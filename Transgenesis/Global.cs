@@ -28,6 +28,13 @@ namespace Transgenesis {
         public static XElement NameElement(this XElement e, string name) {
             return e.Elements("E").First(s => s.Attribute("name")?.Value == name);
         }
+        public static List<string> GetValidAttributes(this XElement e) {
+            return e.Elements("A").Select(a => a.Att("name")).ToList();
+        }
+        public static string Tag(this XElement e) => e.Name.LocalName;
+        public static List<string> GetValidSubelements(this XElement e) {
+            return e.Elements("E").Select(a => a.Att("name")).ToList();
+        }
         public static bool NameElement(this XElement e, string name, out XElement result) {
             return (result = e.Elements("E").FirstOrDefault(s => s.Attribute("name")?.Value == name)) != null;
         }
