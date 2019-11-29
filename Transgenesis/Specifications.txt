@@ -1,0 +1,16 @@
+﻿Go to type definition
+	&type
+Go to type subelement
+	&type.Subelement
+Go to type attribute
+	&type.attribute
+Go to element attribute
+	&type.Subelement.attribute
+
+Auto suggestions
+	Strings that start with the input string
+	Strings that contain the input string
+	Matching part is highlighted
+	List of matching strings is presented below input as options
+	Press up/down to select an option
+	Press space to auto-select the first option or the selected option

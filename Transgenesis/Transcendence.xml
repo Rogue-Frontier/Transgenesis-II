@@ -1,0 +1,2024 @@
+<E name="Hierarchy">
+    <E category="1" name="TranscendenceAdventure" inherit="Hierarchy:TranscendenceExtension">
+        <E category="1" name="AdventureDesc">
+            <A name="adventureUNID" valueType="UNID"/>
+            <A name="attributes" valueType="STRING"/>
+            <A name="backgroundID" valueType="TYPE_IMAGE"/>
+            <A name="desc" valueType="STRING"/>
+            <A name="extends" valueType="STRING"/>
+            <A name="include10StartingShips" valueType="BOOLEAN"/>
+            <A name="inherit" valueType="TYPE_INHERITED"/>
+            <A name="name" valueType="STRING"/>
+            <A name="obsolete" valueType="WHOLE"/>
+            <A name="startingMap" valueType="TYPE_SYSTEM_MAP"/>
+            <A name="startingPos" valueType="STRING"/>
+            <A name="startingShipCriteria" valueType="STRING"/>
+            <A name="startingSystem" valueType="STRING"/>
+            <A name="UNID" valueType="UNID"/>
+            <A name="welcomeMessage" valueType="STRING"/>
+            <E category="?" name="EncounterOverrides">
+                <E category="*" name="Encounter">
+                    <A name="enemyExclusionRadius" valueType="WHOLE"/>
+                    <A name="exclusionRadius" valueType="WHOLE"/>
+                    <A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
+                    <A name="locationCriteria" valueType="STRING"/>
+                    <A name="maxAppearing" valueType="WHOLE"/>
+                    <A name="minAppearing" valueType="WHOLE"/>
+                    <A name="systemCriteria" valueType="STRING"/>
+                    <A name="unid" valueType="TYPE_STATION"/>
+                    <A name="unique" valueType="UNIQUE"/>
+                    <E category="?" inherit="Encounter_Criteria" name="Criteria"/>
+                </E>
+            </E>
+            <E category="?" name="Constants">
+                <E category="*" name="ArmorDamageAdj">
+                    <A name="damageAdj" valueType="STRING"/>
+                    <A name="level" valueType="WHOLE"/>
+                </E>
+                <E category="*" name="ShieldDamageAdj">
+                    <A name="damageAdj" valueType="STRING"/>
+                    <A name="level" valueType="WHOLE"/>
+                </E>
+            </E>
+            <E category="?" inherit="DesignType:Communications"/>
+            <E category="?" inherit="DesignType:StaticData"/>
+            <E category="?" inherit="DesignType:GlobalData"/>
+            <E category="?" name="Language">
+                <E category="?" name="Text">
+                    <A name="id" value="description" valueType="STRING"/>
+                </E>
+                <E category="*" name="Text">
+                    <A name="id" valueType="STRING"/>
+                </E>
+                <E category="*" name="String">
+                    <A name="id" valueType="STRING"/>
+                </E>
+                <E category="*" name="Message">
+                    <A name="id" valueType="STRING"/>
+                    <A name="text" valueType="STRING"/>
+                </E>
+            </E>
+            <E category="?" inherit="DesignType:Events"/>
+            <E category="?" inherit="DesignType:DockScreens"/>
+            <E category="?" inherit="DesignType:DisplayAttributes"/>
+            <E category="?" inherit="DesignType:AttributeDesc"/>
+        </E>
+
+    </E>
+	<E category="mod" name="TranscendenceExtension" inherit="Hierarchy:TranscendenceLibrary"/>
+    <E category="mod" name="TranscendenceLibrary" inherit="Hierarchy:TranscendenceModule">
+        <A name="apiVersion" valueType="INTEGER"/>
+        <A name="autoInclude" valueType="BOOLEAN"/>
+        <A name="autoIncludeForCompatibility" valueType="BOOLEAN"/>
+        <A name="coverImageID" valueType="TYPE_IMAGE"/>
+        <A name="credits" valueType="STRING"/>
+        <A name="debugOnly" valueType="BOOLEAN"/>
+        <A name="extensionAPIVersion" valueType="INTEGER"/>
+        <A name="hidden" valueType="BOOLEAN"/>
+        <A name="name" valueType="STRING"/>
+        <A name="private" valueType="BOOLEAN"/>
+        <A name="release" valueType="INTEGER"/>
+        <A name="UNID" valueType="UNID"/>
+        <A name="usesXML" valueType="BOOLEAN"/>
+        <A name="version" valueType="STRING"/>
+        <E category="*" name="Module">
+            <A name="filename" valueType="STRING"/>
+        </E>
+        <E category="*" name="Library">
+            <A name="unid" valueType="TYPE_MOD"/>
+        </E>
+    </E>
+    <E category="mod" name="TranscendenceModule">
+        <E category="?" name="Globals"/>
+        <E category="*" name="DockScreen" inherit="DesignType">
+            <A name="backgroundID" valueType="DOCKSCREEN_BACKGROUND_ID"/>
+            <A name="desc" valueType="STRING"/>
+            <A name="name" valueType="STRING"/>
+            <A name="nestedScreen" valueType="BOOLEAN"/>
+            <A name="type" valueType="DOCKSCREEN_TYPE"/>
+            <E category="?" name="ListOptions">
+                <A name="criteria" valueType="STRING"/>
+                <A name="dataFrom" valueType="DOCKSCREEN_DATA_FROM"/>
+                <A name="height" valueType="WHOLE"/>
+                <A name="initialItem" valueType="STRING"/>
+                <A name="list" valueType="STRING"/>
+                <A name="noArmorSpeedDisplay" valueType="BOOLEAN"/>
+                <A name="noEmptySlots" valueType="BOOLEAN"/>
+                <A name="posX" valueType="INTEGER"/>
+                <A name="posY" valueType="INTEGER"/>
+                <A name="rowHeight" valueType="WHOLE"/>
+                <A name="slotName" valueType="STRING"/>
+                <A name="width" valueType="WHOLE"/>
+            </E>
+            <E category="?" name="List">
+                <A name="criteria" valueType="STRING"/>
+                <A name="dataFrom" valueType="DOCKSCREEN_DATA_FROM"/>
+                <A name="height" valueType="WHOLE"/>
+                <A name="initialItem" valueType="STRING"/>
+                <A name="list" valueType="STRING"/>
+                <A name="noArmorSpeedDisplay" valueType="BOOLEAN"/>
+                <A name="noEmptySlots" valueType="BOOLEAN"/>
+                <A name="posX" valueType="INTEGER"/>
+                <A name="posY" valueType="INTEGER"/>
+                <A name="rowHeight" valueType="WHOLE"/>
+                <A name="slotName" valueType="STRING"/>
+                <A name="width" valueType="WHOLE"/>
+            </E>
+            <E category="?" name="OnScreenInit"/>
+            <E category="?" name="OnInit"/>
+            <E category="?" name="InitialPane"/>
+            <E category="?" name="OnScreenUpdate"/>
+            <E category="?" name="Display">
+                <A name="animate" valueType="STRING"/>
+                <A name="dataFrom" valueType="DOCKSCREEN_DATA_FROM"/>
+                <A name="display" valueType="STRING"/>
+                <A name="type" valueType="DOCKSCREEN_TYPE"/>
+                <E category="?" name="OnDisplayInit"/>
+                <E category="*" name="Group">
+                    <A name="center" valueType="INTEGER"/>
+                    <A name="height" valueType="INTEGER"/>
+                    <A name="left" valueType="INTEGER"/>
+                    <A name="top" valueType="INTEGER"/>
+                    <A name="vcenter" valueType="INTEGER"/>
+                    <A name="width" valueType="INTEGER"/>
+                </E>
+                <E category="*" name="Text">
+                    <A name="align" valueType="ALIGN_HORIZONTAL"/>
+                    <A name="bottom" valueType="INTEGER"/>
+                    <A name="color" valueType="HEX_COLOR"/>
+                    <A name="font" valueType="FONT"/>
+                    <A name="id" valueType="STRING"/>
+                    <A name="left" valueType="INTEGER"/>
+                    <A name="right" valueType="INTEGER"/>
+                    <A name="top" valueType="INTEGER"/>
+                </E>
+                <E category="*" name="Image">
+                    <A name="align" valueType="ALIGN_HORIZONTAL"/>
+                    <A name="bottom" valueType="INTEGER"/>
+                    <A name="left" valueType="INTEGER"/>
+                    <A name="right" valueType="INTEGER"/>
+                    <A name="top" valueType="INTEGER"/>
+                    <A name="transparent" valueType="BOOLEAN"/>
+                    <A name="valign" valueType="ALIGN_VERTICAL"/>
+                </E>
+            </E>
+            <E category="?" name="Canvas">
+                <A name="bottom" valueType="INTEGER"/>
+                <A name="left" valueType="INTEGER"/>
+                <A name="right" valueType="INTEGER"/>
+                <A name="top" valueType="INTEGER"/>
+            </E>
+            <E category="?" name="Panes">
+                <E category="*" name="Pane">
+                    <A name="desc" valueType="STRING"/>
+                    <A name="layout" valueType="LAYOUT"/>
+                    <A name="noListNavigation" valueType="BOOLEAN"/>
+                    <A name="showCounter" valueType="BOOLEAN"/>
+                    <A name="showTextInput" valueType="BOOLEAN"/>
+                    <E category="?" name="OnPaneInit"/>
+                    <E category="?" name="Initialize"/>
+                    <E category="?" name="Controls">
+                        <E category="?" name="Counter">
+                            <A name="id" valueType="STRING"/>
+                            <A name="style" valueType="STYLE_CONTROLS"/>
+                        </E>
+                        <E category="?" name="ItemDisplay">
+                            <A name="id" valueType="STRING"/>
+                            <A name="style" valueType="STYLE_CONTROLS"/>
+                        </E>
+                        <E category="?" name="ItemListDisplay">
+                            <A name="id" valueType="STRING"/>
+                            <A name="style" valueType="STYLE_CONTROLS"/>
+                        </E>
+                        <E category="?" name="Text">
+                            <A name="id" valueType="STRING"/>
+                            <A name="style" valueType="STYLE_CONTROLS"/>
+                        </E>
+                        <E category="?" name="TextInput">
+                            <A name="id" valueType="STRING"/>
+                            <A name="style" valueType="STYLE_CONTROLS"/>
+                        </E>
+                    </E>
+                    <E category="?" name="Actions">
+                        <E category="*" name="Action">
+                            <A name="cancel" valueType="BOOLEAN"/>
+                            <A name="default" valueType="BOOLEAN"/>
+                            <A name="descID" valueType="STRING"/>
+                            <A name="id" valueType="STRING"/>
+                            <A name="key" valueType="CHARACTER"/>
+                            <A name="minor" valueType="BOOLEAN"/>
+                            <A name="name" valueType="STRING"/>
+                            <A name="nextKey" valueType="BOOLEAN"/>
+                            <A name="prevKey" valueType="BOOLEAN"/>
+                            <E category="?" name="Navigate">
+                                <A name="screen" valueType="STRING"/>
+                            </E>
+                            <E category="?" name="ShowPane">
+                                <A name="pane" valueType="STRING"/>
+                            </E>
+                            <E category="?" name="Exit"/>
+                        </E>
+                    </E>
+                </E>
+            </E>
+        </E>
+        <E category="*" name="EconomyType" inherit="DesignType">
+            <A name="conversion" valueType="INTEGER"/>
+            <A name="currency" valueType="STRING"/>
+            <A name="id" valueType="STRING"/>
+        </E>
+        <E category="*" name="EffectType"	inherit="DesignType">
+			<A name="W.I.P." valueType="STRING"/>
+        </E>
+        <E category="*" name="Image">
+            <A name="backColor" valueType="HEX_COLOR"/>
+            <A name="bitmap" valueType="FILENAME"/>
+            <A name="bitmask" valueType="FILENAME"/>
+            <A name="hitMask" valueType="FILENAME"/>
+            <A name="loadOnUse" valueType="BOOLEAN"/>
+            <A name="noPM" valueType="BOOLEAN"/>
+            <A name="shadowMask" valueType="FILENAME"/>
+            <A name="sprite" valueType="BOOLEAN"/>
+        </E>
+        <E category="*" name="ImageComposite" inherit="DesignType"/>
+        <E category="*" name="ItemTable" inherit="DesignType"/>
+        <E category="*" name="ItemType">
+            <A name="ammoCharges" valueType="BOOLEAN"/>
+            <A name="charges" valueType="WHOLE"/>
+            <A name="data" valueType="STRING"/>
+            <A name="enhancement" valueType="STRING"/>
+            <A name="frequency" valueType="FREQUENCY"/>
+            <A name="level" valueType="WHOLE"/>
+            <A name="massBonusPerCharge" valueType="WHOLE"/>
+            <A name="name" valueType="STRING"/>
+            <A name="noSaleIfUsed" valueType="BOOLEAN"/>
+            <A name="numberAppearing" valueType="WHOLE"/>
+            <A name="pluralName" valueType="STRING"/>
+            <A name="randomDamaged" valueType="BOOLEAN"/>
+            <A name="reverseArticle" valueType="BOOLEAN"/>
+            <A name="secondPlural" valueType="BOOLEAN"/>
+            <A name="showReference" valueType="BOOLEAN"/>
+            <A name="sortName" valueType="STRING"/>
+            <A name="unknownType" valueType="TYPE_ITEM"/>
+            <A name="useAsArmorSet" valueType="BOOLEAN"/>
+            <A name="useCompleteArmorOnly" valueType="BOOLEAN"/>
+            <A name="useEnabledOnly" valueType="BOOLEAN"/>
+            <A name="useInstalledOnly" valueType="BOOLEAN"/>
+            <A name="useKey" valueType="CHARACTER"/>
+            <A name="useScreen" valueType="TYPE_DOCKSCREEN"/>
+            <A name="useUninstalledOnly" valueType="BOOLEAN"/>
+            <A name="value" valueType="WHOLE"/>
+            <A name="valueBonusPerCharge" valueType="WHOLE"/>
+            <A name="valueCharges" valueType="BOOLEAN"/>
+            <A name="virtual" valueType="BOOLEAN"/>
+			<E category="virtual" name="DeviceType">
+                <A name="category" valueType="CATEGORY_DEVICE"/>
+                <A name="deviceSlotCategory" valueType="CATEGORY_DEVICE"/>
+                <A name="deviceSlots" valueType="WHOLE"/>
+                <A name="external" valueType="BOOLEAN"/>
+				<A name="maxHPBonus" valueType="WHOLE"/>
+                <A name="overlayType" valueType="TYPE_OVERLAY"/>
+                <E category="*" name="EnhanceAbilities">
+                    <A name="criteria" valueType="STRING"/>
+                    <A name="enhancement" valueType="STRING"/>
+                    <A name="type" valueType="STRING"/>
+                </E>
+			</E>
+            <E category="?" name="Armor">
+                <A name="blindingDamageAdj" valueType="WHOLE"/>
+                <A name="blindingImmune" valueType="BOOLEAN"/>
+                <A name="chargeDecay" valueType="WHOLE"/>
+                <A name="chargeRegen" valueType="WHOLE"/>
+                <A name="completeBonus" valueType="WHOLE"/>
+                <A name="damageAdjLevel" valueType="INTEGER_SEQUENCE"/>
+                <A name="decay" valueType="WHOLE"/>
+                <A name="decayRate" valueType="WHOLE"/>
+                <A name="deviceCriteria" valueType="STRING"/>
+                <A name="deviceDamageAdj" valueType="WHOLE"/>
+                <A name="deviceDamageImmune" valueType="BOOLEAN"/>
+                <A name="deviceHPBonus" valueType="WHOLE"/>
+                <A name="disintegrationImmune" valueType="BOOLEAN"/>
+                <A name="distribute" valueType="WHOLE"/>
+                <A name="EMPDamageAdj" valueType="WHOLE"/>
+                <A name="EMPImmune" valueType="BOOLEAN"/>
+                <A name="enhancementType" valueType="HEX_NUMBER"/>
+                <A name="idlePowerUse" valueType="WHOLE"/>
+                <A name="installCost" valueType="WHOLE"/>
+                <A name="installCostAdj" valueType="WHOLE"/>
+                <A name="maxHPBonus" valueType="WHOLE"/>
+                <A name="maxSpeedBonus" valueType="WHOLE"/>
+                <A name="photoRecharge" valueType="BOOLEAN"/>
+                <A name="photoRepair" valueType="BOOLEAN"/>
+                <A name="powerUse" valueType="WHOLE"/>
+                <A name="radiationImmune" valueType="BOOLEAN"/>
+                <A name="reflect" valueType="STRING"/>
+                <A name="regen" valueType="WHOLE"/>
+                <A name="repairCost" valueType="WHOLE"/>
+                <A name="repairCostAdj" valueType="WHOLE"/>
+                <A name="repairRate" valueType="WHOLE"/>
+                <A name="repairTech" valueType="WHOLE"/>
+                <A name="shatterImmune" valueType="BOOLEAN"/>
+                <A name="shieldInterference" valueType="BOOLEAN"/>
+                <A name="stealth" valueType="WHOLE"/>
+                <A name="useHealerToRegen" valueType="BOOLEAN"/>
+            </E>
+            <E category="?" name="AutoDefenseDevice" inherit="ItemType:DeviceType">
+                <A name="fireRate" valueType="WHOLE"/>
+                <A name="interceptRange" valueType="WHOLE"/>
+                <A name="target" value="missiles" valueType="STRING"/>
+                <A name="targetCriteria" valueType="STRING"/>
+                <A name="weapon" valueType="TYPE_WEAPON"/>
+            </E>
+            <E category="?" name="CargoHoldDevice" inherit="ItemType:DeviceType">
+                <A name="cargoSpace" valueType="INTEGER"/>
+            </E>
+			;W.I.P.: Clean up
+            <E category="?" name="Components">
+                <E category="*" name="Item">
+                    <A name="chance" valueType="WHOLE"/>
+                    <A name="count" valueType="WHOLE"/>
+                    <A name="criteria" valueType="STRING"/>
+                    <A name="damaged" valueType="WHOLE"/>
+                    <A name="debugOnly" valueType="BOOLEAN"/>
+                    <A name="enhanced" valueType="WHOLE"/>
+                    <A name="enhancement" valueType="STRING"/>
+                    <A name="item" valueType="TYPE_ITEM"/>
+                    <A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
+                </E>
+                <E category="*" name="Table">
+                    <A name="chance" valueType="WHOLE"/>
+                    <A name="count" valueType="WHOLE"/>
+                    <A name="criteria" valueType="STRING"/>
+                    <A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
+                    <E category="*" name="Item">
+                        <A name="chance" valueType="WHOLE"/>
+                        <A name="count" valueType="WHOLE"/>
+                        <A name="criteria" valueType="STRING"/>
+                        <A name="damaged" valueType="WHOLE"/>
+                        <A name="debugOnly" valueType="BOOLEAN"/>
+                        <A name="enhanced" valueType="WHOLE"/>
+                        <A name="enhancement" valueType="STRING"/>
+                        <A name="item" valueType="TYPE_ITEM"/>
+                        <A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
+                    </E>
+                    <E category="*" inherit="Components:Table" name="Table"/>
+                    <E category="*" name="RandomItem">
+                        <A name="attributes" valueType="STRING"/>
+                        <A name="categories" valueType="STRING"/>
+                        <A name="chance" valueType="WHOLE"/>
+                        <A name="count" valueType="WHOLE"/>
+                        <A name="criteria" valueType="STRING"/>
+                        <A name="damaged" valueType="WHOLE"/>
+                        <A name="enhanced" valueType="WHOLE"/>
+                        <A name="enhancement" valueType="STRING"/>
+                        <A name="level" valueType="WHOLE"/>
+                        <A name="levelCurve" valueType="WHOLE"/>
+                        <A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
+                        <A name="modifiers" valueType="STRING"/>
+                    </E>
+                    <E category="*" name="Group">
+                        <A name="chance" valueType="WHOLE"/>
+                        <A name="count" valueType="WHOLE"/>
+                        <A name="criteria" valueType="STRING"/>
+                        <A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
+                        <A name="levelValue" valueType="LEVEL_VALUE"/>
+                        <A name="value" valueType="WHOLE"/>
+                        <E category="*" name="Item">
+                            <A name="chance" valueType="WHOLE"/>
+                            <A name="count" valueType="WHOLE"/>
+                            <A name="criteria" valueType="STRING"/>
+                            <A name="damaged" valueType="WHOLE"/>
+                            <A name="debugOnly" valueType="BOOLEAN"/>
+                            <A name="enhanced" valueType="WHOLE"/>
+                            <A name="enhancement" valueType="STRING"/>
+                            <A name="item" valueType="TYPE_ITEM"/>
+                            <A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
+                        </E>
+                        <E category="*" inherit="Components:Table" name="Table"/>
+                        <E category="*" name="RandomItem">
+                            <A name="attributes" valueType="STRING"/>
+                            <A name="categories" valueType="STRING"/>
+                            <A name="chance" valueType="WHOLE"/>
+                            <A name="count" valueType="WHOLE"/>
+                            <A name="criteria" valueType="STRING"/>
+                            <A name="damaged" valueType="WHOLE"/>
+                            <A name="enhanced" valueType="WHOLE"/>
+                            <A name="enhancement" valueType="STRING"/>
+                            <A name="level" valueType="WHOLE"/>
+                            <A name="levelCurve" valueType="WHOLE"/>
+                            <A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
+                            <A name="modifiers" valueType="STRING"/>
+                        </E>
+                        <E category="*" inherit="Table:Group" name="Group"/>
+                        <E category="*" inherit="Table:Group" name="Components"/>
+                        <E category="*" inherit="Table:Group" name="Items"/>
+                        <E category="*" inherit="Table:Group" name="AverageValue"/>
+                        <E category="*" name="Lookup">
+                            <A name="chance" valueType="WHOLE"/>
+                            <A name="count" valueType="WHOLE"/>
+                            <A name="criteria" valueType="STRING"/>
+                            <A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
+                            <A name="table" valueType="TYPE_ITEM_TABLE"/>
+                        </E>
+                        <E category="*" inherit="Components:Table" name="LevelTable"/>
+                        <E category="*" inherit="Components:Table" name="LocationCriteria"/>
+                        <E category="*" name="Null"/>
+                    </E>
+                    <E category="*" inherit="Table:Group" name="Components"/>
+                    <E category="*" inherit="Table:Group" name="Items"/>
+                    <E category="*" inherit="Table:Group" name="AverageValue"/>
+                    <E category="*" name="Lookup">
+                        <A name="chance" valueType="WHOLE"/>
+                        <A name="count" valueType="WHOLE"/>
+                        <A name="criteria" valueType="STRING"/>
+                        <A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
+                        <A name="table" valueType="TYPE_ITEM_TABLE"/>
+                    </E>
+                    <E category="*" inherit="Components:Table" name="LevelTable"/>
+                    <E category="*" inherit="Components:Table" name="LocationCriteria"/>
+                    <E category="*" name="Null"/>
+                </E>
+                <E category="*" name="RandomItem">
+                    <A name="attributes" valueType="STRING"/>
+                    <A name="categories" valueType="STRING"/>
+                    <A name="chance" valueType="WHOLE"/>
+                    <A name="count" valueType="WHOLE"/>
+                    <A name="criteria" valueType="STRING"/>
+                    <A name="damaged" valueType="WHOLE"/>
+                    <A name="enhanced" valueType="WHOLE"/>
+                    <A name="enhancement" valueType="STRING"/>
+                    <A name="level" valueType="WHOLE"/>
+                    <A name="levelCurve" valueType="WHOLE"/>
+                    <A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
+                    <A name="modifiers" valueType="STRING"/>
+                </E>
+                <E category="*" inherit="Table:Group" name="Group"/>
+                <E category="*" inherit="Table:Group" name="Components"/>
+                <E category="*" inherit="Table:Group" name="Items"/>
+                <E category="*" inherit="Table:Group" name="AverageValue"/>
+                <E category="*" name="Lookup">
+                    <A name="chance" valueType="WHOLE"/>
+                    <A name="count" valueType="WHOLE"/>
+                    <A name="criteria" valueType="STRING"/>
+                    <A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
+                    <A name="table" valueType="TYPE_ITEM_TABLE"/>
+                </E>
+                <E category="*" inherit="Components:Table" name="LevelTable"/>
+                <E category="*" inherit="Components:Table" name="LocationCriteria"/>
+                <E category="*" name="Null"/>
+                <E category="*" name="Item">
+                    <A name="chance" valueType="WHOLE"/>
+                    <A name="count" valueType="WHOLE"/>
+                    <A name="criteria" valueType="STRING"/>
+                    <A name="damaged" valueType="WHOLE"/>
+                    <A name="debugOnly" valueType="BOOLEAN"/>
+                    <A name="enhanced" valueType="WHOLE"/>
+                    <A name="enhancement" valueType="STRING"/>
+                    <A name="item" valueType="TYPE_ITEM"/>
+                    <A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
+                </E>
+                <E category="*" inherit="Components:Table" name="Table"/>
+                <E category="*" name="RandomItem">
+                    <A name="attributes" valueType="STRING"/>
+                    <A name="categories" valueType="STRING"/>
+                    <A name="chance" valueType="WHOLE"/>
+                    <A name="count" valueType="WHOLE"/>
+                    <A name="criteria" valueType="STRING"/>
+                    <A name="damaged" valueType="WHOLE"/>
+                    <A name="enhanced" valueType="WHOLE"/>
+                    <A name="enhancement" valueType="STRING"/>
+                    <A name="level" valueType="WHOLE"/>
+                    <A name="levelCurve" valueType="WHOLE"/>
+                    <A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
+                    <A name="modifiers" valueType="STRING"/>
+                </E>
+                <E category="*" inherit="Table:Group" name="Group"/>
+                <E category="*" inherit="Table:Group" name="Components"/>
+                <E category="*" inherit="Table:Group" name="Items"/>
+                <E category="*" inherit="Table:Group" name="AverageValue"/>
+                <E category="*" name="Lookup">
+                    <A name="chance" valueType="WHOLE"/>
+                    <A name="count" valueType="WHOLE"/>
+                    <A name="criteria" valueType="STRING"/>
+                    <A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
+                    <A name="table" valueType="TYPE_ITEM_TABLE"/>
+                </E>
+                <E category="*" inherit="Components:Table" name="LevelTable"/>
+                <E category="*" inherit="Components:Table" name="LocationCriteria"/>
+                <E category="*" name="Null"/>
+            </E>
+            <E category="?" name="CyberDeckDevice" inherit="ItemType:DeviceType">
+                <A name="aiLevel" valueType="WHOLE"/>
+                <A name="attackChance" valueType="WHOLE"/>
+                <A name="program" valueType="PROGRAM"/>
+                <A name="programName" valueType="STRING"/>
+                <A name="range" valueType="WHOLE"/>
+            </E>
+            <E category="?" name="DriveDevice" inherit="ItemType:DeviceType">
+                <A name="inertialessDrive" valueType="BOOLEAN"/>
+                <A name="maxRotationRate" valueType="DECIMAL"/>
+                <A name="maxSpeed" valueType="WHOLE"/>
+                <A name="maxSpeedInc" valueType="WHOLE"/>
+                <A name="powerUse" valueType="WHOLE"/>
+                <A name="rotationAccel" valueType="DECIMAL"/>
+                <A name="rotationStopAccel" valueType="DECIMAL"/>
+                <A name="thrust" valueType="DECIMAL"/>
+            </E>
+            <E category="?" name="EnhancerDevice" inherit="ItemType:DeviceType">
+                <A name="activateAdj" valueType="WHOLE"/>
+                <A name="criteria" valueType="STRING"/>
+                <A name="damageAdj" valueType="INTEGER_SEQUENCE"/>
+                <A name="hpBonus" valueType="WHOLE"/>
+                <A name="maxActivateDelay" valueType="INTEGER"/>
+                <A name="maxHPBonus" valueType="WHOLE"/>
+                <A name="minActivateDelay" valueType="INTEGER"/>
+                <A name="overlayType" valueType="TYPE_OVERLAY"/>
+                <A name="powerUse" valueType="WHOLE"/>
+            </E>
+            <E category="?" name="Image">
+                <A name="animationColumns" valueType="WHOLE"/>
+                <A name="blending" valueType="BLENDING"/>
+                <A name="flashTicks" valueType="WHOLE"/>
+                <A name="imageFrameCount" valueType="WHOLE"/>
+                <A name="imageHeight" valueType="WHOLE"/>
+                <A name="imageID" valueType="TYPE_IMAGE"/>
+                <A name="imageTicksPerFrame" valueType="WHOLE"/>
+                <A name="imageWidth" valueType="WHOLE"/>
+                <A name="imageX" valueType="WHOLE"/>
+                <A name="imageY" valueType="WHOLE"/>
+                <A name="rotationColumns" valueType="WHOLE"/>
+                <A name="rotationCount" valueType="WHOLE"/>
+                <A name="rotationOffset" valueType="INTEGER"/>
+                <A name="viewportRatio" valueType="DECIMAL"/>
+                <A name="viewportSize" valueType="INTEGER"/>
+                <A name="xOffset" valueType="INTEGER"/>
+                <A name="yOffset" valueType="INTEGER"/>
+            </E>
+            <E category="?" inherit="DesignType:StaticData" name="InitialData"/>
+            <E category="?" name="Invoke">
+                <A name="asArmorSet" valueType="BOOLEAN"/>
+                <A name="completeArmorOnly" valueType="BOOLEAN"/>
+                <A name="enabledOnly" valueType="BOOLEAN"/>
+                <A name="installedOnly" valueType="BOOLEAN"/>
+                <A name="key" valueType="CHARACTER"/>
+                <A name="uninstalledOnly" valueType="BOOLEAN"/>
+            </E>
+            <E category="?" name="MiscellaneousDevice" inherit="ItemType:DeviceType">
+                <A name="capacitorPowerUse" valueType="WHOLE"/>
+                <A name="powerRating" valueType="WHOLE"/>
+                <A name="powerToActivate" valueType="WHOLE"/>
+                <A name="powerUse" valueType="WHOLE"/>
+            </E>
+            <E category="?" name="Missile" inherit="ItemType:DeviceType">
+                <A name="W.I.P." valueType="STRING"/>
+            </E>
+            <E category="?" name="Names"/>
+            <E category="?" name="ReactorDevice" inherit="ItemType:DeviceType">
+                <A name="fuelCapacity" valueType="WHOLE"/>
+                <A name="fuelCriteria" valueType="STRING"/>
+                <A name="maxFuel" valueType="WHOLE"/>
+                <A name="maxFuelTech" valueType="WHOLE"/>
+                <A name="maxHPBonus" valueType="WHOLE"/>
+                <A name="maxPower" valueType="WHOLE"/>
+                <A name="maxPowerBonusPerCharge" valueType="WHOLE"/>
+                <A name="minFuelTech" valueType="WHOLE"/>
+                <A name="noFuel" valueType="BOOLEAN"/>
+                <A name="reactorEfficiency" valueType="WHOLE"/>
+                <A name="reactorPower" valueType="WHOLE"/>
+            </E>
+            <E category="?" name="RepairerDevice" inherit="ItemType:DeviceType">
+			    <A name="W.I.P." valueType="STRING"/>
+            </E>
+            <E category="?" name="Shields" inherit="ItemType:DeviceType">
+                <A name="absorbAdj" valueType="WHOLE"/>
+                <A name="armorShield" valueType="WHOLE"/>
+                <A name="category" valueType="CATEGORY_DEVICE"/>
+                <A name="damageAdj" valueType="STRING"/>
+                <A name="damageAdjLevel" valueType="STRING"/>
+                <A name="depletionDelay" valueType="WHOLE"/>
+                <A name="hasNonRegenHP" valueType="BOOLEAN"/>
+                <A name="hitEffect" valueType="TYPE_EFFECT"/>
+                <A name="hitPoints" valueType="WHOLE"/>
+                <A name="hpBonus" valueType="WHOLE"/>
+                <A name="HPBonusPerCharge" valueType="WHOLE"/>
+                <A name="idlePowerUse" valueType="WHOLE"/>
+                <A name="maxCharges" valueType="WHOLE"/>
+                <A name="powerBonusPerCharge" valueType="WHOLE"/>
+                <A name="powerUse" valueType="WHOLE"/>
+                <A name="reflect" valueType="STRING"/>
+                <A name="regen" valueType="WHOLE"/>
+                <A name="regenHP" valueType="WHOLE"/>
+                <A name="regenHPBonusPerCharge" valueType="WHOLE"/>
+                <A name="regenTime" valueType="WHOLE"/>
+                <A name="weaponSuppress" valueType="STRING"/>
+            </E>
+            <E category="?" name="SolarDevice" inherit="ItemType:DeviceType">
+                <A name="category" valueType="CATEGORY_DEVICE"/>
+                <A name="deviceSlotCategory" valueType="CATEGORY_DEVICE"/>
+                <A name="deviceSlots" valueType="WHOLE"/>
+                <A name="external" valueType="BOOLEAN"/>
+                <A name="maxHPBonus" valueType="WHOLE"/>
+                <A name="overlayType" valueType="TYPE_OVERLAY"/>
+                <A name="powerGen" valueType="WHOLE"/>
+                <A name="refuel" valueType="WHOLE"/>
+                <E category="*" name="EnhanceAbilities">
+                    <A name="criteria" valueType="STRING"/>
+                    <A name="enhancement" valueType="STRING"/>
+                    <A name="type" valueType="STRING"/>
+                </E>
+            </E>
+            <E category="?" name="Weapon" inherit="ItemType:DeviceType"/>
+            <E category="?" inherit="DesignType:Communications"/>
+            <E category="?" inherit="DesignType:StaticData"/>
+            <E category="?" inherit="DesignType:StaticData"/>
+            <E category="?" inherit="DesignType:Language"/>
+            <E category="?" name="Events" inherit="DesignType:Events">
+                <E category="?" name="CanBeInstalled"/>
+                <E category="?" name="CanBeUninstalled"/>
+                <E category="?" name="OnAddedAsEnhancement"/>
+                <E category="?" name="OnDisable"/>
+                <E category="?" name="OnEnable"/>
+                <E category="?" name="GetDescription"/>
+                <E category="?" name="GetName"/>
+                <E category="?" name="GetTradePrice"/>
+                <E category="?" name="OnInstall"/>
+                <E category="?" name="OnObjDestroyed"/>
+                <E category="?" name="OnReactorOverload"/>
+                <E category="?" name="OnRefuel"/>
+                <E category="?" name="OnRemovedAsEnhancement"/>
+                <E category="?" name="OnUninstall"/>
+            </E>
+            <E category="?" inherit="DesignType:DockScreens"/>
+            <E category="?" inherit="DesignType:DisplayAttributes"/>
+            <E category="?" inherit="DesignType:DisplayAttributes"/>
+        </E>
+        <E category="*" name="MissionType">
+            <A name="allowPlayerDelete" value="false" valueType="BOOLEAN"/>
+            <A name="debriefAfterOutOfSystem" value="false" valueType="BOOLEAN"/>
+            <A name="expireTime" valueType="INTEGER"/>
+            <A name="failureAfterOutOfSystem" value="false" valueType="BOOLEAN"/>
+            <A name="forceUndockAfterDebrief" value="false" valueType="BOOLEAN"/>
+            <A name="level" valueType="WHOLE"/>
+            <A name="maxAppearing" valueType="WHOLE"/>
+            <A name="name" valueType="STRING"/>
+            <A name="noDebrief" value="false" valueType="BOOLEAN"/>
+            <A name="noDecline" value="false" valueType="BOOLEAN"/>
+            <A name="noFailureOnOwnerDestroyed" value="false" valueType="BOOLEAN"/>
+            <A name="noStats" value="false" valueType="BOOLEAN"/>
+            <A name="priority" value="1" valueType="WHOLE"/>
+            <E category="?" inherit="DesignType:Communications"/>
+            <E category="?" inherit="DesignType:StaticData"/>
+            <E category="?" inherit="DesignType:StaticData"/>
+            <E category="?" name="Language">
+                <E category="?" name="Text">
+                    <A name="id" value="Name" valueType="STRING"/>
+                </E>
+                <E category="?" name="Text">
+                    <A name="id" value="Summary" valueType="STRING"/>
+                </E>
+                <E category="?" name="Text">
+                    <A name="id" value="Intro" valueType="STRING"/>
+                </E>
+                <E category="?" name="Text">
+                    <A name="id" value="Briefing" valueType="STRING"/>
+                </E>
+                <E category="?" name="Text">
+                    <A name="id" value="AcceptReply" valueType="STRING"/>
+                </E>
+                <E category="?" name="Text">
+                    <A name="id" value="DeclineReply" valueType="STRING"/>
+                </E>
+                <E category="?" name="Text">
+                    <A name="id" value="InProgress" valueType="STRING"/>
+                </E>
+                <E category="?" name="Text">
+                    <A name="id" value="SuccessMsg" valueType="STRING"/>
+                </E>
+                <E category="?" name="Text">
+                    <A name="id" value="FailureMsg" valueType="STRING"/>
+                </E>
+                <E category="?" name="Text">
+                    <A name="id" value="SuccessDebrief" valueType="STRING"/>
+                </E>
+                <E category="?" name="Text">
+                    <A name="id" value="FailureDebrief" valueType="STRING"/>
+                </E>
+                <E category="?" name="Text">
+                    <A name="id" value="AlreadyDebriefed" valueType="STRING"/>
+                </E>
+                <E category="?" name="Text">
+                    <A name="id" value="Unavailable" valueType="STRING"/>
+                </E>
+                <E category="*" name="Text">
+                    <A name="id" valueType="STRING"/>
+                </E>
+                <E category="*" name="String">
+                    <A name="id" valueType="STRING"/>
+                </E>
+                <E category="*" name="Message">
+                    <A name="id" valueType="STRING"/>
+                    <A name="text" valueType="STRING"/>
+                </E>
+            </E>
+            <E category="?" name="Events" inherit="DesignType:Events">
+				<A name="W.I.P." valueType="STRING"/>
+			</E>
+            <E category="?" inherit="DesignType:DockScreens"/>
+            <E category="?" inherit="DesignType:DisplayAttributes"/>
+            <E category="?" inherit="DesignType:DisplayAttributes"/>
+        </E>
+        <E category="*" name="NameGenerator" inherit="DesignType"/>
+        <E category="*" name="OverlayType">
+            <A name="absorbAdj" valueType="INTEGER_SEQUENCE"/>
+            <A name="disableShipScreen" valueType="BOOLEAN"/>
+            <A name="disarm" valueType="BOOLEAN"/>
+            <A name="drag" valueType="WHOLE"/>
+            <A name="ignoreSourceRotation" valueType="BOOLEAN"/>
+            <A name="paralyze" valueType="BOOLEAN"/>
+            <A name="shieldOverlay" valueType="BOOLEAN"/>
+            <A name="spin" valueType="BOOLEAN"/>
+            <A name="weaponBonusAdj" valueType="INTEGER_SEQUENCE"/>
+            <A name="weaponSuppress" valueType="STRING"/>
+            <E category="?" name="Effect" inherit="ImageDesc"/>
+            <E category="?" name="HitEffect" inherit="ImageDesc"/>
+            <E category="?" name="EffectWhenHit" inherit="ImageDesc">
+                <A name="altEffect" valueType="BOOLEAN"/>
+            </E>
+            <E category="?" name="Counter">
+                <A name="color" valueType="HEX_COLOR"/>
+                <A name="label" valueType="STRING"/>
+                <A name="max" valueType="WHOLE"/>
+                <A name="showOnMap" valueType="BOOLEAN"/>
+                <A name="style" valueType="OVERLAY_COUNTER_STYLE"/>
+            </E>
+            <E category="?" inherit="DesignType:Communications"/>
+            <E category="?" inherit="DesignType:StaticData"/>
+            <E category="?" inherit="DesignType:StaticData"/>
+            <E category="?" inherit="DesignType:Language"/>
+            <E category="?" inherit="DesignType:Events">
+                <E category="?" name="OnCreate"/>
+                <E category="?" name="OnUpdate"/>
+                <E category="?" name="OnDamage"/>
+                <E category="?" name="OnDestroy"/>
+                <E category="?" name="OnObjDestroyed"/>
+            </E>
+            <E category="?" inherit="DesignType:DockScreens"/>
+            <E category="?" inherit="DesignType:DisplayAttributes"/>
+            <E category="?" inherit="DesignType:DisplayAttributes"/>
+        </E>
+        <E category="*" name="Power" inherit="DesignType">
+            <A name="key" valueType="CHARACTER"/>
+            <A name="name" valueType="STRING"/>
+            <E category="?" name="OnShow"/>
+            <E category="?" name="OnInvokedByPlayer"/>
+            <E category="?" name="OnInvoke"/>
+            <E category="?" name="OnDestroyCheck"/>
+        </E>
+        <E category="*" name="ShipClass" inherit="DesignType">
+            <A name="W.I.P." valueType="STRING"/>
+            <E category="?" name="Names">
+                <A name="customPlural" valueType="BOOLEAN"/>
+                <A name="definiteArticle" valueType="BOOLEAN"/>
+                <A name="esPlural" valueType="BOOLEAN"/>
+                <A name="firstPlural" valueType="BOOLEAN"/>
+                <A name="noArticle" valueType="BOOLEAN"/>
+                <A name="personalName" valueType="BOOLEAN"/>
+                <A name="reverseArticle" valueType="BOOLEAN"/>
+                <A name="secondPlural" valueType="BOOLEAN"/>
+            </E>
+			;W.I.P.: Clean up
+            <E category="?" name="Items">
+                <E category="*" name="Item">
+                    <A name="chance" valueType="WHOLE"/>
+                    <A name="count" valueType="WHOLE"/>
+                    <A name="criteria" valueType="STRING"/>
+                    <A name="damaged" valueType="WHOLE"/>
+                    <A name="debugOnly" valueType="BOOLEAN"/>
+                    <A name="enhanced" valueType="WHOLE"/>
+                    <A name="enhancement" valueType="STRING"/>
+                    <A name="item" valueType="TYPE_ITEM"/>
+                    <A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
+                </E>
+                <E category="*" inherit="Components:Table" name="Table"/>
+                <E category="*" name="RandomItem">
+                    <A name="attributes" valueType="STRING"/>
+                    <A name="categories" valueType="STRING"/>
+                    <A name="chance" valueType="WHOLE"/>
+                    <A name="count" valueType="WHOLE"/>
+                    <A name="criteria" valueType="STRING"/>
+                    <A name="damaged" valueType="WHOLE"/>
+                    <A name="enhanced" valueType="WHOLE"/>
+                    <A name="enhancement" valueType="STRING"/>
+                    <A name="level" valueType="WHOLE"/>
+                    <A name="levelCurve" valueType="WHOLE"/>
+                    <A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
+                    <A name="modifiers" valueType="STRING"/>
+                </E>
+                <E category="*" inherit="Table:Group" name="Group"/>
+                <E category="*" inherit="Table:Group" name="Components"/>
+                <E category="*" inherit="Table:Group" name="Items"/>
+                <E category="*" inherit="Table:Group" name="AverageValue"/>
+                <E category="*" name="Lookup">
+                    <A name="chance" valueType="WHOLE"/>
+                    <A name="count" valueType="WHOLE"/>
+                    <A name="criteria" valueType="STRING"/>
+                    <A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
+                    <A name="table" valueType="TYPE_ITEM_TABLE"/>
+                </E>
+                <E category="*" inherit="Components:Table" name="LevelTable"/>
+                <E category="*" inherit="Components:Table" name="LocationCriteria"/>
+                <E category="*" name="Null"/>
+            </E>
+			;W.I.P.: Clean up
+            <E category="?" name="Devices">
+                <E category="*" name="Device">
+                    <A name="chance" valueType="WHOLE"/>
+                    <A name="count" valueType="WHOLE"/>
+                    <A name="deviceID" valueType="TYPE_DEVICE"/>
+                    <A name="external" valueType="BOOLEAN"/>
+                    <A name="hpBonus" valueType="INTEGER"/>
+                    <A name="level" valueType="WHOLE"/>
+                    <A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
+                    <A name="linkedFire" valueType="LINKED_FIRE_OPTIONS"/>
+                    <A name="maxFireArc" valueType="INTEGER"/>
+                    <A name="minFireArc" valueType="INTEGER"/>
+                    <A name="omnidirectional" valueType="BOOLEAN"/>
+                    <A name="posAngle" valueType="INTEGER"/>
+                    <A name="posRadius" valueType="INTEGER"/>
+                    <A name="posZ" valueType="INTEGER"/>
+                    <A name="secondaryWeapon" valueType="BOOLEAN"/>
+                    <E category="*" name="Item">
+                        <A name="chance" valueType="WHOLE"/>
+                        <A name="count" valueType="WHOLE"/>
+                        <A name="criteria" valueType="STRING"/>
+                        <A name="damaged" valueType="WHOLE"/>
+                        <A name="debugOnly" valueType="BOOLEAN"/>
+                        <A name="enhanced" valueType="WHOLE"/>
+                        <A name="enhancement" valueType="STRING"/>
+                        <A name="item" valueType="TYPE_ITEM"/>
+                        <A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
+                    </E>
+                    <E category="*" inherit="Components:Table" name="Table"/>
+                    <E category="*" name="RandomItem">
+                        <A name="attributes" valueType="STRING"/>
+                        <A name="categories" valueType="STRING"/>
+                        <A name="chance" valueType="WHOLE"/>
+                        <A name="count" valueType="WHOLE"/>
+                        <A name="criteria" valueType="STRING"/>
+                        <A name="damaged" valueType="WHOLE"/>
+                        <A name="enhanced" valueType="WHOLE"/>
+                        <A name="enhancement" valueType="STRING"/>
+                        <A name="level" valueType="WHOLE"/>
+                        <A name="levelCurve" valueType="WHOLE"/>
+                        <A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
+                        <A name="modifiers" valueType="STRING"/>
+                    </E>
+                    <E category="*" inherit="Table:Group" name="Group"/>
+                    <E category="*" inherit="Table:Group" name="Components"/>
+                    <E category="*" inherit="Table:Group" name="Items"/>
+                    <E category="*" inherit="Table:Group" name="AverageValue"/>
+                    <E category="*" name="Lookup">
+                        <A name="chance" valueType="WHOLE"/>
+                        <A name="count" valueType="WHOLE"/>
+                        <A name="criteria" valueType="STRING"/>
+                        <A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
+                        <A name="table" valueType="TYPE_ITEM_TABLE"/>
+                    </E>
+                    <E category="*" inherit="Components:Table" name="LevelTable"/>
+                    <E category="*" inherit="Components:Table" name="LocationCriteria"/>
+                    <E category="*" name="Null"/>
+                </E>
+                <E category="*" inherit="Devices:Device" name="Item"/>
+                <E category="*" name="DeviceSlot">
+                    <A name="chance" valueType="WHOLE"/>
+                    <A name="criteria" valueType="STRING"/>
+                    <A name="external" valueType="BOOLEAN"/>
+                    <A name="hpBonus" valueType="INTEGER"/>
+                    <A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
+                    <A name="linkedFire" valueType="LINKED_FIRE_OPTIONS"/>
+                    <A name="maxCount" valueType="WHOLE"/>
+                    <A name="maxFireArc" valueType="INTEGER"/>
+                    <A name="minFireArc" valueType="INTEGER"/>
+                    <A name="omnidirectional" valueType="BOOLEAN"/>
+                    <A name="posAngle" valueType="INTEGER"/>
+                    <A name="posRadius" valueType="INTEGER"/>
+                    <A name="posZ" valueType="INTEGER"/>
+                    <A name="secondaryWeapon" valueType="BOOLEAN"/>
+                </E>
+                <E category="*" name="Table">
+                    <A name="chance" valueType="WHOLE"/>
+                    <A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
+                    <E category="*" inherit="Devices:Device" name="Device"/>
+                    <E category="*" inherit="Devices:Device" name="Item"/>
+                    <E category="*" name="DeviceSlot">
+                        <A name="chance" valueType="WHOLE"/>
+                        <A name="criteria" valueType="STRING"/>
+                        <A name="external" valueType="BOOLEAN"/>
+                        <A name="hpBonus" valueType="INTEGER"/>
+                        <A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
+                        <A name="linkedFire" valueType="LINKED_FIRE_OPTIONS"/>
+                        <A name="maxCount" valueType="WHOLE"/>
+                        <A name="maxFireArc" valueType="INTEGER"/>
+                        <A name="minFireArc" valueType="INTEGER"/>
+                        <A name="omnidirectional" valueType="BOOLEAN"/>
+                        <A name="posAngle" valueType="INTEGER"/>
+                        <A name="posRadius" valueType="INTEGER"/>
+                        <A name="posZ" valueType="INTEGER"/>
+                        <A name="secondaryWeapon" valueType="BOOLEAN"/>
+                    </E>
+                    <E category="*" inherit="Devices:Table" name="Table"/>
+                    <E category="*" inherit="Devices:Table" name="Group"/>
+                    <E category="*" inherit="Devices:Table" name="Devices"/>
+                    <E category="*" inherit="Devices:Table" name="LevelTable"/>
+                    <E category="*" name="Null"/>
+                </E>
+                <E category="*" inherit="Devices:Table" name="Group"/>
+                <E category="*" inherit="Devices:Table" name="Devices"/>
+                <E category="*" inherit="Devices:Table" name="LevelTable"/>
+                <E category="*" name="Null"/>
+            </E>
+            <E category="?" inherit="DesignType:Communications"/>
+            <E category="?" inherit="DesignType:StaticData"/>
+            <E category="?" inherit="DesignType:StaticData"/>
+            <E category="?" inherit="DesignType:Language"/>
+            <E category="?" name="Events" inherit="DesignType:Events">
+                <E category="?" name="CanDockAsPlayer"			code="true"/>
+                <E category="?" name="CanInstallItem"			code="true"/>
+                <E category="?" name="CanRemoveItem"			code="true"/>
+                <E category="?" name="GetDockScreen"			code="true"/>
+                <E category="?" name="GetExplosionType"			code="true"/>
+                <E category="?" name="GetPlayerPriceAdj"		code="true"/>
+                <E category="?" name="OnAttacked"				code="true"/>
+                <E category="?" name="OnAttackedByPlayer"		code="true"/>
+                <E category="?" name="OnCreate"					code="true"/>
+                <E category="?" name="OnCreateOrders"			code="true"/>
+                <E category="?" name="OnDamage"					code="true"/>
+                <E category="?" name="OnDataTransfer"			code="true"/>
+                <E category="?" name="OnDeselected"				code="true"/>
+                <E category="?" name="OnDestroy"				code="true"/>
+                <E category="?" name="OnDockObjAdj"				code="true"/>
+                <E category="?" name="OnEnteredGate"			code="true"/>
+                <E category="?" name="OnEnteredSystem"			code="true"/>
+                <E category="?" name="OnLoad"					code="true"/>
+                <E category="?" name="OnMining"					code="true"/>
+                <E category="?" name="OnObjBlacklistedPlayer"	code="true"/>
+                <E category="?" name="OnObjDestroyed"			code="true"/>
+                <E category="?" name="OnObjDocked"				code="true"/>
+                <E category="?" name="OnObjEnteredGate"			code="true"/>
+                <E category="?" name="OnObjJumped"				code="true"/>
+                <E category="?" name="OnObjJumpPosAdj"			code="true"/>
+                <E category="?" name="OnObjReconned"			code="true"/>
+                <E category="?" name="OnOrderChanged"			code="true"/>
+                <E category="?" name="OnOrdersCompleted"		code="true"/>
+                <E category="?" name="OnEventHandlerInit"		code="true"/>
+                <E category="?" name="OnMissionAccepted"		code="true"/>
+                <E category="?" name="OnMissionCompleted"		code="true"/>
+                <E category="?" name="OnPlayerBlacklisted"		code="true"/>
+                <E category="?" name="OnPlayerEnteredShip"		code="true"/>
+                <E category="?" name="OnPlayerEnteredSystem"	code="true"/>
+                <E category="?" name="OnPlayerLeftShip"			code="true"/>
+                <E category="?" name="OnPlayerLeftSystem"		code="true"/>
+                <E category="?" name="OnRandomEncounter"		code="true"/>
+                <E category="?" name="OnSelected"				code="true"/>
+                <E category="?" name="OnSubordinateAttacked"	code="true"/>
+                <E category="?" name="OnSystemExplosion"		code="true"/>
+                <E category="?" name="OnSystemObjAttacked"		code="true"/>
+                <E category="?" name="OnSystemObjDestroyed"		code="true"/>
+                <E category="?" name="OnSystemWeaponFire"		code="true"/>
+                <E category="?" name="OnTranslateMessage"		code="true"/>
+                <E category="?" name="OnUpdate"/>
+            </E>
+            <E category="?" inherit="DesignType:DockScreens" name="DockScreens"/>
+            <E category="?" inherit="DesignType:DisplayAttributes" name="DisplayAttributes"/>
+            <E category="?" inherit="DesignType:DisplayAttributes" name="AttributeDesc"/>
+        </E>
+        <E category="*" name="ShipClassOverride" inherit="DesignType"/>
+        <E category="*" name="ShipTable" inherit="DesignType"/>
+        <E category="*" name="Sound" inherit="DesignType">
+            <A name="filename" valueType="FILENAME"/>
+        </E>
+        <E category="*" name="Sovereign">
+            <A name="adjective" valueType="STRING"/>
+            <A name="alignment" valueType="ALIGNMENT"/>
+            <A name="attributes" valueType="STRING"/>
+            <A name="demonym" valueType="STRING"/>
+            <A name="extends" valueType="STRING"/>
+            <A name="inherit" valueType="TYPE_INHERITED"/>
+            <A name="name" valueType="STRING"/>
+            <A name="obsolete" valueType="WHOLE"/>
+            <A name="plural" valueType="STRING"/>
+            <A name="shortName" valueType="STRING"/>
+            <A name="UNID" valueType="UNID"/>
+            <E category="?" name="Relationships">
+                <E category="*" name="Relationship">
+                    <A name="disposition" valueType="DISPOSITION"/>
+                    <A name="mutual" valueType="BOOLEAN"/>
+                    <A name="sovereign" valueType="TYPE_SOVEREIGN"/>
+                </E>
+            </E>
+            <E category="?" inherit="DesignType:Communications"/>
+            <E category="?" inherit="DesignType:StaticData"/>
+            <E category="?" inherit="DesignType:GlobalData"/>
+            <E category="?" name="Language">
+                <E category="?" name="Text">
+                    <A name="id" value="AttackTarget" valueType="STRING"/>
+                </E>
+                <E category="?" name="Text">
+                    <A name="id" value="AttackTargetBroadcast" valueType="STRING"/>
+                </E>
+                <E category="?" name="Text">
+                    <A name="id" value="HitByFriendlyFire" valueType="STRING"/>
+                </E>
+                <E category="?" name="Text">
+                    <A name="id" value="QueryEscortStatus" valueType="STRING"/>
+                </E>
+                <E category="?" name="Text">
+                    <A name="id" value="QueryFleetStatus" valueType="STRING"/>
+                </E>
+                <E category="?" name="Text">
+                    <A name="id" value="EscortAttacked" valueType="STRING"/>
+                </E>
+                <E category="?" name="Text">
+                    <A name="id" value="EscortReportingIn" valueType="STRING"/>
+                </E>
+                <E category="?" name="Text">
+                    <A name="id" value="WatchYourTargets" valueType="STRING"/>
+                </E>
+                <E category="?" name="Text">
+                    <A name="id" value="NiceShooting" valueType="STRING"/>
+                </E>
+                <E category="?" name="Text">
+                    <A name="id" value="FormUp" valueType="STRING"/>
+                </E>
+                <E category="?" name="Text">
+                    <A name="id" value="BreakAndAttack" valueType="STRING"/>
+                </E>
+                <E category="?" name="Text">
+                    <A name="id" value="QueryComms" valueType="STRING"/>
+                </E>
+                <E category="?" name="Text">
+                    <A name="id" value="AbortAttack" valueType="STRING"/>
+                </E>
+                <E category="?" name="Text">
+                    <A name="id" value="Wait" valueType="STRING"/>
+                </E>
+                <E category="?" name="Text">
+                    <A name="id" value="QueryWaitStatus" valueType="STRING"/>
+                </E>
+                <E category="?" name="Text">
+                    <A name="id" value="AttackInFormation" valueType="STRING"/>
+                </E>
+                <E category="?" name="Text">
+                    <A name="id" value="DeterTarget" valueType="STRING"/>
+                </E>
+                <E category="?" name="Text">
+                    <A name="id" value="QueryAttackStatus" valueType="STRING"/>
+                </E>
+                <E category="?" name="Text">
+                    <A name="id" value="DockingSequenceEngaged" valueType="STRING"/>
+                </E>
+                <E category="?" name="Text">
+                    <A name="id" value="HitByHostileFire" valueType="STRING"/>
+                </E>
+                <E category="?" name="Text">
+                    <A name="id" value="DestroyedByFriendlyFire" valueType="STRING"/>
+                </E>
+                <E category="?" name="Text">
+                    <A name="id" value="DestroyedByHostileFire" valueType="STRING"/>
+                </E>
+                <E category="?" name="Text">
+                    <A name="id" value="BaseDestroyedByTarget" valueType="STRING"/>
+                </E>
+                <E category="*" name="Text">
+                    <A name="id" valueType="STRING"/>
+                </E>
+                <E category="*" name="String">
+                    <A name="id" valueType="STRING"/>
+                </E>
+                <E category="*" name="Message">
+                    <A name="id" valueType="STRING"/>
+                    <A name="text" valueType="STRING"/>
+                </E>
+            </E>
+            <E category="?" inherit="DesignType:Events"/>
+            <E category="?" inherit="DesignType:DockScreens"/>
+            <E category="?" inherit="DesignType:DisplayAttributes"/>
+            <E category="?" inherit="DesignType:DisplayAttributes"/>
+        </E>
+        <E category="*" name="SpaceEnvironmentType" inherit="DesignType">
+            <A name="autoEdges" valueType="BOOLEAN"/>
+            <A name="dragFactor" valueType="WHOLE"/>
+            <A name="lrsJammer" value="false" valueType="BOOLEAN"/>
+            <A name="mapColor" valueType="HEX_COLOR"/>
+            <A name="opacity" valueType="WHOLE"/>
+            <A name="shieldJammer" value="false" valueType="BOOLEAN"/>
+            <A name="srsJammer" value="false" valueType="BOOLEAN"/>
+            <E category="?" name="Image" inherit="ImageDesc"/>
+            <E category="?" name="EdgeMask" inherit="ImageDesc"/>
+            <E category="?" inherit="DesignType:Communications"/>
+            <E category="?" inherit="DesignType:StaticData"/>
+            <E category="?" inherit="DesignType:GlobalData"/>
+            <E category="?" inherit="DesignType:Language"/>
+            <E category="?" name="Events" inherit="DesignType:Events">
+                <E category="?" name="OnObjUpdate"/>
+            </E>
+            <E category="?" inherit="DesignType:DockScreens"/>
+            <E category="?" inherit="DesignType:DisplayAttributes"/>
+            <E category="?" inherit="DesignType:AttributeDesc"/>
+        </E>
+        <E category="*" name="StationType" inherit="DesignType">
+            <A name="abandonedScreen" valueType="STRING"/>
+            <A name="alertWhenAttacked" valueType="STRING"/>
+            <A name="alertWhenDestroyed" valueType="STRING"/>
+            <A name="allowEnemyDocking" valueType="STRING"/>
+            <A name="armorID" valueType="STRING"/>
+            <A name="attributes" valueType="STRING"/>
+            <A name="backgroundPlane" valueType="STRING"/>
+            <A name="barrier" valueType="BOOLEAN"/>
+            <A name="barrierEffect" valueType="STRING"/>
+            <A name="beacon" valueType="STRING"/>
+            <A name="canAttack" valueType="BOOLEAN"/>
+            <A name="chance" valueType="STRING"/>
+            <A name="constructionRate" valueType="INTEGER"/>
+            <A name="controllingSovereign" valueType="TYPE_SOVEREIGN"/>
+            <A name="count" valueType="INTEGER"/>
+            <A name="defaultBackgroundID" valueType="STRING"/>
+            <A name="destEntryPoint&#9;" valueType="STRING"/>
+            <A name="destNodeID" valueType="STRING"/>
+            <A name="destroyWhenEmpty" valueType="BOOLEAN"/>
+            <A name="dockingPorts" valueType="INTEGER"/>
+            <A name="dockScreen" valueType="STRING"/>
+            <A name="ejectaAdj" valueType="INTEGER"/>
+            <A name="ejectaType" valueType="TYPE_ANY"/>
+            <A name="enemyExclusionRadius" valueType="INTEGER"/>
+            <A name="explosionType" valueType="TYPE_ANY"/>
+            <A name="extends" valueType="STRING"/>
+            <A name="fireRateAdj" valueType="INTEGER"/>
+            <A name="frequency" valueType="FREQUENCY"/>
+            <A name="gateEffect" valueType="TYPE_ANY"/>
+            <A name="gravityRadius" valueType="INTEGER"/>
+            <A name="hitPoints" valueType="INTEGER"/>
+            <A name="immutable" valueType="BOOLEAN"/>
+            <A name="inactive" valueType="BOOLEAN"/>
+            <A name="inherit" valueType="TYPE_INHERITED"/>
+            <A name="largeDamageCount" valueType="INTEGER"/>
+            <A name="largeDamageHeight" valueType="INTEGER"/>
+            <A name="largeDamageImageID" valueType="TYPE_IMAGE"/>
+            <A name="largeDamageWidth" valueType="INTEGER"/>
+            <A name="level" valueType="INTEGER"/>
+            <A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
+            <A name="locationCriteria" valueType="STRING"/>
+            <A name="mass" valueType="INTEGER"/>
+            <A name="maxHitPoints" valueType="INTEGER"/>
+            <A name="maxLightRadius" valueType="INTEGER"/>
+            <A name="maxStructuralHitPoints" valueType="INTEGER"/>
+            <A name="mediumDamageCount" valueType="INTEGER"/>
+            <A name="mediumDamageHeight" valueType="INTEGER"/>
+            <A name="mediumDamageImageID" valueType="TYPE_IMAGE"/>
+            <A name="mediumDamageWidth" valueType="INTEGER"/>
+            <A name="minShips" valueType="INTEGER"/>
+            <A name="mobile" valueType="BOOLEAN"/>
+            <A name="multiHull" valueType="BOOLEAN"/>
+            <A name="name" valueType="STRING"/>
+            <A name="noBlacklist" valueType="BOOLEAN"/>
+            <A name="noFriendlyFire" valueType="BOOLEAN"/>
+            <A name="noFriendlyTarget" valueType="BOOLEAN"/>
+            <A name="noMapDetails" valueType="BOOLEAN"/>
+            <A name="noMapIcon" valueType="BOOLEAN"/>
+            <A name="noMapLabel" valueType="BOOLEAN"/>
+            <A name="obsolete" valueType="WHOLE"/>
+            <A name="paintLayer" valueType="STRING"/>
+            <A name="radioactive" valueType="BOOLEAN"/>
+            <A name="randomEncounters" valueType="FREQUENCY"/>
+            <A name="regen" valueType="INTEGER"/>
+            <A name="repairRate" valueType="INTEGER"/>
+            <A name="reverseArticle" valueType="BOOLEAN"/>
+            <A name="scale" valueType="SCALE_SIZE"/>
+            <A name="shipEncounter" valueType="BOOLEAN"/>
+            <A name="shipRegen" valueType="INTEGER"/>
+            <A name="shipRepairRate" valueType="INTEGER"/>
+            <A name="sign" valueType="BOOLEAN"/>
+            <A name="size" valueType="INTEGER"/>
+            <A name="sovereign" valueType="TYPE_SOVEREIGN"/>
+            <A name="spaceColor" valueType="STRING"/>
+            <A name="stealth" valueType="INTEGER"/>
+            <A name="structuralHitPoints" valueType="STRING"/>
+            <A name="timeStopImmune" valueType="BOOLEAN"/>
+            <A name="UNID" valueType="UNID"/>
+            <A name="unique" valueType="UNIQUE"/>
+            <A name="virtual" valueType="BOOLEAN"/>
+            <A name="x" valueType="INTEGER"/>
+            <A name="y" valueType="INTEGER"/>
+            <E category="?" name="Animations">
+                <E category="*" name="Animation">
+                    <A name="animationColumns" valueType="WHOLE"/>
+                    <A name="blending" valueType="BLENDING"/>
+                    <A name="flashTicks" valueType="WHOLE"/>
+                    <A name="imageFrameCount" valueType="WHOLE"/>
+                    <A name="imageHeight" valueType="WHOLE"/>
+                    <A name="imageID" valueType="TYPE_IMAGE"/>
+                    <A name="imageTicksPerFrame" valueType="WHOLE"/>
+                    <A name="imageWidth" valueType="WHOLE"/>
+                    <A name="imageX" valueType="WHOLE"/>
+                    <A name="imageY" valueType="WHOLE"/>
+                    <A name="rotationColumns" valueType="WHOLE"/>
+                    <A name="rotationCount" valueType="WHOLE"/>
+                    <A name="rotationOffset" valueType="INTEGER"/>
+                    <A name="viewportRatio" valueType="DECIMAL"/>
+                    <A name="viewportSize" valueType="INTEGER"/>
+                    <A name="x" valueType="INTEGER"/>
+                    <A name="xOffset" valueType="INTEGER"/>
+                    <A name="y" valueType="INTEGER"/>
+                    <A name="yOffset" valueType="INTEGER"/>
+                </E>
+            </E>
+            <E category="?" name="Construction">
+                <A name="constructionRate" valueType="WHOLE"/>
+                <A name="maxConstruction" valueType="WHOLE"/>
+            </E>
+            <E category="?" name="EncounterGroup"/>
+            <E category="?" name="EncounterType"/>
+            <E category="?" name="Encounter">
+                <A name="enemyExclusionRadius" valueType="WHOLE"/>
+                <A name="exclusionRadius" valueType="WHOLE"/>
+                <A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
+                <A name="locationCriteria" valueType="STRING"/>
+                <A name="maxAppearing" valueType="WHOLE"/>
+                <A name="minAppearing" valueType="WHOLE"/>
+                <A name="systemCriteria" valueType="STRING"/>
+                <A name="unique" valueType="UNIQUE"/>
+                <E category="?" name="Criteria">
+                    <E category="*" name="Attributes">
+                        <A name="criteria" valueType="STRING"/>
+                    </E>
+                    <E category="*" name="Chance">
+                        <A name="chance" valueType="WHOLE"/>
+                    </E>
+                    <E category="*" name="DistanceBetweenNodes">
+                        <A name="max" valueType="WHOLE"/>
+                        <A name="min" valueType="WHOLE"/>
+                    </E>
+                    <E category="*" name="DistanceTo">
+                        <A name="criteria" valueType="STRING"/>
+                        <A name="max" valueType="WHOLE"/>
+                        <A name="min" valueType="WHOLE"/>
+                        <A name="nodeID" valueType="STRING"/>
+                    </E>
+                    <E category="*" name="StargateCount">
+                        <A name="max" valueType="WHOLE"/>
+                        <A name="min" valueType="WHOLE"/>
+                    </E>
+                </E>
+            </E>
+            <E category="?" name="Encounters">
+                <A name="frequency" valueType="FREQUENCY"/>
+            </E>
+            <E category="?" name="ImageComposite"/>
+            <E category="?" name="ImageEffect"/>
+            <E category="?" name="ImageLookup"/>
+            <E category="?" name="ImageVariants"/>
+            <E category="?" name="Reinforcements">
+                <A name="buildReinforcements" valueType="BOOLEAN"/>
+                <A name="minShips" valueType="DICE_RANGE"/>
+            </E>
+            <E category="?" name="Satellites">
+                <A name="overlapCheck" valueType="SATELLITE_OVERLAP_CHECK"/>
+            </E>
+            <E category="?" name="Ships">
+                <A name="buildReinforcements" valueType="BOOLEAN"/>
+                <A name="challenge" valueType="DICE_RANGE"/>
+                <A name="minShips" valueType="DICE_RANGE"/>
+                <A name="standingCount" valueType="DICE_RANGE"/>
+            </E>
+            
+            <E category="?" inherit="DesignType:Communications"/>
+            <E category="?" inherit="DesignType:StaticData"/>
+            <E category="?" inherit="DesignType:GlobalData"/>
+            <E category="?" inherit="DesignType:Language"/>
+            <E category="?" inherit="DesignType:Events">
+				<A name="W.I.P." valueType="STRING"/>
+			</E>
+            <E category="?" inherit="DesignType:DockScreens"/>
+            <E category="?" inherit="DesignType:DisplayAttributes"/>
+            <E category="?" inherit="DesignType:AttributeDesc"/>
+        </E>
+        <E category="*" name="SystemMap" inherit="DesignType">
+			<A name="W.I.P." valueType="STRING"/>
+		</E>
+        <E category="*" name="SystemTable" inherit="DesignType">
+			<A name="W.I.P." valueType="STRING"/>
+		</E>
+	
+		
+		<E category="*" name="SystemType">
+			<A name="attributes" valueType="STRING"/>
+			<A name="backgroundID" valueType="TYPE_IMAGE"/>
+			<A name="extends" valueType="STRING"/>
+			<A name="inherit" valueType="TYPE_INHERITED"/>
+			<A name="noExtraEncounters" valueType="BOOLEAN"/>
+			<A name="noRandomEncounters" valueType="BOOLEAN"/>
+			<A name="obsolete" valueType="WHOLE"/>
+			<A name="spaceEnvironmentTileSize" valueType="TILE_SIZE"/>
+			<A name="spaceScale" valueType="INTEGER"/>
+			<A name="timeScale" valueType="INTEGER"/>
+			<A name="UNID" valueType="UNID"/>
+			<E	name="SystemGroup"	category="1">
+				<E	name="AntiTrojan"	inherit="SystemType:SystemGroup"	category="*">
+					<A	name="debugOnly"	valueType="BOOLEAN"/>
+					<A	name="probability"		valueType="WHOLE"/>
+					<A	name="offset"	valueType="DICE_RANGE"/>
+				</E>
+				<E	name="ArcDistribution"	category="*">
+					<A	name="debugOnly"	valueType="BOOLEAN"/>
+					<A	name="probability"		valueType="WHOLE"/>
+					<A	name="count"	valueType="DICE_RANGE"/>
+					<A	name="radialWidth"	valueType="WHOLE"/>
+					<A	name="radialEdgeWidth"	valueType="WHOLE"/>
+					<A	name="scale"		valueType="SCALE_DISTANCE"/>
+				</E>
+				<E	name="AddAttribute"	category="*">
+					<A	name="debugOnly"	valueType="BOOLEAN"/>
+					<A	name="probability"		valueType="WHOLE"/>
+					<A	name="attributes"	valueType="STRING"/>
+				</E>
+				<E	name="AddTerritory"	category="*">
+					<A	name="debugOnly"	valueType="BOOLEAN"/>
+					<A	name="probability"		valueType="WHOLE"/>
+					<A	name="id"			valueType="STRING"/>
+					<A	name="minRadius"	valueType="WHOLE"/>
+					<A	name="maxRadius"	valueType="WHOLE"/>
+					<A	name="criteria"		valueType="STRING"/>
+					<A	name="attributes"	valueType="STRING"/>
+				</E>
+				<E	name="Code"	category="*">
+					<A	name="debugOnly"	valueType="BOOLEAN"/>
+					<A	name="probability"		valueType="WHOLE"/>
+				</E>
+				<E	name="FillLocations"	category="*">
+					<A	name="debugOnly"	valueType="BOOLEAN"/>
+					<A	name="probability"		valueType="WHOLE"/>
+					<A	name="percentFull"	valueType="WHOLE"/>
+					<A	name="count"	valueType="WHOLE"/>
+					<A	name="percentEnemies"	valueType="WHOLE"/>
+					<A	name="stationCriteria"	valueType="STRING"/>
+				</E>
+				<E	name="Group"	category="*"	inherit="SystemType:SystemGroup">
+					<A	name="debugOnly"	valueType="BOOLEAN"/>
+					<A	name="probability"		valueType="WHOLE"/>
+				</E>
+				<E	name="Label"	category="*">
+					<A	name="debugOnly"	valueType="BOOLEAN"/>
+					<A	name="probability"		valueType="WHOLE"/>
+					<A	name="attributes"	valueType="STRING"/>
+				</E>
+				;WIP
+				<E	name="LevelTable"	category="*">
+					<A	name="debugOnly"	valueType="BOOLEAN"/>
+					<A	name="probability"		valueType="WHOLE"/>
+					<E	category="*"	inherit="SystemGroup:AntiTrojan">
+						<A	name="levelFrequency"	valueType="STRING"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:ArcDistribution">
+						<A	name="levelFrequency"	valueType="STRING"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:Code">
+						<A	name="levelFrequency"	valueType="STRING"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:Group">
+						<A	name="levelFrequency"	valueType="STRING"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:LevelTable">
+						<A	name="levelFrequency"	valueType="STRING"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:Lookup">
+						<A	name="levelFrequency"	valueType="STRING"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:Null">
+						<A	name="levelFrequency"	valueType="STRING"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:Offset">
+						<A	name="levelFrequency"	valueType="STRING"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:Orbitals">
+						<A	name="levelFrequency"	valueType="STRING"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:Particles">
+						<A	name="levelFrequency"	valueType="STRING"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:Primary">
+						<A	name="levelFrequency"	valueType="STRING"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:Siblings">
+						<A	name="levelFrequency"	valueType="STRING"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:SpaceEnvironment">
+						<A	name="levelFrequency"	valueType="STRING"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:Station">
+						<A	name="levelFrequency"	valueType="STRING"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:Table">
+						<A	name="levelFrequency"	valueType="STRING"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:Trojan">
+						<A	name="levelFrequency"	valueType="STRING"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:Variants">
+						<A	name="levelFrequency"	valueType="STRING"/>
+					</E>
+				</E>
+				;WIP
+				<E	name="LocationCriteriaTable"	category="*">
+					<A	name="debugOnly"	valueType="BOOLEAN"/>
+					<A	name="probability"		valueType="WHOLE"/>
+					<E	category="*"	inherit="SystemGroup:AntiTrojan">
+						<A	name="criteria"	valueType="STRING"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:ArcDistribution">
+						<A	name="criteria"	valueType="STRING"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:Code">
+						<A	name="criteria"	valueType="STRING"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:Group">
+						<A	name="criteria"	valueType="STRING"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:LevelTable">
+						<A	name="criteria"	valueType="STRING"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:Lookup">
+						<A	name="criteria"	valueType="STRING"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:Null">
+						<A	name="criteria"	valueType="STRING"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:Offset">
+						<A	name="criteria"	valueType="STRING"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:Orbitals">
+						<A	name="criteria"	valueType="STRING"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:Particles">
+						<A	name="criteria"	valueType="STRING"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:Primary">
+						<A	name="criteria"	valueType="STRING"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:Siblings">
+						<A	name="criteria"	valueType="STRING"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:SpaceEnvironment">
+						<A	name="criteria"	valueType="STRING"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:Station">
+						<A	name="criteria"	valueType="STRING"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:Table">
+						<A	name="criteria"	valueType="STRING"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:Trojan">
+						<A	name="criteria"	valueType="STRING"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:Variants">
+						<A	name="criteria"	valueType="STRING"/>
+					</E>
+				</E>
+				<E	name="Lookup"	category="*">
+					<A	name="table"	valueType="STRING"/>
+				</E>
+				<E	name="Marker"	category="*">
+					<A	name="debugOnly"	valueType="BOOLEAN"/>
+					<A	name="probability"		valueType="WHOLE"/>
+					<A	name="objName"	valueType="STRING"/>
+					<A	name="showOrbit"	valueType="BOOLEAN"/>
+				</E>
+				<E	name="Null"	category="*"/>
+				<E	name="Offset"	inherit="SystemType:SystemGroup"	category="*">
+					<A	name="debugOnly"	valueType="BOOLEAN"/>
+					<A	name="probability"		valueType="WHOLE"/>
+					<A	name="count"		valueType="DICE_RANGE"/>
+					<A	name="scale"		valueType="SCALE_DISTANCE"/>
+					<A	name="radius"		valueType="DICE_RANGE"/>
+					<A	name="angle"		valueType="DICE_RANGE"/>
+					<A	name="x"			valueType="DICE_RANGE"/>
+					<A	name="y"			valueType="DICE_RANGE"/>
+				</E>
+				<E	name="Orbitals"	inherit="SystemType:SystemGroup"	category="*">
+					<A	name="debugOnly"	valueType="BOOLEAN"/>
+					<A	name="probability"		valueType="WHOLE"/>
+					<A	name="count"		valueType="DICE_RANGE"/>
+					<A	name="distance"		valueType="DICE_RANGE"/>
+					<A	name="bodeDistanceStart"	valueType="DICE_RANGE"/>
+					<A	name="bodeDistanceEnd"	valueType="DICE_RANGE"/>
+					<A	name="angle"		valueType="DICE_RANGE"/>
+					<A	name="eccentricity"	valueType="DICE_RANGE"/>
+					<A	name="rotation"		valueType="DICE_RANGE"/>
+					<A	name="noOverlap"	valueType="BOOLEAN"/>
+					<A	name="exclusionRadius"	valueType="WHOLE"/>
+					<A	name="scale"		valueType="SCALE_DISTANCE"/>
+				</E>
+				<E	name="Particles"	category="*">
+					<A	name="debugOnly"	valueType="BOOLEAN"/>
+					<A	name="probability"		valueType="WHOLE"/>
+					<A	name="name"	valueType="STRING"/>
+					<A	name="noWake"	valueType="BOOLEAN"/>
+					<A	name="radius"	valueType="WHOLE"/>
+					<A	name="minRadius"	valueType="WHOLE"/>
+					<A	name="dampening"	valueType="WHOLE"/>
+					<A	name="damage"		valueType="STRING"/>
+					<A	name="count"	valueType="DICE_RANGE"/>
+					<E	category="?"	inherit="ImageDesc"/>
+				</E>
+				<E	name="PlaceRandomStation"	category="*">
+					<A	name="debugOnly"	valueType="BOOLEAN"/>
+					<A	name="probability"		valueType="WHOLE"/>
+					<A	name="count"	valueType="DICE_RANGE"/>
+					<A	name="stationCriteria"	valueType="STRING"/>
+					<A	name="separateEnemies"	valueType="BOOLEAN"/>
+					<A	name="separateEnemies"	valueType="BOOLEAN"/>
+				</E>
+				<E	name="Primary"	inherit="SystemType:SystemGroup"	category="*">
+					<A	name="debugOnly"	valueType="BOOLEAN"/>
+					<A	name="probability"		valueType="WHOLE"/>
+				</E>
+				<E	category="*"	inherit="SystemType:SystemGroup"	name="RandomLocation">
+					<A	name="debugOnly"	valueType="BOOLEAN"/>
+					<A	name="probability"		valueType="WHOLE"/>
+					<A	name="locationCriteria" valueType="STRING"/>
+					<A	name="minDist" valueType="WHOLE"/>
+					<A	name="maxDist" valueType="WHOLE"/>
+					<A	name="percentFull"	valueType="WHOLE"/>
+					<A	name="count"	valueType="DICE_RANGE"/>
+				</E>
+				<E	name="RandomStation"	category="*">
+					<A	name="debugOnly"	valueType="BOOLEAN"/>
+					<A	name="probability"		valueType="WHOLE"/>
+					<A	name="stationCriteria"	valueType="STRING"/>
+					<A	name="locationAttribs"	valueType="STRING"/>
+					<A	name="includeAll"	valueType="BOOLEAN"/>
+					<A	name="noSatellites"	valueType="BOOLEAN"/>
+					<A	name="showOrbit"	valueType="BOOLEAN"/>
+					<A	name="imageVariant"	valueType="WHOLE"/>
+					<A	name="paintLayer"	valueType="PAINT_LAYER"/>
+					<A	name="objName"		valueType="STRING"/>
+					<A	name="noMapLabel"	valueType="BOOLEAN"/>
+					
+					<A	name="noConstruction"	valueType="BOOLEAN"/>
+					<A	name="noReinforcements"	valueType="BOOLEAN"/>
+					<E	category="?"	inherit="StaticData_Data"/>
+					<E	category="?"	inherit="StationType_Satellites"/>
+					<E	category="?"	inherit="StationType_Ships"/>
+					<E	category="?"	inherit="Events_OnCreate"/>
+				</E>
+				<E	name="Siblings"	inherit="SystemType:SystemGroup"	category="*">
+					<A	name="debugOnly"	valueType="BOOLEAN"/>
+					<A	name="probability"		valueType="WHOLE"/>
+					<A	name="distribution"	valueType="DICE_RANGE"/>
+					<A	name="minRadius"	valueType="DICE_RANGE"/>
+					<A	name="radiusInc"	valueType="DICE_RANGE"/>
+					<A	name="radiusDec"	valueType="DICE_RANGE"/>
+					<A	name="angle"		valueType="DICE_RANGE"/>
+					<A	name="arcInc"		valueType="DICE_RANGE"/>
+					<A	name="angleAdj"		valueType="DICE_RANGE"/>
+					<A	name="angleInc"		valueType="DICE_RANGE"/>
+				</E>
+				<E	name="Ship"		inherit="ShipTable:Ship"	category="*">
+					<A	name="debugOnly"	valueType="BOOLEAN"/>
+					<A	name="probability"		valueType="WHOLE"/>
+					<A	name="count"	valueType="DICE_RANGE"/>
+				</E>
+				;WIP
+				<E	name="SpaceEnvironment"	category="*">
+					<A	name="debugOnly"	valueType="BOOLEAN"/>
+					<A	name="probability"		valueType="WHOLE"/>
+					<A	name="type"	valueType="TYPE_SPACE_ENVIRONMENT"/>
+					<A	name="shape"	valueType="SHAPE_SPACE_ENVIRONMENT"/>
+					<A	name="patches"	valueType="WHOLE"/>
+					<A	name="patchFrequency"	valueType="WHOLE"/>
+					<A	name="encountersCount"		valueType="DICE_RANGE"/>
+					;One SystemGroup element
+				</E>
+				<E	name="Stargate"	inherit="SystemType:Station"	category="*">
+					<A	name="debugOnly"	valueType="BOOLEAN"/>
+					<A	name="probability"		valueType="WHOLE"/>
+					<A	name="objName"	valueType="STRING"/>
+				</E>
+				
+				<E	name="Table"	category="*">
+					<A	name="debugOnly"	valueType="BOOLEAN"/>
+					<A	name="probability"		valueType="WHOLE"/>
+					<E	category="*"	inherit="SystemGroup:AntiTrojan">
+						<A	name="chance"	valueType="STRING"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:ArcDistribution">
+						<A	name="chance"	valueType="STRING"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:Code">
+						<A	name="chance"	valueType="STRING"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:Group">
+						<A	name="chance"	valueType="STRING"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:LevelTable">
+						<A	name="chance"	valueType="STRING"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:Lookup">
+						<A	name="chance"	valueType="STRING"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:Null">
+						<A	name="chance"	valueType="STRING"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:Offset">
+						<A	name="chance"	valueType="STRING"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:Orbitals">
+						<A	name="chance"	valueType="STRING"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:Particles">
+						<A	name="chance"	valueType="STRING"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:Primary">
+						<A	name="chance"	valueType="STRING"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:Siblings">
+						<A	name="chance"	valueType="STRING"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:SpaceEnvironment">
+						<A	name="chance"	valueType="STRING"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:Station">
+						<A	name="chance"	valueType="STRING"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:Table">
+						<A	name="chance"	valueType="STRING"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:Trojan">
+						<A	name="chance"	valueType="STRING"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:Variants">
+						<A	name="chance"	valueType="STRING"/>
+					</E>
+				</E>
+				
+				<E	name="Variant"	category="*">
+					<A	name="debugOnly"	valueType="BOOLEAN"/>
+					<A	name="probability"		valueType="WHOLE"/>
+					<A	name="variant"	valueType="STRING"/>
+				</E>
+				<E	name="Variants"	inherit="SystemGroup:VariantTable"	category="*">
+					<A	name="debugOnly"	valueType="BOOLEAN"/>
+					<A	name="probability"		valueType="WHOLE"/>
+				</E>
+				<E	name="VariantTable"	category="*">
+					<A	name="debugOnly"	valueType="BOOLEAN"/>
+					<A	name="probability"		valueType="WHOLE"/>
+				</E>
+				
+			</E>
+			<E	name="Tables"	category="?">
+				<E	category="*"	inherit="SystemType:SystemGroup"	name="*"/>
+			</E>
+			<E category="?" inherit="DesignType:Communications"/>
+			<E category="?" inherit="DesignType:StaticData"/>
+			<E category="?" inherit="DesignType:GlobalData"/>
+			<E category="?" inherit="DesignType:Language"/>
+			<E category="?" name="Events" inherit="DesignType:Events">
+				<E category="?" name="OnCreate"/>
+				<E category="?" name="OnObjJumpPosAdj"/>
+			</E>
+			<E category="?" inherit="DesignType:DockScreens"/>
+			<E category="?" inherit="DesignType:DisplayAttributes"/>
+			<E category="?" inherit="DesignType:AttributeDesc"/>
+		</E>
+		
+		
+        <E category="*" name="TemplateType" inherit="DesignType">
+            <E category="?" inherit="DesignType:Communications"/>
+            <E category="?" inherit="DesignType:StaticData"/>
+            <E category="?" inherit="DesignType:GlobalData"/>
+            <E category="?" inherit="DesignType:Language"/>
+            <E category="?" inherit="DesignType:Events">
+				<E category="?" name="GetTypeSource"/>
+			</E>
+            <E category="?" inherit="DesignType:DockScreens"/>
+            <E category="?" inherit="DesignType:DisplayAttributes"/>
+            <E category="?" inherit="DesignType:AttributeDesc"/>
+        </E>
+        <E category="*" name="Type" inherit="DesignType"/>
+    </E>
+	
+<!--
+            <E category="?" inherit="DesignType:Communications"/>
+            <E category="?" inherit="DesignType:StaticData"/>
+            <E category="?" inherit="DesignType:GlobalData"/>
+            <E category="?" inherit="DesignType:Language"/>
+            <E category="?" inherit="DesignType:Events"/>
+            <E category="?" inherit="DesignType:DockScreens"/>
+            <E category="?" inherit="DesignType:DisplayAttributes"/>
+            <E category="?" inherit="DesignType:AttributeDesc"/>
+-->
+
+	<E category="virtual" id="ImageDesc">
+		<A name="animationColumns" valueType="WHOLE"/>
+		<A name="blending" valueType="BLENDING"/>
+		<A name="flashTicks" valueType="WHOLE"/>
+		<A name="imageFrameCount" valueType="WHOLE"/>
+		<A name="imageHeight" valueType="WHOLE"/>
+		<A name="imageID" valueType="TYPE_IMAGE"/>
+		<A name="imageTicksPerFrame" valueType="WHOLE"/>
+		<A name="imageWidth" valueType="WHOLE"/>
+		<A name="imageX" valueType="WHOLE"/>
+		<A name="imageY" valueType="WHOLE"/>
+		<A name="rotationColumns" valueType="WHOLE"/>
+		<A name="rotationCount" valueType="WHOLE"/>
+		<A name="rotationOffset" valueType="INTEGER"/>
+		<A name="viewportRatio" valueType="DECIMAL"/>
+		<A name="viewportSize" valueType="INTEGER"/>
+		<A name="xOffset" valueType="INTEGER"/>
+		<A name="yOffset" valueType="INTEGER"/>
+	</E>
+	<E category="virtual" id="SpaceObject">
+		<E category="?" name="Names">
+			<A name="customPlural" valueType="BOOLEAN"/>
+			<A name="definiteArticle" valueType="BOOLEAN"/>
+			<A name="esPlural" valueType="BOOLEAN"/>
+			<A name="firstPlural" valueType="BOOLEAN"/>
+			<A name="noArticle" valueType="BOOLEAN"/>
+			<A name="personalName" valueType="BOOLEAN"/>
+			<A name="reverseArticle" valueType="BOOLEAN"/>
+			<A name="secondPlural" valueType="BOOLEAN"/>
+		</E>
+		<E category="?" name="Image" inherit="ImageDesc"/>
+        <E category="?" name="HeroImage" inherit="ImageDesc"/>
+		<E category="?" inherit="DesignType:StaticData" name="InitialData"/>
+		<E category="?" name="DockingPorts">
+			<A name="bringToFront" valueType="STRING"/>
+			<A name="maxDist" valueType="WHOLE"/>
+			<A name="portAngle" valueType="INTEGER"/>
+			<A name="portCount" valueType="WHOLE"/>
+			<A name="portRadius" valueType="INTEGER"/>
+			<A name="rotation" valueType="INTEGER"/>
+			<A name="sendToBack" valueType="STRING"/>
+			<A name="x" valueType="INTEGER"/>
+			<A name="y" valueType="INTEGER"/>
+		</E>
+		<E category="?" name="Trade">
+			<A name="creditConversion" valueType="WHOLE"/>
+			<A name="currency" valueType="STRING"/>
+			<A name="max" valueType="WHOLE"/>
+			<A name="replenish" valueType="WHOLE"/>
+			<E category="*" name="AcceptDonation">
+				<A name="actualPrice" valueType="BOOLEAN"/>
+				<A name="criteria" valueType="STRING"/>
+				<A name="inventoryAdj" valueType="WHOLE"/>
+				<A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
+				<A name="messageID" valueType="STRING"/>
+				<A name="noDescription" valueType="BOOLEAN"/>
+				<A name="priceAdj" valueType="PRICE_ADJ"/>
+				<A name="upgradeInstallOnly" valueType="BOOLEAN"/>
+			</E>
+			<E category="*" name="Buy">
+				<A name="actualPrice" valueType="BOOLEAN"/>
+				<A name="criteria" valueType="STRING"/>
+				<A name="inventoryAdj" valueType="WHOLE"/>
+				<A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
+				<A name="messageID" valueType="STRING"/>
+				<A name="noDescription" valueType="BOOLEAN"/>
+				<A name="priceAdj" valueType="PRICE_ADJ"/>
+				<A name="upgradeInstallOnly" valueType="BOOLEAN"/>
+			</E>
+			<E category="*" name="Sell">
+				<A name="actualPrice" valueType="BOOLEAN"/>
+				<A name="criteria" valueType="STRING"/>
+				<A name="inventoryAdj" valueType="WHOLE"/>
+				<A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
+				<A name="messageID" valueType="STRING"/>
+				<A name="noDescription" valueType="BOOLEAN"/>
+				<A name="priceAdj" valueType="PRICE_ADJ"/>
+				<A name="upgradeInstallOnly" valueType="BOOLEAN"/>
+			</E>
+			<E category="*" name="Refuel">
+				<A name="actualPrice" valueType="BOOLEAN"/>
+				<A name="criteria" valueType="STRING"/>
+				<A name="inventoryAdj" valueType="WHOLE"/>
+				<A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
+				<A name="messageID" valueType="STRING"/>
+				<A name="noDescription" valueType="BOOLEAN"/>
+				<A name="priceAdj" valueType="PRICE_ADJ"/>
+				<A name="upgradeInstallOnly" valueType="BOOLEAN"/>
+			</E>
+			<E category="*" name="RepairArmor">
+				<A name="actualPrice" valueType="BOOLEAN"/>
+				<A name="criteria" valueType="STRING"/>
+				<A name="inventoryAdj" valueType="WHOLE"/>
+				<A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
+				<A name="messageID" valueType="STRING"/>
+				<A name="noDescription" valueType="BOOLEAN"/>
+				<A name="priceAdj" valueType="PRICE_ADJ"/>
+				<A name="upgradeInstallOnly" valueType="BOOLEAN"/>
+			</E>
+			<E category="*" name="ReplaceArmor">
+				<A name="actualPrice" valueType="BOOLEAN"/>
+				<A name="criteria" valueType="STRING"/>
+				<A name="inventoryAdj" valueType="WHOLE"/>
+				<A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
+				<A name="messageID" valueType="STRING"/>
+				<A name="noDescription" valueType="BOOLEAN"/>
+				<A name="priceAdj" valueType="PRICE_ADJ"/>
+				<A name="upgradeInstallOnly" valueType="BOOLEAN"/>
+			</E>
+			<E category="*" name="InstallDevice">
+				<A name="actualPrice" valueType="BOOLEAN"/>
+				<A name="criteria" valueType="STRING"/>
+				<A name="inventoryAdj" valueType="WHOLE"/>
+				<A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
+				<A name="messageID" valueType="STRING"/>
+				<A name="noDescription" valueType="BOOLEAN"/>
+				<A name="priceAdj" valueType="PRICE_ADJ"/>
+				<A name="upgradeInstallOnly" valueType="BOOLEAN"/>
+			</E>
+			<E category="*" name="UpgradeDevice">
+				<A name="actualPrice" valueType="BOOLEAN"/>
+				<A name="criteria" valueType="STRING"/>
+				<A name="inventoryAdj" valueType="WHOLE"/>
+				<A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
+				<A name="messageID" valueType="STRING"/>
+				<A name="noDescription" valueType="BOOLEAN"/>
+				<A name="priceAdj" valueType="PRICE_ADJ"/>
+				<A name="upgradeInstallOnly" valueType="BOOLEAN"/>
+			</E>
+			<E category="*" name="RemoveDevice">
+				<A name="actualPrice" valueType="BOOLEAN"/>
+				<A name="criteria" valueType="STRING"/>
+				<A name="inventoryAdj" valueType="WHOLE"/>
+				<A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
+				<A name="messageID" valueType="STRING"/>
+				<A name="noDescription" valueType="BOOLEAN"/>
+				<A name="priceAdj" valueType="PRICE_ADJ"/>
+				<A name="upgradeInstallOnly" valueType="BOOLEAN"/>
+			</E>
+			<E category="*" name="EnhanceItem">
+				<A name="actualPrice" valueType="BOOLEAN"/>
+				<A name="criteria" valueType="STRING"/>
+				<A name="inventoryAdj" valueType="WHOLE"/>
+				<A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
+				<A name="messageID" valueType="STRING"/>
+				<A name="noDescription" valueType="BOOLEAN"/>
+				<A name="priceAdj" valueType="PRICE_ADJ"/>
+				<A name="upgradeInstallOnly" valueType="BOOLEAN"/>
+			</E>
+			<E category="*" name="RepairItem">
+				<A name="actualPrice" valueType="BOOLEAN"/>
+				<A name="criteria" valueType="STRING"/>
+				<A name="inventoryAdj" valueType="WHOLE"/>
+				<A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
+				<A name="messageID" valueType="STRING"/>
+				<A name="noDescription" valueType="BOOLEAN"/>
+				<A name="priceAdj" valueType="PRICE_ADJ"/>
+				<A name="upgradeInstallOnly" valueType="BOOLEAN"/>
+			</E>
+			<E category="*" name="BuyShip">
+				<A name="actualPrice" valueType="BOOLEAN"/>
+				<A name="criteria" valueType="STRING"/>
+				<A name="inventoryAdj" valueType="WHOLE"/>
+				<A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
+				<A name="messageID" valueType="STRING"/>
+				<A name="noDescription" valueType="BOOLEAN"/>
+				<A name="priceAdj" valueType="PRICE_ADJ"/>
+				<A name="upgradeInstallOnly" valueType="BOOLEAN"/>
+			</E>
+			<E category="*" name="SellShip">
+				<A name="actualPrice" valueType="BOOLEAN"/>
+				<A name="criteria" valueType="STRING"/>
+				<A name="inventoryAdj" valueType="WHOLE"/>
+				<A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
+				<A name="messageID" valueType="STRING"/>
+				<A name="noDescription" valueType="BOOLEAN"/>
+				<A name="priceAdj" valueType="PRICE_ADJ"/>
+				<A name="upgradeInstallOnly" valueType="BOOLEAN"/>
+			</E>
+			<E category="*" name="Custom">
+				<A name="actualPrice" valueType="BOOLEAN"/>
+				<A name="criteria" valueType="STRING"/>
+				<A name="inventoryAdj" valueType="WHOLE"/>
+				<A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
+				<A name="messageID" valueType="STRING"/>
+				<A name="noDescription" valueType="BOOLEAN"/>
+				<A name="priceAdj" valueType="PRICE_ADJ"/>
+				<A name="upgradeInstallOnly" valueType="BOOLEAN"/>
+			</E>
+		</E>
+	</E>
+	;DesignType default subelements
+	
+	<E category="virtual" id="DesignType">
+		<E category="virtual" name="Communications">
+			<E category="*" name="Message">
+				<A name="id" valueType="STRING"/>
+				<A name="key" valueType="CHARACTER"/>
+				<A name="name" valueType="STRING"/>
+				<E category="?" name="OnShow"/>
+				<E category="?" name="Invoke"/>
+			</E>
+		</E>
+		<E category="virtual" name="StaticData">
+			<E category="*" name="Data">
+				<A name="data" valueType="STRING"/>
+				<A name="id" valueType="STRING"/>
+			</E>
+		</E>
+		<E category="virtual" name="GlobalData" inherit="DesignType:StaticData"/>
+		<E category="virtual" name="Language">
+			<E category="*" name="Text">
+				<A name="id" valueType="STRING"/>
+			</E>
+			<E category="*" name="String">
+				<A name="id" valueType="STRING"/>
+			</E>
+			<E category="*" name="Message">
+				<A name="id" valueType="STRING"/>
+				<A name="text" valueType="STRING"/>
+			</E>
+		</E>
+		<E category="virtual" name="Events">
+			<E category="?" name="GetCreatePos"/>
+			<E category="?" name="GetGlobalAchievements"/>
+			<E category="?" name="GetGlobalDockScreen"/>
+			<E category="?" name="GetGlobalPlayerPriceAdj"/>
+			<E category="?" name="GetGlobalResurrectPotential"/>
+			<E category="?" name="OnGlobalEndDiagnostics"/>
+			<E category="?" name="OnGlobalMarkImages"/>
+			<E category="?" name="OnGlobalObjDestroyed"/>
+			<E category="?" name="OnGlobalPaneInit"/>
+			<E category="?" name="OnGlobalPlayerBoughtItem"/>
+			<E category="?" name="OnGlobalPlayerChangedShips"/>
+			<E category="?" name="OnGlobalPlayerEnteredSystem"/>
+			<E category="?" name="OnGlobalPlayerLeftSystem"/>
+			<E category="?" name="OnGlobalPlayerSoldItem"/>
+			<E category="?" name="OnGlobalResurrect"/>
+			<E category="?" name="OnGlobalTopologyCreated"/>
+			<E category="?" name="OnGlobalStartDiagnostics"/>
+			<E category="?" name="OnGlobalSystemDiagnostics"/>
+			<E category="?" name="OnGlobalSystemCreated"/>
+			<E category="?" name="OnGlobalSystemStarted"/>
+			<E category="?" name="OnGlobalSystemStopped"/>
+			<E category="?" name="OnGlobalUniverseCreated"/>
+			<E category="?" name="OnGlobalUniverseLoad"/>
+			<E category="?" name="OnGlobalUniverseSave"/>
+			<E category="?" name="OnGlobalUpdate"/>
+			<E category="?" name="OnRandomEncounter"/>
+		</E>
+		<E category="virtual" name="DockScreens">
+			<E category="*" name="DockScreen">
+				<E category="?" name="ListOptions">
+					<A name="criteria" valueType="STRING"/>
+					<A name="dataFrom" valueType="DOCKSCREEN_DATA_FROM"/>
+					<A name="height" valueType="WHOLE"/>
+					<A name="initialItem" valueType="STRING"/>
+					<A name="list" valueType="STRING"/>
+					<A name="noArmorSpeedDisplay" valueType="BOOLEAN"/>
+					<A name="noEmptySlots" valueType="BOOLEAN"/>
+					<A name="posX" valueType="INTEGER"/>
+					<A name="posY" valueType="INTEGER"/>
+					<A name="rowHeight" valueType="WHOLE"/>
+					<A name="slotName" valueType="STRING"/>
+					<A name="width" valueType="WHOLE"/>
+				</E>
+				<E category="?" name="List">
+					<A name="criteria" valueType="STRING"/>
+					<A name="dataFrom" valueType="DOCKSCREEN_DATA_FROM"/>
+					<A name="height" valueType="WHOLE"/>
+					<A name="initialItem" valueType="STRING"/>
+					<A name="list" valueType="STRING"/>
+					<A name="noArmorSpeedDisplay" valueType="BOOLEAN"/>
+					<A name="noEmptySlots" valueType="BOOLEAN"/>
+					<A name="posX" valueType="INTEGER"/>
+					<A name="posY" valueType="INTEGER"/>
+					<A name="rowHeight" valueType="WHOLE"/>
+					<A name="slotName" valueType="STRING"/>
+					<A name="width" valueType="WHOLE"/>
+				</E>
+				<E category="?" name="OnScreenInit"/>
+				<E category="?" name="OnInit"/>
+				<E category="?" name="InitialPane"/>
+				<E category="?" name="OnScreenUpdate"/>
+				<E category="?" inherit="DockScreen_Display" name="Display"/>
+				<E category="?" name="Canvas">
+					<A name="bottom" valueType="INTEGER"/>
+					<A name="left" valueType="INTEGER"/>
+					<A name="right" valueType="INTEGER"/>
+					<A name="top" valueType="INTEGER"/>
+				</E>
+				<E category="?" inherit="DockScreen_Panes" name="Panes"/>
+			</E>
+		</E>
+		<E category="virtual" name="DisplayAttributes">
+			<E category="*" name="ItemAttribute">
+				<A name="criteria" valueType="STRING"/>
+				<A name="label" valueType="STRING"/>
+				<A name="labelType" valueType="LABEL_TYPE"/>
+			</E>
+		</E>
+		<E category="virtual" name="AttributeDesc" inherit="DockScreen_DisplayAttributes"/>
+	</E>
+</E>
