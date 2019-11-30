@@ -1317,7 +1317,7 @@
                 <E category="*" name="Null"/>
             </E>
             <E category="?" inherit="DesignTypeBase:Communications"/>
-            <E category="?" inherit="DesignTypeBase:StaticData"/>
+            <E category="?" inherit="DesignTypeBase:GlobalData"/>
             <E category="?" inherit="DesignTypeBase:StaticData"/>
             <E category="?" inherit="DesignTypeBase:Language"/>
             <E category="?" name="Events" inherit="DesignTypeBase:Events">

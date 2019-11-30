@@ -8,6 +8,7 @@ using System.Xml;
 using System.IO;
 using System.Xml.Linq;
 using System.Linq;
+using System.Diagnostics;
 
 namespace Transgenesis {
     class Program {
@@ -160,7 +161,7 @@ namespace Transgenesis {
                 }
                 //Inherit base elements
                 foreach (var e in inherited.Elements()) {
-                    result.Add(e);
+                    result.Add(new XElement(e));
                 }
             }
             //Handle additional/overriding attributes
@@ -175,6 +176,11 @@ namespace Transgenesis {
                     result.Add(e);
                 }
             }
+            /*
+            if(template.Att("name") == null && from?.StartsWith("DesignTypeBase:") == true) {
+                Trace.Assert(!string.IsNullOrEmpty(result.Att("name")), result.ToString());
+            }
+            */
             return result;
         }
         public List<string> GetAttributeValues(string attributeName) {
@@ -190,6 +196,42 @@ namespace Transgenesis {
                 return new List<string>();
             }
         }
+        public void CreateExtension(ExtensionTypes e, string path) {
+            XElement structure;
+            XElement template;
+            TranscendenceExtension extension;
+
+            switch (e) {
+                case ExtensionTypes.TranscendenceAdventure:
+                    template = coreStructures["TranscendenceAdventure"];
+                    break;
+                case ExtensionTypes.TranscendenceExtension:
+                    template = coreStructures["TranscendenceExtension"];
+                    break;
+                case ExtensionTypes.TranscendenceLibrary:
+                    template = coreStructures["TranscendenceLibrary"];
+                    break;
+                case ExtensionTypes.TranscendenceModule:
+                default:
+                    template = coreStructures["TranscendenceModule"];
+                    break;
+            }
+            template = InitializeTemplate(template);
+            structure = FromTemplate(template);
+
+            extension = new TranscendenceExtension(
+                path: path,
+                structure: structure
+            );
+            extensions[path] = extension;
+            extension.Save();
+        }
+    }
+    enum ExtensionTypes {
+        TranscendenceAdventure,
+        TranscendenceExtension,
+        TranscendenceLibrary,
+        TranscendenceModule
     }
     class Commander : Component {
         Stack<Component> screens;
@@ -231,37 +273,10 @@ namespace Transgenesis {
                     string[] parts = command.Split(' ');
                     switch(parts.First().ToLower()) {
                         case "create":
-                            XElement structure;
-                            XElement template;
-                            TranscendenceExtension extension;
-                            switch(parts[1].ToLower()) {
-                                case "extension":
-                                    template = env.coreStructures["TranscendenceExtension"];
-                                    break;
-                                case "library":
-                                    template = env.coreStructures["TranscendenceLibrary"];
-                                    break;
-                                case "adventure":
-                                    template = env.coreStructures["TranscendenceAdventure"];
-                                    break;
-                                case "module":
-                                    template = env.coreStructures["TranscendenceModule"];
-                                    break;
-                                default:
-                                    goto Done;
+                            if(Enum.TryParse<ExtensionTypes>(parts[1], out ExtensionTypes ex)) {
+                                env.CreateExtension(ex, parts[2]);
                             }
-                            template = env.InitializeTemplate(template);
-                            structure = env.FromTemplate(template);
 
-                            string path = parts[2];
-
-                            extension = new TranscendenceExtension(
-                                path: path,
-                                structure: structure
-                            );
-                            env.extensions[path] = extension;
-
-                            Done:
                             break;
                         case "load":
                             for(int i = 1; i < parts.Length; i++) {
@@ -287,7 +302,7 @@ namespace Transgenesis {
             }
             Dictionary<string, Func<List<string>>> autocomplete = new Dictionary<string, Func<List<string>>> {
                         {"", () => new List<string>{ "create", "load", "edit" } },
-                        {"create", () => new List<string>{ "adventure", "extension", "library", "module" } },
+                        {"create", () => new List<string>{ "TranscendenceAdventure", "TranscendenceExtension", "TranscendenceLibrary", "TranscendenceModule" } },
                         {"load", () => Directory.GetFiles(Directory.GetCurrentDirectory(), "*.xml").ToList() },
                         {"edit", () => env.extensions.Keys.ToList() }
                     };

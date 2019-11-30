@@ -25,6 +25,10 @@ namespace Transgenesis {
             this.structure = structure;
         }
 
+        public void Save() {
+            File.WriteAllText(path, structure.ToString());
+        }
+
         //Get a set of all the modules in this extension
         public HashSet<TranscendenceExtension> collapseModuleChain() {
             HashSet<TranscendenceExtension> allModules = new HashSet<TranscendenceExtension>();
