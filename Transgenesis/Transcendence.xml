@@ -1131,7 +1131,7 @@
                 <A name="style" valueType="OVERLAY_COUNTER_STYLE"/>
             </E>
             <E category="?" inherit="DesignTypeBase:Communications"/>
-            <E category="?" inherit="DesignTypeBase:StaticData"/>
+            <E category="?" inherit="DesignTypeBase:GlobalData"/>
             <E category="?" inherit="DesignTypeBase:StaticData"/>
             <E category="?" inherit="DesignTypeBase:Language"/>
             <E category="?" inherit="DesignTypeBase:Events">
@@ -2278,7 +2278,7 @@
 	;DesignType default subelements
 	
 	<E category="virtual" id="DesignTypeBase">
-		<E category="virtual" name="Communications">
+		<E category="?" name="Communications">
 			<E category="*" name="Message">
 				<A name="id" valueType="STRING"/>
 				<A name="key" valueType="CHARACTER"/>
@@ -2287,14 +2287,14 @@
 				<E category="?" name="Invoke"/>
 			</E>
 		</E>
-		<E category="virtual" name="StaticData">
+		<E category="?" name="StaticData">
 			<E category="*" name="Data">
 				<A name="data" valueType="STRING"/>
 				<A name="id" valueType="STRING"/>
 			</E>
 		</E>
-		<E category="virtual" name="GlobalData" inherit="DesignTypeBase:StaticData"/>
-		<E category="virtual" name="Language">
+		<E category="?" name="GlobalData" inherit="DesignTypeBase:StaticData"/>
+		<E category="?" name="Language">
 			<E category="*" name="Text">
 				<A name="id" valueType="STRING"/>
 			</E>
@@ -2306,7 +2306,7 @@
 				<A name="text" valueType="STRING"/>
 			</E>
 		</E>
-		<E category="virtual" name="Events">
+		<E category="?" name="Events">
 			<E category="?" name="GetCreatePos"/>
 			<E category="?" name="GetGlobalAchievements"/>
 			<E category="?" name="GetGlobalDockScreen"/>
@@ -2334,7 +2334,7 @@
 			<E category="?" name="OnGlobalUpdate"/>
 			<E category="?" name="OnRandomEncounter"/>
 		</E>
-		<E category="virtual" name="DockScreens">
+		<E category="?" name="DockScreens">
 			<E category="*" name="DockScreen">
 				<E category="?" name="ListOptions">
 					<A name="criteria" valueType="STRING"/>
@@ -2378,13 +2378,13 @@
 				<E category="?" inherit="DesignTypes:DockScreen:Panes" name="Panes"/>
 			</E>
 		</E>
-		<E category="virtual" name="DisplayAttributes">
+		<E category="?" name="DisplayAttributes">
 			<E category="*" name="ItemAttribute">
 				<A name="criteria" valueType="STRING"/>
 				<A name="label" valueType="STRING"/>
 				<A name="labelType" valueType="LABEL_TYPE"/>
 			</E>
 		</E>
-		<E category="virtual" name="AttributeDesc" inherit="DesignTypes:DockScreen:DisplayAttributes"/>
+		<E category="?" name="AttributeDesc" inherit="DesignTypes:DockScreen:DisplayAttributes"/>
 	</E>
 </E>
