@@ -1,6 +1,379 @@
 <E name="Hierarchy">
+	<AttributeType name="BOOLEAN">
+		true
+		false
+	</AttributeType>
+	<AttributeType name="ALIGNMENT">
+		constructive order
+		constructive chaos
+		neutral
+		destructive order
+		destructive chaos
+		republic
+		federation
+		uplifter
+		foundation
+		competitor
+		archivist
+		seeker
+		hermit
+		collective
+		empire
+		sterilizer
+		corrector
+		megalomaniac
+		cryptologue
+		perversion
+		solipsist
+		unorganized
+		subsapient
+		predator
+	</AttributeType>
+	<AttributeType name="DISPOSITION">
+		friend
+		neutral
+		enemy
+	</AttributeType>
+	<AttributeType name="BLENDING">
+		
+		brighten
+	</AttributeType>
+	<AttributeType name="BLEND_MODE">
+		normal
+		multiply
+		overlay
+		screen
+		hardLight
+		composite
+	</AttributeType>
+	<AttributeType name="FREQUENCY">
+		common
+		uncommon
+		rare
+		veryRare
+		notRandom
+	</AttributeType>
+	<AttributeType name="UNIQUE">
+		inSystem
+		inUniverse
+	</AttributeType>
+	<AttributeType name="SCALE_SIZE">
+		star
+		world
+		structure
+		ship
+		flotsam
+	</AttributeType>
+	<AttributeType name="SCALE_DISTANCE">
+		pixel
+		light-second
+		light-minute
+	</AttributeType>
+	<AttributeType name="TILE_SIZE">
+		small
+		medium
+		large
+		huge
+	</AttributeType>
+	<AttributeType name="SYSTEMTYPE_BACKGROUND">
+		none
+	</AttributeType>
+	<AttributeType name="SHAPE_SPACE_ENVIRONMENT">
+		circular
+		arc
+	</AttributeType>
+	<AttributeType name="PAINT_LAYER">
+		overhang
+	</AttributeType>
+	<AttributeType name="DOCKSCREEN_TYPE">
+		canvas
+		itemPicker
+		deviceSelector
+		weaponsSelector
+		armorSelector
+		miscSelector
+		customItemPicker
+		customPicker
+		subjugateMinigame
+	</AttributeType>
+	<AttributeType name="BACKGROUND_ID">
+		hero
+		image
+		none
+		object
+		schematic
+	</AttributeType>
+	<AttributeType name="DATA_FROM">
+		player
+		source
+		station
+	</AttributeType>
+	<AttributeType name="FONT">
+		Small
+		SmallBold
+		Medium
+		MediumBold
+		Large
+		LargeBold
+		Header
+		HeaderBold
+		SubTitle
+		SubTitleBold
+		SubTitleHeavyBold
+		Title
+		LogoTitle
+		ConsoleMediumHeavy
+	</AttributeType>
+	<AttributeType name="ALIGN_HORIZONTAL">
+		left
+		center
+		right
+	</AttributeType>
+	<AttributeType name="ALIGN_VERTICAL">
+		top
+		center
+		bottom
+	</AttributeType>
+	<AttributeType name="STYLE_COUNTER">
+	</AttributeType>
+	<AttributeType name="LABEL_TYPE">
+	</AttributeType>
+	<AttributeType name="LAYOUT">
+	</AttributeType>
+	<AttributeType name="STYLE_CONTROLS">
+	</AttributeType>
+	<AttributeType name="STYLE_FLARE">
+	</AttributeType>
+	<AttributeType name="STYLE_LIGHTNING_STORM">
+	</AttributeType>
+	<AttributeType name="STYLE_PARTICLE">
+	</AttributeType>
+	<AttributeType name="STYLE_PARTICLE_CLOUD">
+		cloud
+		exhaust
+		jet
+		ring
+		splash
+	</AttributeType>
+	<AttributeType name="STYLE_PARTICLE_PATTERN">
+	</AttributeType>
+	<AttributeType name="STYLE_PARTICLE_SYSTEM">
+	</AttributeType>
+	<AttributeType name="STYLE_STARBURST">
+	</AttributeType>
+	<AttributeType name="PROGRAM">
+		ShieldsDown
+		Reboot
+		Disarm
+	</AttributeType>
+	<AttributeType name="LINKED_FIRE_OPTIONS">
+	</AttributeType>
+	<AttributeType name="EFFECT_INSTANCE">
+	</AttributeType>
+	<AttributeType name="BEAM_TYPE">
+	</AttributeType>
+	<AttributeType name="STYLE_LINE">
+	</AttributeType>
+	<AttributeType name="STYLE_RAY">
+		wavy
+		smooth
+		jagged
+		grainy
+		lightning
+		whiptail
+	</AttributeType>
+	<AttributeType name="SHAPE_RAY">
+		diamond
+		oval
+		straight
+		tapered
+		cone
+	</AttributeType>
+	<AttributeType name="ANIMATE_RAY">
+		fade
+		flicker
+		cycle
+	</AttributeType>
+	<AttributeType name="ANIMATE_ORB">
+		dissipate
+		explode
+		fade
+		flicker
+	</AttributeType>
+	<AttributeType name="STYLE_ORB">
+		smooth
+		flare
+		cloud
+		fireBlast
+		smoke
+		diffraction
+		firecloud
+	</AttributeType>
+	<AttributeType name="STYLE_SHOCKWAVE">
+		glowRing
+		image
+		cloud
+	</AttributeType>
+	<AttributeType name="WEAPON_CONFIGURATION">
+		dual
+		wall
+		spread2
+		spread3
+		spread5
+		alternating
+	</AttributeType>
+	<AttributeType name="WEAPON_COUNTER">
+		temperature
+		capacitor
+	</AttributeType>
+	<AttributeType name="FAILURE_TYPE">
+		custom
+		explosion
+		heatDamage
+		jammed
+		misfire
+		noFailure
+		safeMode
+	</AttributeType>
+	<AttributeType name="VARIANT_TYPE">
+		charges
+		missiles
+		levels
+	</AttributeType>
+	<AttributeType name="FIRE_TYPE">
+		missile
+		beam
+		area
+		continuousBeam
+		particles
+		radius
+	</AttributeType>
+	<AttributeType name="ARMOR_NONCRITICAL">
+		dev0
+		dev1
+		dev2
+		dev3
+		dev4
+		dev5
+		dev6
+		dev7
+		maneuver
+		drive
+		scanners
+		tactical
+		cargo
+	</AttributeType>
+	<AttributeType name="SHIP_EFFECT_TYPE">
+		rotateLeft
+		rotateRight
+		thrustMain
+	</AttributeType>
+	<AttributeType name="SHIP_EQUIPMENT">
+		SRS
+		LRS
+		SystemMap
+		Autopilot
+		SRSEnhancer
+		TargetingComputer
+		GalacticMap
+		FriendlyFireLock
+		TradingComputer
+		ProtectWingmen
+		MiningComputer
+	</AttributeType>
+	<AttributeType name="SHIP_COMPARTMENT_TYPE">
+		cargo
+		general
+		mainDrive
+	</AttributeType>
+	<AttributeType name="COMBAT_STYLE">
+		standard
+		advanced
+		chase
+		flyBy
+		noRetreat
+		standOff
+	</AttributeType>
+	<AttributeType name="FLOCKING_STYLE">
+		cloud
+		compact
+		random
+	</AttributeType>
+	<AttributeType name="INITIAL_CLASS">
+		false
+		true
+		always
+	</AttributeType>
+	<AttributeType name="SHIP_UI">
+		pilot
+		command
+	</AttributeType>
+	<AttributeType name="HUD_STYLE">
+		default
+		circular
+		rectangular
+	</AttributeType>
+	<AttributeType name="SHIP_ORDER">
+		guard
+		dock
+		attack
+		wait
+		gate
+		
+		gateOnThreat
+		gateOnStationDestroyed
+		patrol
+		escort
+		scavenge
+		
+		followPlayerThroughGate
+		attackNearestEnemy
+		tradeRoute
+		wander
+		loot
+		hold
+		mine
+		waitForPlayer
+		attackPlayerOnReturn
+		follow
+		
+		navPath
+		goto
+		waitForTarget
+		waitForEnemy
+		bombard
+		
+		approach
+		aim
+		orbit
+		holdCourse
+		turnTo
+		
+		attackHold
+		attackStation
+		fireEvent
+		waitForUndock
+		sendMessage
+		
+		attackArea
+		holdAndAttack
+		gotoPos
+		waitForThreat
+		sentry
+	</AttributeType>
+	<AttributeType name="SHIP_CONTROLLER">
+		auton
+		crew
+		ferian
+		fleet
+		fleetcommand
+		gaianprocessor
+		gladiator
+		zoanthrope
+	</AttributeType>
+	
     <E category="1" name="TranscendenceAdventure" inherit="Hierarchy:TranscendenceExtension">
-        <E category="1" name="AdventureDesc">
+        <E category="1" name="AdventureDesc" inherit="DesignTypeBase">
             <A name="adventureUNID" valueType="UNID"/>
             <A name="attributes" valueType="STRING"/>
             <A name="backgroundID" valueType="TYPE_IMAGE"/>
@@ -27,7 +400,7 @@
                     <A name="systemCriteria" valueType="STRING"/>
                     <A name="unid" valueType="TYPE_STATION"/>
                     <A name="unique" valueType="UNIQUE"/>
-                    <E category="?" inherit="Encounter_Criteria" name="Criteria"/>
+                    <E category="?" inherit="Encounter:Criteria" name="Criteria"/>
                 </E>
             </E>
             <E category="?" name="Constants">
@@ -40,9 +413,6 @@
                     <A name="level" valueType="WHOLE"/>
                 </E>
             </E>
-            <E category="?" inherit="DesignType:Communications"/>
-            <E category="?" inherit="DesignType:StaticData"/>
-            <E category="?" inherit="DesignType:GlobalData"/>
             <E category="?" name="Language">
                 <E category="?" name="Text">
                     <A name="id" value="description" valueType="STRING"/>
@@ -58,10 +428,6 @@
                     <A name="text" valueType="STRING"/>
                 </E>
             </E>
-            <E category="?" inherit="DesignType:Events"/>
-            <E category="?" inherit="DesignType:DockScreens"/>
-            <E category="?" inherit="DesignType:DisplayAttributes"/>
-            <E category="?" inherit="DesignType:AttributeDesc"/>
         </E>
 
     </E>
@@ -88,9 +454,22 @@
             <A name="unid" valueType="TYPE_MOD"/>
         </E>
     </E>
-    <E category="mod" name="TranscendenceModule">
+    <E category="mod" name="TranscendenceModule" inherit="DesignTypes">
         <E category="?" name="Globals"/>
-        <E category="*" name="DockScreen" inherit="DesignType">
+    </E>
+	
+<!--
+            <E category="?" inherit="DesignTypeBase:Communications"/>
+            <E category="?" inherit="DesignTypeBase:StaticData"/>
+            <E category="?" inherit="DesignTypeBase:GlobalData"/>
+            <E category="?" inherit="DesignTypeBase:Language"/>
+            <E category="?" inherit="DesignTypeBase:Events"/>
+            <E category="?" inherit="DesignTypeBase:DockScreens"/>
+            <E category="?" inherit="DesignTypeBase:DisplayAttributes"/>
+            <E category="?" inherit="DesignTypeBase:AttributeDesc"/>
+-->
+	<E category="virtual" id="DesignTypes">
+		<E category="*" name="DockScreen" inherit="DesignTypeBase">
             <A name="backgroundID" valueType="DOCKSCREEN_BACKGROUND_ID"/>
             <A name="desc" valueType="STRING"/>
             <A name="name" valueType="STRING"/>
@@ -222,12 +601,12 @@
                 </E>
             </E>
         </E>
-        <E category="*" name="EconomyType" inherit="DesignType">
+        <E category="*" name="EconomyType" inherit="DesignTypeBase">
             <A name="conversion" valueType="INTEGER"/>
             <A name="currency" valueType="STRING"/>
             <A name="id" valueType="STRING"/>
         </E>
-        <E category="*" name="EffectType"	inherit="DesignType">
+        <E category="*" name="EffectType"	inherit="DesignTypeBase">
 			<A name="W.I.P." valueType="STRING"/>
         </E>
         <E category="*" name="Image">
@@ -240,9 +619,9 @@
             <A name="shadowMask" valueType="FILENAME"/>
             <A name="sprite" valueType="BOOLEAN"/>
         </E>
-        <E category="*" name="ImageComposite" inherit="DesignType"/>
-        <E category="*" name="ItemTable" inherit="DesignType"/>
-        <E category="*" name="ItemType">
+        <E category="*" name="ImageComposite" inherit="DesignTypeBase"/>
+        <E category="*" name="ItemTable" inherit="DesignTypeBase"/>
+        <E category="*" name="ItemType" inherit="DesignTypeBase">
             <A name="ammoCharges" valueType="BOOLEAN"/>
             <A name="charges" valueType="WHOLE"/>
             <A name="data" valueType="STRING"/>
@@ -554,7 +933,7 @@
                 <A name="xOffset" valueType="INTEGER"/>
                 <A name="yOffset" valueType="INTEGER"/>
             </E>
-            <E category="?" inherit="DesignType:StaticData" name="InitialData"/>
+            <E category="?" inherit="DesignTypeBase:StaticData" name="InitialData"/>
             <E category="?" name="Invoke">
                 <A name="asArmorSet" valueType="BOOLEAN"/>
                 <A name="completeArmorOnly" valueType="BOOLEAN"/>
@@ -628,11 +1007,11 @@
                 </E>
             </E>
             <E category="?" name="Weapon" inherit="ItemType:DeviceType"/>
-            <E category="?" inherit="DesignType:Communications"/>
-            <E category="?" inherit="DesignType:StaticData"/>
-            <E category="?" inherit="DesignType:StaticData"/>
-            <E category="?" inherit="DesignType:Language"/>
-            <E category="?" name="Events" inherit="DesignType:Events">
+            <E category="?" inherit="DesignTypeBase:Communications"/>
+            <E category="?" inherit="DesignTypeBase:StaticData"/>
+            <E category="?" inherit="DesignTypeBase:StaticData"/>
+            <E category="?" inherit="DesignTypeBase:Language"/>
+            <E category="?" name="Events" inherit="DesignTypeBase:Events">
                 <E category="?" name="CanBeInstalled"/>
                 <E category="?" name="CanBeUninstalled"/>
                 <E category="?" name="OnAddedAsEnhancement"/>
@@ -648,11 +1027,11 @@
                 <E category="?" name="OnRemovedAsEnhancement"/>
                 <E category="?" name="OnUninstall"/>
             </E>
-            <E category="?" inherit="DesignType:DockScreens"/>
-            <E category="?" inherit="DesignType:DisplayAttributes"/>
-            <E category="?" inherit="DesignType:DisplayAttributes"/>
+            <E category="?" inherit="DesignTypeBase:DockScreens"/>
+            <E category="?" inherit="DesignTypeBase:DisplayAttributes"/>
+            <E category="?" inherit="DesignTypeBase:DisplayAttributes"/>
         </E>
-        <E category="*" name="MissionType">
+        <E category="*" name="MissionType" inherit="DesignTypeBase">
             <A name="allowPlayerDelete" value="false" valueType="BOOLEAN"/>
             <A name="debriefAfterOutOfSystem" value="false" valueType="BOOLEAN"/>
             <A name="expireTime" valueType="INTEGER"/>
@@ -666,9 +1045,9 @@
             <A name="noFailureOnOwnerDestroyed" value="false" valueType="BOOLEAN"/>
             <A name="noStats" value="false" valueType="BOOLEAN"/>
             <A name="priority" value="1" valueType="WHOLE"/>
-            <E category="?" inherit="DesignType:Communications"/>
-            <E category="?" inherit="DesignType:StaticData"/>
-            <E category="?" inherit="DesignType:StaticData"/>
+            <E category="?" inherit="DesignTypeBase:Communications"/>
+            <E category="?" inherit="DesignTypeBase:StaticData"/>
+            <E category="?" inherit="DesignTypeBase:StaticData"/>
             <E category="?" name="Language">
                 <E category="?" name="Text">
                     <A name="id" value="Name" valueType="STRING"/>
@@ -720,15 +1099,15 @@
                     <A name="text" valueType="STRING"/>
                 </E>
             </E>
-            <E category="?" name="Events" inherit="DesignType:Events">
+            <E category="?" name="Events" inherit="DesignTypeBase:Events">
 				<A name="W.I.P." valueType="STRING"/>
 			</E>
-            <E category="?" inherit="DesignType:DockScreens"/>
-            <E category="?" inherit="DesignType:DisplayAttributes"/>
-            <E category="?" inherit="DesignType:DisplayAttributes"/>
+            <E category="?" inherit="DesignTypeBase:DockScreens"/>
+            <E category="?" inherit="DesignTypeBase:DisplayAttributes"/>
+            <E category="?" inherit="DesignTypeBase:DisplayAttributes"/>
         </E>
-        <E category="*" name="NameGenerator" inherit="DesignType"/>
-        <E category="*" name="OverlayType">
+        <E category="*" name="NameGenerator" inherit="DesignTypeBase"/>
+        <E category="*" name="OverlayType" inherit="DesignTypeBase">
             <A name="absorbAdj" valueType="INTEGER_SEQUENCE"/>
             <A name="disableShipScreen" valueType="BOOLEAN"/>
             <A name="disarm" valueType="BOOLEAN"/>
@@ -751,22 +1130,22 @@
                 <A name="showOnMap" valueType="BOOLEAN"/>
                 <A name="style" valueType="OVERLAY_COUNTER_STYLE"/>
             </E>
-            <E category="?" inherit="DesignType:Communications"/>
-            <E category="?" inherit="DesignType:StaticData"/>
-            <E category="?" inherit="DesignType:StaticData"/>
-            <E category="?" inherit="DesignType:Language"/>
-            <E category="?" inherit="DesignType:Events">
+            <E category="?" inherit="DesignTypeBase:Communications"/>
+            <E category="?" inherit="DesignTypeBase:StaticData"/>
+            <E category="?" inherit="DesignTypeBase:StaticData"/>
+            <E category="?" inherit="DesignTypeBase:Language"/>
+            <E category="?" inherit="DesignTypeBase:Events">
                 <E category="?" name="OnCreate"/>
                 <E category="?" name="OnUpdate"/>
                 <E category="?" name="OnDamage"/>
                 <E category="?" name="OnDestroy"/>
                 <E category="?" name="OnObjDestroyed"/>
             </E>
-            <E category="?" inherit="DesignType:DockScreens"/>
-            <E category="?" inherit="DesignType:DisplayAttributes"/>
-            <E category="?" inherit="DesignType:DisplayAttributes"/>
+            <E category="?" inherit="DesignTypeBase:DockScreens"/>
+            <E category="?" inherit="DesignTypeBase:DisplayAttributes"/>
+            <E category="?" inherit="DesignTypeBase:DisplayAttributes"/>
         </E>
-        <E category="*" name="Power" inherit="DesignType">
+        <E category="*" name="Power" inherit="DesignTypeBase">
             <A name="key" valueType="CHARACTER"/>
             <A name="name" valueType="STRING"/>
             <E category="?" name="OnShow"/>
@@ -774,7 +1153,7 @@
             <E category="?" name="OnInvoke"/>
             <E category="?" name="OnDestroyCheck"/>
         </E>
-        <E category="*" name="ShipClass" inherit="DesignType">
+        <E category="*" name="ShipClass" inherit="DesignTypeBase">
             <A name="W.I.P." valueType="STRING"/>
             <E category="?" name="Names">
                 <A name="customPlural" valueType="BOOLEAN"/>
@@ -937,11 +1316,11 @@
                 <E category="*" inherit="Devices:Table" name="LevelTable"/>
                 <E category="*" name="Null"/>
             </E>
-            <E category="?" inherit="DesignType:Communications"/>
-            <E category="?" inherit="DesignType:StaticData"/>
-            <E category="?" inherit="DesignType:StaticData"/>
-            <E category="?" inherit="DesignType:Language"/>
-            <E category="?" name="Events" inherit="DesignType:Events">
+            <E category="?" inherit="DesignTypeBase:Communications"/>
+            <E category="?" inherit="DesignTypeBase:StaticData"/>
+            <E category="?" inherit="DesignTypeBase:StaticData"/>
+            <E category="?" inherit="DesignTypeBase:Language"/>
+            <E category="?" name="Events" inherit="DesignTypeBase:Events">
                 <E category="?" name="CanDockAsPlayer"			code="true"/>
                 <E category="?" name="CanInstallItem"			code="true"/>
                 <E category="?" name="CanRemoveItem"			code="true"/>
@@ -988,16 +1367,19 @@
                 <E category="?" name="OnTranslateMessage"		code="true"/>
                 <E category="?" name="OnUpdate"/>
             </E>
-            <E category="?" inherit="DesignType:DockScreens" name="DockScreens"/>
-            <E category="?" inherit="DesignType:DisplayAttributes" name="DisplayAttributes"/>
-            <E category="?" inherit="DesignType:DisplayAttributes" name="AttributeDesc"/>
+            <E category="?" inherit="DesignTypeBase:DockScreens" name="DockScreens"/>
+            <E category="?" inherit="DesignTypeBase:DisplayAttributes" name="DisplayAttributes"/>
+            <E category="?" inherit="DesignTypeBase:DisplayAttributes" name="AttributeDesc"/>
         </E>
-        <E category="*" name="ShipClassOverride" inherit="DesignType"/>
-        <E category="*" name="ShipTable" inherit="DesignType"/>
-        <E category="*" name="Sound" inherit="DesignType">
+        <E category="*" name="ShipClassOverride" inherit="DesignTypeBase"/>
+        ;TO DO
+		<E category="*" name="ShipTable" inherit="DesignTypeBase"/>
+		;TO DO
+        <E category="*" name="Sound" inherit="DesignTypeBase">
+		;TO DO
             <A name="filename" valueType="FILENAME"/>
         </E>
-        <E category="*" name="Sovereign">
+        <E category="*" name="Sovereign" inherit="DesignTypeBase">
             <A name="adjective" valueType="STRING"/>
             <A name="alignment" valueType="ALIGNMENT"/>
             <A name="attributes" valueType="STRING"/>
@@ -1016,9 +1398,9 @@
                     <A name="sovereign" valueType="TYPE_SOVEREIGN"/>
                 </E>
             </E>
-            <E category="?" inherit="DesignType:Communications"/>
-            <E category="?" inherit="DesignType:StaticData"/>
-            <E category="?" inherit="DesignType:GlobalData"/>
+            <E category="?" inherit="DesignTypeBase:Communications"/>
+            <E category="?" inherit="DesignTypeBase:StaticData"/>
+            <E category="?" inherit="DesignTypeBase:GlobalData"/>
             <E category="?" name="Language">
                 <E category="?" name="Text">
                     <A name="id" value="AttackTarget" valueType="STRING"/>
@@ -1100,12 +1482,12 @@
                     <A name="text" valueType="STRING"/>
                 </E>
             </E>
-            <E category="?" inherit="DesignType:Events"/>
-            <E category="?" inherit="DesignType:DockScreens"/>
-            <E category="?" inherit="DesignType:DisplayAttributes"/>
-            <E category="?" inherit="DesignType:DisplayAttributes"/>
+            <E category="?" inherit="DesignTypeBase:Events"/>
+            <E category="?" inherit="DesignTypeBase:DockScreens"/>
+            <E category="?" inherit="DesignTypeBase:DisplayAttributes"/>
+            <E category="?" inherit="DesignTypeBase:DisplayAttributes"/>
         </E>
-        <E category="*" name="SpaceEnvironmentType" inherit="DesignType">
+        <E category="*" name="SpaceEnvironmentType" inherit="DesignTypeBase">
             <A name="autoEdges" valueType="BOOLEAN"/>
             <A name="dragFactor" valueType="WHOLE"/>
             <A name="lrsJammer" value="false" valueType="BOOLEAN"/>
@@ -1115,18 +1497,18 @@
             <A name="srsJammer" value="false" valueType="BOOLEAN"/>
             <E category="?" name="Image" inherit="ImageDesc"/>
             <E category="?" name="EdgeMask" inherit="ImageDesc"/>
-            <E category="?" inherit="DesignType:Communications"/>
-            <E category="?" inherit="DesignType:StaticData"/>
-            <E category="?" inherit="DesignType:GlobalData"/>
-            <E category="?" inherit="DesignType:Language"/>
-            <E category="?" name="Events" inherit="DesignType:Events">
+            <E category="?" inherit="DesignTypeBase:Communications"/>
+            <E category="?" inherit="DesignTypeBase:StaticData"/>
+            <E category="?" inherit="DesignTypeBase:GlobalData"/>
+            <E category="?" inherit="DesignTypeBase:Language"/>
+            <E category="?" name="Events" inherit="DesignTypeBase:Events">
                 <E category="?" name="OnObjUpdate"/>
             </E>
-            <E category="?" inherit="DesignType:DockScreens"/>
-            <E category="?" inherit="DesignType:DisplayAttributes"/>
-            <E category="?" inherit="DesignType:AttributeDesc"/>
+            <E category="?" inherit="DesignTypeBase:DockScreens"/>
+            <E category="?" inherit="DesignTypeBase:DisplayAttributes"/>
+            <E category="?" inherit="DesignTypeBase:AttributeDesc"/>
         </E>
-        <E category="*" name="StationType" inherit="DesignType">
+        <E category="*" name="StationType" inherit="DesignTypeBase">
             <A name="abandonedScreen" valueType="STRING"/>
             <A name="alertWhenAttacked" valueType="STRING"/>
             <A name="alertWhenDestroyed" valueType="STRING"/>
@@ -1291,26 +1673,24 @@
                 <A name="standingCount" valueType="DICE_RANGE"/>
             </E>
             
-            <E category="?" inherit="DesignType:Communications"/>
-            <E category="?" inherit="DesignType:StaticData"/>
-            <E category="?" inherit="DesignType:GlobalData"/>
-            <E category="?" inherit="DesignType:Language"/>
-            <E category="?" inherit="DesignType:Events">
+            <E category="?" inherit="DesignTypeBase:Communications"/>
+            <E category="?" inherit="DesignTypeBase:StaticData"/>
+            <E category="?" inherit="DesignTypeBase:GlobalData"/>
+            <E category="?" inherit="DesignTypeBase:Language"/>
+            <E category="?" inherit="DesignTypeBase:Events">
 				<A name="W.I.P." valueType="STRING"/>
 			</E>
-            <E category="?" inherit="DesignType:DockScreens"/>
-            <E category="?" inherit="DesignType:DisplayAttributes"/>
-            <E category="?" inherit="DesignType:AttributeDesc"/>
+            <E category="?" inherit="DesignTypeBase:DockScreens"/>
+            <E category="?" inherit="DesignTypeBase:DisplayAttributes"/>
+            <E category="?" inherit="DesignTypeBase:AttributeDesc"/>
         </E>
-        <E category="*" name="SystemMap" inherit="DesignType">
+        <E category="*" name="SystemMap" inherit="DesignTypeBase">
 			<A name="W.I.P." valueType="STRING"/>
 		</E>
-        <E category="*" name="SystemTable" inherit="DesignType">
+        <E category="*" name="SystemTable" inherit="DesignTypeBase">
 			<A name="W.I.P." valueType="STRING"/>
 		</E>
-	
-		
-		<E category="*" name="SystemType">
+		<E category="*" name="SystemType" inherit="DesignTypeBase">
 			<A name="attributes" valueType="STRING"/>
 			<A name="backgroundID" valueType="TYPE_IMAGE"/>
 			<A name="extends" valueType="STRING"/>
@@ -1678,46 +2058,32 @@
 			<E	name="Tables"	category="?">
 				<E	category="*"	inherit="SystemType:SystemGroup"	name="*"/>
 			</E>
-			<E category="?" inherit="DesignType:Communications"/>
-			<E category="?" inherit="DesignType:StaticData"/>
-			<E category="?" inherit="DesignType:GlobalData"/>
-			<E category="?" inherit="DesignType:Language"/>
-			<E category="?" name="Events" inherit="DesignType:Events">
+			<E category="?" inherit="DesignTypeBase:Communications"/>
+			<E category="?" inherit="DesignTypeBase:StaticData"/>
+			<E category="?" inherit="DesignTypeBase:GlobalData"/>
+			<E category="?" inherit="DesignTypeBase:Language"/>
+			<E category="?" name="Events" inherit="DesignTypeBase:Events">
 				<E category="?" name="OnCreate"/>
 				<E category="?" name="OnObjJumpPosAdj"/>
 			</E>
-			<E category="?" inherit="DesignType:DockScreens"/>
-			<E category="?" inherit="DesignType:DisplayAttributes"/>
-			<E category="?" inherit="DesignType:AttributeDesc"/>
+			<E category="?" inherit="DesignTypeBase:DockScreens"/>
+			<E category="?" inherit="DesignTypeBase:DisplayAttributes"/>
+			<E category="?" inherit="DesignTypeBase:AttributeDesc"/>
 		</E>
-		
-		
-        <E category="*" name="TemplateType" inherit="DesignType">
-            <E category="?" inherit="DesignType:Communications"/>
-            <E category="?" inherit="DesignType:StaticData"/>
-            <E category="?" inherit="DesignType:GlobalData"/>
-            <E category="?" inherit="DesignType:Language"/>
-            <E category="?" inherit="DesignType:Events">
+        <E category="*" name="TemplateType" inherit="DesignTypeBase">
+            <E category="?" inherit="DesignTypeBase:Communications"/>
+            <E category="?" inherit="DesignTypeBase:StaticData"/>
+            <E category="?" inherit="DesignTypeBase:GlobalData"/>
+            <E category="?" inherit="DesignTypeBase:Language"/>
+            <E category="?" inherit="DesignTypeBase:Events">
 				<E category="?" name="GetTypeSource"/>
 			</E>
-            <E category="?" inherit="DesignType:DockScreens"/>
-            <E category="?" inherit="DesignType:DisplayAttributes"/>
-            <E category="?" inherit="DesignType:AttributeDesc"/>
+            <E category="?" inherit="DesignTypeBase:DockScreens"/>
+            <E category="?" inherit="DesignTypeBase:DisplayAttributes"/>
+            <E category="?" inherit="DesignTypeBase:AttributeDesc"/>
         </E>
-        <E category="*" name="Type" inherit="DesignType"/>
-    </E>
-	
-<!--
-            <E category="?" inherit="DesignType:Communications"/>
-            <E category="?" inherit="DesignType:StaticData"/>
-            <E category="?" inherit="DesignType:GlobalData"/>
-            <E category="?" inherit="DesignType:Language"/>
-            <E category="?" inherit="DesignType:Events"/>
-            <E category="?" inherit="DesignType:DockScreens"/>
-            <E category="?" inherit="DesignType:DisplayAttributes"/>
-            <E category="?" inherit="DesignType:AttributeDesc"/>
--->
-
+        <E category="*" name="Type" inherit="DesignTypeBase"/>
+	</E>
 	<E category="virtual" id="ImageDesc">
 		<A name="animationColumns" valueType="WHOLE"/>
 		<A name="blending" valueType="BLENDING"/>
@@ -1750,7 +2116,7 @@
 		</E>
 		<E category="?" name="Image" inherit="ImageDesc"/>
         <E category="?" name="HeroImage" inherit="ImageDesc"/>
-		<E category="?" inherit="DesignType:StaticData" name="InitialData"/>
+		<E category="?" inherit="DesignTypeBase:StaticData" name="InitialData"/>
 		<E category="?" name="DockingPorts">
 			<A name="bringToFront" valueType="STRING"/>
 			<A name="maxDist" valueType="WHOLE"/>
@@ -1911,7 +2277,7 @@
 	</E>
 	;DesignType default subelements
 	
-	<E category="virtual" id="DesignType">
+	<E category="virtual" id="DesignTypeBase">
 		<E category="virtual" name="Communications">
 			<E category="*" name="Message">
 				<A name="id" valueType="STRING"/>
@@ -1927,7 +2293,7 @@
 				<A name="id" valueType="STRING"/>
 			</E>
 		</E>
-		<E category="virtual" name="GlobalData" inherit="DesignType:StaticData"/>
+		<E category="virtual" name="GlobalData" inherit="DesignTypeBase:StaticData"/>
 		<E category="virtual" name="Language">
 			<E category="*" name="Text">
 				<A name="id" valueType="STRING"/>
@@ -2002,14 +2368,14 @@
 				<E category="?" name="OnInit"/>
 				<E category="?" name="InitialPane"/>
 				<E category="?" name="OnScreenUpdate"/>
-				<E category="?" inherit="DockScreen_Display" name="Display"/>
+				<E category="?" inherit="DesignTypes:DockScreen:Display" name="Display"/>
 				<E category="?" name="Canvas">
 					<A name="bottom" valueType="INTEGER"/>
 					<A name="left" valueType="INTEGER"/>
 					<A name="right" valueType="INTEGER"/>
 					<A name="top" valueType="INTEGER"/>
 				</E>
-				<E category="?" inherit="DockScreen_Panes" name="Panes"/>
+				<E category="?" inherit="DesignTypes:DockScreen:Panes" name="Panes"/>
 			</E>
 		</E>
 		<E category="virtual" name="DisplayAttributes">
@@ -2019,6 +2385,6 @@
 				<A name="labelType" valueType="LABEL_TYPE"/>
 			</E>
 		</E>
-		<E category="virtual" name="AttributeDesc" inherit="DockScreen_DisplayAttributes"/>
+		<E category="virtual" name="AttributeDesc" inherit="DesignTypes:DockScreen:DisplayAttributes"/>
 	</E>
 </E>

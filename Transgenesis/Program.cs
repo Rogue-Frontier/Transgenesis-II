@@ -48,6 +48,8 @@ namespace Transgenesis {
         public Dictionary<string, XElement> baseStructures = new Dictionary<string, XElement>();
         public Dictionary<XElement, XElement> bases = new Dictionary<XElement, XElement>();
         public Dictionary<string, TranscendenceExtension> extensions = new Dictionary<string, TranscendenceExtension>();
+        public Dictionary<string, List<string>> customAttributeValues;
+
 
         public Environment() {
 
@@ -66,6 +68,22 @@ namespace Transgenesis {
             foreach (var baseStructure in hierarchy.Elements("E").Where(e => (string)e.Attribute("category") == "virtual")) {
                 baseStructures[(string)baseStructure.Attribute("id")] = baseStructure;
             }
+
+            customAttributeValues = new Dictionary<string, List<string>>();
+            foreach(var attributeType in hierarchy.Elements("AttributeType")) {
+                customAttributeValues[attributeType.Att("name")] = new List<string>(attributeType.Value.Split('\r', '\n'));
+            }
+        }
+        public bool CanAddElement(XElement element, XElement template, string subelement, out XElement subtemplate) {
+            subtemplate = template.TryNameElement(subelement);
+            if(subtemplate == null) {
+                return false;
+            }
+            subtemplate = InitializeTemplate(subtemplate);
+            return CanAddElement(element, subtemplate);
+        }
+        public bool CanRemoveElement(XElement element, XElement template, string subelement) {
+            return CanRemoveElement(element, template.Elements("E").First(e => e.Att("name") == subelement));
         }
         public static bool CanAddElement(XElement element, XElement subtemplate) {
             switch(subtemplate.Att("category")) {
@@ -92,25 +110,28 @@ namespace Transgenesis {
                     return false;
             }
         }
-        public static List<string> GetAddableElements(XElement element, XElement template) {
-            return template.Elements("E").Where(subtemplate => CanAddElement(element, subtemplate)).Select(subtemplate => subtemplate.Att("name")).ToList();
+        public List<string> GetAddableElements(XElement element, XElement template) {
+            return template.Elements("E").Select(subtemplate => InitializeTemplate(subtemplate)).Where(subtemplate => CanAddElement(element, subtemplate)).Select(subtemplate => subtemplate.Att("name")).ToList();
         }
-        public static List<string> GetRemovableElements(XElement element, XElement template) {
-            return template.Elements("E").Where(subtemplate => CanRemoveElement(element, subtemplate)).Select(subtemplate => subtemplate.Att("name")).ToList();
+        public List<string> GetRemovableElements(XElement element, XElement template) {
+            return template.Elements("E").Select(subtemplate => InitializeTemplate(subtemplate)).Where(subtemplate => CanRemoveElement(element, subtemplate)).Select(subtemplate => subtemplate.Att("name")).ToList();
         }
         public XElement FromTemplate(XElement template) {
             XElement result = new XElement(template.Att("name"));
             foreach(XElement subtemplate in template.Elements("E").Where(e => e.Att("category") == "1" || e.Att("category") == "+")) {
-                var initialized = Initialize(subtemplate);
-                result.Add(FromTemplate(initialized));
+                var initialized = InitializeTemplate(subtemplate);
+                var subelement = FromTemplate(initialized);
+                bases[subelement] = initialized;
+                result.Add(subelement);
             }
+            bases[result] = template;
             return result;
         }
         //Initializes a template for actual use, handling inheritance
-        public XElement Initialize(XElement original) {
+        public XElement InitializeTemplate(XElement template) {
 
-            XElement result = new XElement(original.Name);
-            if (original.Att("inherit", out string from)) {
+            XElement result = new XElement(template.Name);
+            if (template.Att("inherit", out string from)) {
                 var parts = from.Split(':');
                 string source = parts.First();
                 //XElement template = original;
@@ -121,33 +142,33 @@ namespace Transgenesis {
                 }
                 */
                 //Start with the root and navigate to the base element
-                XElement template = baseStructures[source];
+                XElement inherited = baseStructures[source];
 
                 //Handle the inheritance chain
-                template = Initialize(template);
+                inherited = InitializeTemplate(inherited);
 
                 foreach (string part in parts.Skip(1)) {
                     //template = template.Element(part);
-                    template = template.Elements("E").First(e => e.Att("name") == part);
+                    inherited = inherited.Elements("E").First(e => e.Att("name") == part);
 
                     //Handle the inheritance chain
-                    template = Initialize(template);
+                    inherited = InitializeTemplate(inherited);
                 }
                 //Inherit base attributes
-                foreach (var a in template.Attributes()) {
+                foreach (var a in inherited.Attributes()) {
                     result.SetAttributeValue(a.Name, a.Value);
                 }
                 //Inherit base elements
-                foreach (var e in template.Elements()) {
+                foreach (var e in inherited.Elements()) {
                     result.Add(e);
                 }
             }
             //Handle additional/overriding attributes
-            foreach (var a in original.Attributes()) {
+            foreach (var a in template.Attributes()) {
                 result.SetAttributeValue(a.Name, a.Value);
             }
             //Handle additional/overriding elements
-            foreach (var e in original.Elements()) {
+            foreach (var e in template.Elements()) {
                 if (result.NameElement(e.Att("name"), out XElement replaced)) {
                     replaced.ReplaceWith(e);
                 } else {
@@ -155,6 +176,19 @@ namespace Transgenesis {
                 }
             }
             return result;
+        }
+        public List<string> GetAttributeValues(string attributeName) {
+            if(customAttributeValues.TryGetValue(attributeName, out List<string> values)) {
+                return values;
+            } else if(Enum.TryParse<AttributeTypes>(attributeName, out AttributeTypes attributeType)) {
+                switch(attributeType) {
+                    //TO DO
+                    default:
+                        return new List<string>();
+                }
+            } else {
+                return new List<string>();
+            }
         }
     }
     class Commander : Component {
@@ -216,7 +250,7 @@ namespace Transgenesis {
                                 default:
                                     goto Done;
                             }
-                            template = env.Initialize(template);
+                            template = env.InitializeTemplate(template);
                             structure = env.FromTemplate(template);
 
                             string path = parts[2];
@@ -226,7 +260,6 @@ namespace Transgenesis {
                                 structure: structure
                             );
                             env.extensions[path] = extension;
-                            env.bases[structure] = template;
 
                             Done:
                             break;
@@ -293,10 +326,43 @@ namespace Transgenesis {
         }
         public void Draw() {
             Console.Clear();
-            Console.WriteLine(extension.structure.ToString());
+            //Console.WriteLine(extension.structure.ToString());
+
+            LinkedList<XElement> ancestors = new LinkedList<XElement>();
+            XElement e = focused.Parent;
+            while(e != null) {
+                ancestors.AddFirst(e);
+                e = e.Parent;
+            }
+            int tabs = 0;
+            foreach(XElement ancestor in ancestors) {
+                Global.PrintLine($"{Tab()}<{ancestor.Name.LocalName}>", ConsoleColor.White, ConsoleColor.Black);
+                tabs++;
+            }
+            if(focused.ElementsBeforeSelf().Count() > 0) {
+                Global.PrintLine($"{Tab()}...", ConsoleColor.White, ConsoleColor.Black);
+            }
+            Global.PrintLine($"{Tab()}<{focused.Name.LocalName}>", ConsoleColor.Green, ConsoleColor.Black);
+            tabs++;
+            foreach(XElement child in focused.Elements()) {
+                Global.PrintLine($"{Tab()}<{child.Name.LocalName}/>", ConsoleColor.White, ConsoleColor.Black);
+            }
+            tabs--;
+            Global.PrintLine($"{Tab()}</{focused.Name.LocalName}>", ConsoleColor.Green, ConsoleColor.Black);
+            if (focused.ElementsAfterSelf().Count() > 0) {
+                Global.PrintLine($"{Tab()}...", ConsoleColor.White, ConsoleColor.Black);
+            }
+            tabs--;
+            foreach (XElement ancestor in ancestors.Reverse()) {
+                Global.PrintLine($"{Tab()}</{ancestor.Name.LocalName}>", ConsoleColor.White, ConsoleColor.Black);
+                tabs--;
+            }
+
 
             i.Draw();
             s.Draw();
+
+            string Tab() => new string('\t', tabs);
         }
 
         public void Handle(ConsoleKeyInfo k) {
@@ -304,47 +370,87 @@ namespace Transgenesis {
             s.Handle(k);
 
             string input = i.Text;
-
             switch (k.Key) {
-                case ConsoleKey.Spacebar:
 
-                    if(input.Length > 0) {
-                        switch(input[0]) {
-                            case char c when c >= 'a' && c <= 'z':
-                                break;
-                            case char c when c >= 'A' && c <= 'Z':
-                                break;
-                            case '&':
-
-                                break;
-                        }
-                    }
+                case ConsoleKey.LeftArrow when (k.Modifiers & ConsoleModifiers.Control) != 0:
+                    focused = focused.Parent ?? focused;
                     break;
-            }
-            string[] parts = input.Split(' ');
-            if(parts.Length == 3) {
-                switch(parts[0]) {
-                    case "set": {
-                            string attribute = parts[1];
-                            //Calculate values for attribute
+                case ConsoleKey.RightArrow when (k.Modifiers & ConsoleModifiers.Control) != 0:
+                    focused = focused.Elements().FirstOrDefault() ?? focused;
+                    break;
+                case ConsoleKey.OemPlus when (k.Modifiers & ConsoleModifiers.Control) != 0:
+                    focused = focused.ElementsAfterSelf().FirstOrDefault() ?? focused;
+                    break;
+                case ConsoleKey.OemMinus when (k.Modifiers & ConsoleModifiers.Control) != 0:
+                    focused = focused.ElementsBeforeSelf().LastOrDefault() ?? focused;
+                    break;
 
-                            //var items = Global.GetSuggestions(input.Substring(p.Length).TrimStart(), all);
-                            //s.SetItems(items);
-                            break;
+                case ConsoleKey.Enter: {
+                        string[] parts = input.Split(' ');
+                        switch (parts[0]) {
+                            case "add":
+                                string elementName = parts[1];
+                                if(env.CanAddElement(focused, env.bases[focused], elementName, out XElement subtemplate)) {
+                                    var subelement = env.FromTemplate(subtemplate);
+                                    focused.Add(subelement);
+                                    i.Clear();
+                                }
+                                break;
+                            case "set": {
+                                string attribute = parts[1];
+                                string value = string.Join(' ', parts.Skip(2));
+                                if (value.Length > 0) {
+                                    focused.SetAttributeValue(attribute, value);
+                                } else {
+                                    focused.Attribute(attribute)?.Remove();
+                                }
+                                    i.Clear();
+                                break;
+                            }
+                            case "remove":
+                                //TO DO
+                                break;
                         }
-                }
-            } else {
-                Dictionary<string, Func<List<string>>> autocomplete = new Dictionary<string, Func<List<string>>> {
-                        {"", () => new List<string>{ "set", "add", "remove" } },
-                        {"set", () => env.bases[focused].GetValidAttributes() },
-                        {"add", () => Environment.GetAddableElements(focused, env.bases[focused]) },
-                        {"remove", () => Environment.GetRemovableElements(focused, env.bases[focused]) }
-                    };
-                string p = autocomplete.Keys.Last(prefix => input.StartsWith((prefix + " ").TrimStart()));
-                List<string> all = autocomplete[p]();
+                        break;
+                    }
+                default: {
 
-                var items = Global.GetSuggestions(input.Substring(p.Length).TrimStart(), all);
-                s.SetItems(items);
+                        string[] parts = input.Split(' ');
+                        if (parts.Length > 2) {
+                            switch (parts[0]) {
+                                case "set": {
+                                        string attribute = parts[1];
+                                        //Calculate values for attribute
+
+                                        //string rest = string.Join(' ', parts.Skip(2));
+
+
+                                        string rest = parts[2];
+                                        var all = env.GetAttributeValues(attribute);
+                                        if(focused.Att(attribute, out string value)) {
+                                            all.Insert(0, focused.Att(value));
+                                        }
+                                        
+                                        var items = Global.GetSuggestions(rest, all);
+                                        s.SetItems(items);
+                                        break;
+                                    }
+                            }
+                        } else {
+                            Dictionary<string, Func<List<string>>> autocomplete = new Dictionary<string, Func<List<string>>> {
+                                {"", () => new List<string>{ "set", "add", "remove" } },
+                                {"set", () => env.bases[focused].GetValidAttributes() },
+                                {"add", () => env.GetAddableElements(focused, env.bases[focused]) },
+                                {"remove", () => env.GetRemovableElements(focused, env.bases[focused]) }
+                            };
+                            string p = autocomplete.Keys.Last(prefix => input.StartsWith((prefix + " ").TrimStart()));
+                            List<string> all = autocomplete[p]();
+
+                            var items = Global.GetSuggestions(input.Substring(p.Length).TrimStart(), all);
+                            s.SetItems(items);
+                        }
+                        break;
+                    }
             }
 
             /*
