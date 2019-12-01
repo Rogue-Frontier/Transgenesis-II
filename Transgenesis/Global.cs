@@ -57,7 +57,7 @@ namespace Transgenesis {
             //(Console.ForegroundColor, Console.BackgroundColor) = f;
         }
         public static bool Att(this XElement e, string attrib, out string result) {
-            return (result = (string)e.Attribute("inherit")) != null;
+            return (result = e.Attribute(attrib)?.Value) != null;
         }
 
         public static List<HighlightEntry> GetSuggestions(string input, IEnumerable<string> items) {

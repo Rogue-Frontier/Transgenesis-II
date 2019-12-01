@@ -146,7 +146,7 @@ namespace Transgenesis {
 
             customAttributeValues = new Dictionary<string, List<string>>();
             foreach(var attributeType in hierarchy.Elements("AttributeType")) {
-                customAttributeValues[attributeType.Att("name")] = new List<string>(attributeType.Value.Split('\r', '\n').Where(s => !string.IsNullOrWhiteSpace(s)));
+                customAttributeValues[attributeType.Att("name")] = new List<string>(attributeType.Value.Replace("\t", "").Split('\r', '\n').Where(s => !string.IsNullOrWhiteSpace(s)));
             }
         }
         public bool CanAddElement(XElement element, XElement template, string subelement, out XElement subtemplate) {
@@ -608,16 +608,18 @@ namespace Transgenesis {
                                     break;
                                 }
                             case "set": {
-                                string attribute = parts[1];
-                                string value = string.Join(' ', parts.Skip(2));
-                                if (value.Length > 0) {
-                                    focused.SetAttributeValue(attribute, value);
-                                } else if(!string.IsNullOrEmpty(attribute)) {
-                                    focused.Attribute(attribute)?.Remove();
+                                    string attribute = parts[1];
+                                    string value = string.Join(' ', parts.Skip(2));
+                                    if (value.Length > 0) {
+                                        //Set the value
+                                        focused.SetAttributeValue(attribute, value);
+                                    } else if(!string.IsNullOrEmpty(attribute)) {
+                                        //Delete the attribute if we enter no value
+                                        focused.Attribute(attribute)?.Remove();
+                                    }
+                                    i.Clear();
+                                    break;
                                 }
-                                i.Clear();
-                                break;
-                            }
                             case "bind": {
                                     extension.updateTypeBindings(env);
                                     break;
@@ -929,10 +931,16 @@ namespace Transgenesis {
                 case ConsoleKey.UpArrow:
                     if (index > -1)
                         index--;
+                    else
+                        //Wrap around
+                        index = items.Count - 1;
                     break;
                 case ConsoleKey.DownArrow:
                     if (index + 1 < items.Count)
                         index++;
+                    else
+                        //Wrap around
+                        index = -1;
                     break;
                 case ConsoleKey.Spacebar:
                     /*
