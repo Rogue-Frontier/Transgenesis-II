@@ -4,13 +4,14 @@ using System.Text;
 using System.Xml.Linq;
 using System.Linq;
 using System.IO;
+using System.Xml;
 
 namespace Transgenesis {
     class TranscendenceExtension {
         TranscendenceExtension parent;
         public string path;
-        TypeManager types;
-        Dictionary<string, XElement> typemap;
+        public TypeManager types;
+        public Dictionary<string, XElement> typemap;
         HashSet<TranscendenceExtension> dependencies;
         HashSet<TranscendenceExtension> modules;
         public XElement structure;
@@ -26,7 +27,30 @@ namespace Transgenesis {
         }
 
         public void Save() {
-            File.WriteAllText(path, structure.ToString());
+            StringBuilder s = new StringBuilder();
+            s.AppendLine(@"<?xml version=""1.0"" encoding=""us-ascii""?>");
+            s.AppendLine($"!DOCTYPE {structure.Tag()}");
+            s.AppendLine("    [");
+
+            /*
+            (_, Dictionary<string, string> entity2unid) = types.BindAll();
+            foreach(string entity in entity2unid.Keys) {
+                s.AppendLine($@"    {entity, -32}""{entity2unid[entity]}""");
+            }
+            */
+            //TO DO: Display type elements
+            foreach(TypeElement e in types.elements) {
+                if(e is TypeEntry entry) {
+                    s.AppendLine($@"    {entry.entity,-32}""{entry.unid}""");
+                }
+                //TO DO: Handle other element types
+            }
+
+            //TO DO: Display bound types
+
+            s.AppendLine("    ]>");
+            s.Append(structure.ToString());
+            File.WriteAllText(path, s.ToString());
         }
 
         //Get a set of all the modules in this extension
@@ -315,7 +339,7 @@ namespace Transgenesis {
     }
 
     class TypeManager {
-        List<TypeElement> elements = new List<TypeElement>();  //TO DO: Make sure that entries and ranges are correctly sorted at extension loading time if no working metadata file is available
+        public List<TypeElement> elements = new List<TypeElement>();  //TO DO: Make sure that entries and ranges are correctly sorted at extension loading time if no working metadata file is available
 
         public (Dictionary<string, string>, Dictionary<string,string>) BindAll() {
             Dictionary<string, string> unid2entity = new Dictionary<string, string>();
@@ -373,19 +397,19 @@ namespace Transgenesis {
 	class Type : TypeElement {
 
         public string comment;
-        public string type;
+        public string entity;
         public Type() : this(Types.COMMENT_DEFAULT, Types.ENTITY_DEFAULT) {
             
         }
         public Type(String comment, String type) {
             this.comment = comment;
-            this.type = type;
+            this.entity = type;
         }
         public virtual void BindAll(Dictionary<string, string> unid2entity, Dictionary<string, string> entity2unid) {}
         public XElement GetXMLOutput() {
             XElement result = new XElement("Type");
             result.SetAttributeValue("comment", comment);
-            result.SetAttributeValue("type", type);
+            result.SetAttributeValue("entity", entity);
             return result;
         }
 	}
@@ -398,31 +422,41 @@ namespace Transgenesis {
         public TypeEntry(String unid) : base() {
             this.unid = unid;
         }
-        public TypeEntry(String comment, String unid, String type) : base(comment, type) {
+        public TypeEntry(string unid, string entity) : base(Types.COMMENT_DEFAULT, entity) {
+            this.unid = unid;
+        }
+        public TypeEntry(String comment, String unid, String entity) : base(comment, entity) {
             this.unid = unid;
         }
         public override void BindAll(Dictionary<string, string> unid2entity, Dictionary<string, string> entity2unid) {
-            Types.BindEntry(unid2entity, entity2unid, unid, type);
+            Types.BindEntry(unid2entity, entity2unid, unid, entity);
         }
-	}
+        public XElement GetXMLOutput() {
+            XElement result = new XElement("TypeEntry");
+            result.SetAttributeValue("comment", comment);
+            result.SetAttributeValue("unid", unid);
+            result.SetAttributeValue("entity", entity);
+            return result;
+        }
+    }
 	//Specifies a group of types that will get automatically-generated UNIDs
 	class TypeGroup : TypeElement {
 
-        protected string comment;
-        public List<string> types;
+        public string comment;
+        public List<string> entities;
 
         public TypeGroup() : this(Types.COMMENT_DEFAULT, new List<string>()) {
         }
-        public TypeGroup(String comment, List<string> types) {
+        public TypeGroup(String comment, List<string> entities) {
             this.comment = comment;
-            this.types = new List<string>();
-            this.types.AddRange(types);
+            this.entities = new List<string>();
+            this.entities.AddRange(entities);
         }
         public void BindAll(Dictionary<string, string> unid2entity, Dictionary<string, string> entity2unid) { }
         public XElement GetXMLOutput() {
             XElement result = new XElement("TypeGroup");
             result.SetAttributeValue("comment", comment);
-            result.SetAttributeValue("types", string.Join(' ', types));
+            result.SetAttributeValue("entities", string.Join(' ', entities));
             return result;
         }
 	}
@@ -437,7 +471,7 @@ namespace Transgenesis {
             this.unid_min = unid_min;
             this.unid_max = unid_max;
         }
-        public TypeRange(String comment, String unid_min, String unid_max, List<string> types) : base(comment, types) {
+        public TypeRange(String comment, String unid_min, String unid_max, List<string> entities) : base(comment, entities) {
             this.unid_min = unid_min;
             this.unid_max = unid_max;
         }
@@ -452,7 +486,7 @@ namespace Transgenesis {
             result.SetAttributeValue("comment", comment);
             result.SetAttributeValue("unid_min", unid_min);
             result.SetAttributeValue("unid_max", unid_max);
-            result.SetAttributeValue("types", string.Join(' ', types));
+            result.SetAttributeValue("entities", string.Join(' ', entities));
             return result;
         }
         public void BindAll(Dictionary<string, string> unid2entity, Dictionary<string, string> entity2unid) {
@@ -469,11 +503,11 @@ namespace Transgenesis {
             }
             if (min != null || max != null) {
                 int maxCount = ((int)max - (int)min) + 1;
-                if (types.Count > maxCount) {
+                if (entities.Count > maxCount) {
                     //JOptionPane.showMessageDialog(null, "Not enough UNIDs within range");
                 }
-                for (int i = 0; i < types.Count && i < maxCount; i++) {
-                    Types.BindEntry(unid2entity, entity2unid, ((int)(min + i)).ToString("X"), types[i]);
+                for (int i = 0; i < entities.Count && i < maxCount; i++) {
+                    Types.BindEntry(unid2entity, entity2unid, ((int)(min + i)).ToString("X"), entities[i]);
                 }
             }
         }

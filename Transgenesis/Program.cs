@@ -104,9 +104,14 @@ namespace Transgenesis {
                 }
                 screens.Peek().Update();
                 if (draw) {
+                    (int left, int top) = (Console.WindowLeft, Console.WindowTop);
+
                     screens.Peek().Draw();
                     Console.BackgroundColor = ConsoleColor.Black;
                     Console.ForegroundColor = ConsoleColor.White;
+
+                    (Console.WindowLeft, Console.WindowTop) = (left, top);
+
                 }
                 draw = false;
             }
@@ -191,7 +196,8 @@ namespace Transgenesis {
         public List<string> GetRemovableElements(XElement element, XElement template) {
             return template.Elements("E").Select(subtemplate => InitializeTemplate(subtemplate)).Where(subtemplate => CanRemoveElement(element, subtemplate)).Select(subtemplate => subtemplate.Att("name")).ToList();
         }
-        public bool LoadExtension(XElement structure, string path) {
+        public bool LoadExtension(XmlDocument doc, string path) {
+            var structure = XElement.Parse(doc.OuterXml);
             if (Enum.TryParse(structure.Tag(), out ExtensionTypes ex)) {
                 XElement template;
                 switch (ex) {
@@ -212,8 +218,15 @@ namespace Transgenesis {
                 }
                 template = InitializeTemplate(template);
                 var extension = new TranscendenceExtension(path, structure);
+
                 extensions[path] = extension;
                 LoadWithTemplate(structure, template);
+
+                //Load entities
+                foreach(XmlEntity entity in doc.DocumentType.Entities) {
+                    extension.types.elements.Add(new TypeEntry(entity.InnerText, entity.Name));
+
+                }
 
                 return true;
             }
@@ -406,18 +419,58 @@ namespace Transgenesis {
                                 env.CreateExtension(ex, parts[2]);
                             }
                             break;
-                        case "load":
-                            string path = string.Join(' ', parts.Skip(1));
-                            XmlDocument doc = new XmlDocument();
-                            doc.Load(path);
-                            var structure = XElement.Parse(doc.OuterXml);
-                            env.LoadExtension(structure, path);
-                            break;
+                        case "unload": {
+                                string path = Path.GetFullPath(string.Join(' ', parts.Skip(1)).Trim());
+                                if (env.extensions.ContainsKey(path)) {
+                                    env.extensions.Remove(path);
+                                    //TO DO
+                                    //Clear data from bases
+                                }
+                                break;
+                            }
+                        case "load": {
+                                string path = Path.GetFullPath(string.Join(' ', parts.Skip(1)).Trim());
+                                string xml = File.ReadAllText(path);
+                                //Cheat the XML reader by escaping ampersands so we don't parse entities
+                                xml = xml.Replace("&", "&amp;");
+                                XmlDocument doc = new XmlDocument();
+                                doc.LoadXml(xml);
+
+                                env.LoadExtension(doc, path);
+
+                                break;
+                            }
+                        case "open": {
+                                string path = Path.GetFullPath(string.Join(' ', parts.Skip(1)).Trim());
+                                string xml = File.ReadAllText(path);
+                                //Cheat the XML reader by escaping ampersands so we don't parse entities
+                                xml = xml.Replace("&", "&amp;");
+                                XmlDocument doc = new XmlDocument();
+                                doc.LoadXml(xml);
+
+                                env.LoadExtension(doc, path);
+
+                                if (env.extensions.TryGetValue(path, out TranscendenceExtension result)) {
+                                    screens.Push(new ExtensionEditor(screens, env, result));
+                                }
+
+                                break;
+                            }
                         case "edit":
                             if(parts.Length == 2) {
                                 string ext = parts[1];
                                 if(env.extensions.TryGetValue(ext, out TranscendenceExtension result)) {
                                     screens.Push(new ExtensionEditor(screens, env, result));
+                                }
+                            } else {
+
+                            }
+                            break;
+                        case "types":
+                            if (parts.Length == 2) {
+                                string ext = parts[1];
+                                if (env.extensions.TryGetValue(ext, out TranscendenceExtension result)) {
+                                    screens.Push(new TypeEditor(screens, env, result));
                                 }
                             } else {
 
@@ -432,10 +485,12 @@ namespace Transgenesis {
                     break;
                 default:
                     Dictionary<string, Func<List<string>>> autocomplete = new Dictionary<string, Func<List<string>>> {
-                        {"", () => new List<string>{ "create", "load", "edit" } },
+                        {"", () => new List<string>{ "create", "load", "edit", "open", "unload" } },
                         {"create", () => new List<string>{ "TranscendenceAdventure", "TranscendenceExtension", "TranscendenceLibrary", "TranscendenceModule" } },
                         {"load", () => Directory.GetFiles(Directory.GetCurrentDirectory(), "*.xml").ToList() },
-                        {"edit", () => env.extensions.Keys.ToList() }
+                        {"unload", () => env.extensions.Keys.ToList() },
+                        {"edit", () => env.extensions.Keys.ToList() },
+                        {"open", () => Directory.GetFiles(Directory.GetCurrentDirectory(), "*.xml").ToList() }
                     };
                     string str = autocomplete.Keys.Last(prefix => input.StartsWith((prefix + " ").TrimStart()));
                     List<string> all = autocomplete[str]();
@@ -484,7 +539,7 @@ namespace Transgenesis {
             }
             int tabs = 0;
             foreach(XElement ancestor in ancestors) {
-                Global.PrintLine($"{Tab()}<{ancestor.Name.LocalName}{ShowContextAttributes(ancestor)}>", ConsoleColor.White, ConsoleColor.Black);
+                Global.PrintLine($"{Tab()}<{ancestor.Tag()}{ShowContextAttributes(ancestor)}>", ConsoleColor.White, ConsoleColor.Black);
                 tabs++;
             }
             if(focused.ElementsBeforeSelf().Count() > 0) {
@@ -494,15 +549,15 @@ namespace Transgenesis {
 
             //See if we need to print any children
             if(focused.HasElements) {
-                Global.PrintLine($"{Tab()}<{focused.Name.LocalName}{ShowAttributes(focused)}>", ConsoleColor.Green, ConsoleColor.Black);
+                Global.PrintLine($"{Tab()}<{focused.Tag()}{ShowAttributes(focused)}>", ConsoleColor.Green, ConsoleColor.Black);
                 tabs++;
                 foreach (XElement child in focused.Elements()) {
-                    Global.PrintLine($"{Tab()}<{child.Name.LocalName}/>", ConsoleColor.White, ConsoleColor.Black);
+                    Global.PrintLine($"{Tab()}<{child.Tag()}{ShowContextAttributes(child)}/>", ConsoleColor.White, ConsoleColor.Black);
                 }
                 tabs--;
-                Global.PrintLine($"{Tab()}</{focused.Name.LocalName}>", ConsoleColor.Green, ConsoleColor.Black);
+                Global.PrintLine($"{Tab()}</{focused.Tag()}>", ConsoleColor.Green, ConsoleColor.Black);
             } else {
-                Global.PrintLine($"{Tab()}<{focused.Name.LocalName}{ShowAttributes(focused)}/>", ConsoleColor.Green, ConsoleColor.Black);
+                Global.PrintLine($"{Tab()}<{focused.Tag()}{ShowAttributes(focused)}/>", ConsoleColor.Green, ConsoleColor.Black);
             }
 
 
@@ -524,12 +579,22 @@ namespace Transgenesis {
             string ShowContextAttributes(XElement element) {
                 Dictionary<string, string> attributes = new Dictionary<string, string>();
 
-                foreach(var key in new string[] { "unid"}) {
-                    if(element.Att(key, out string value)) {
-                        attributes[key] = value;
+                //If we have a few attributes, just show all of them inline
+                if(element.Attributes().Count() < 4) {
+                    foreach(var attribute in element.Attributes()) {
+                        attributes[attribute.Name.LocalName] = attribute.Value;
+                    }
+                } else {
+                    //Otherwise, just show the important ones
+                    foreach (var key in new string[] { "unid", "name" }) {
+                        if (element.Att(key, out string value)) {
+                            attributes[key] = value;
+                        }
                     }
                 }
-                bool inline = attributes.Count > 1;
+
+
+                bool inline = attributes.Count < 4;
                 bool more = attributes.Count < element.Attributes().Count();
                 return AttributesToString(attributes, inline, more);
             }
@@ -538,12 +603,12 @@ namespace Transgenesis {
                 foreach(var attribute in element.Attributes()) {
                     attributes[attribute.Name.LocalName] = attribute.Value;
                 }
-                bool inline = attributes.Count < 3;
+                bool inline = attributes.Count < 4;
                 return AttributesToString(attributes, inline, false);
             }
             string AttributesToString(Dictionary<string,string> attributes, bool inline, bool more) {
                 if (attributes.Count == 0) {
-                    return "";
+                    return more ? " ..." : "";
                 }
                 if (inline) {
                     StringBuilder result = new StringBuilder();
@@ -698,7 +763,7 @@ namespace Transgenesis {
                                     break;
                                 }
                             case "types": {
-
+                                    screens.Push(new TypeEditor(screens, env, extension));
                                     break;
                                 }
                             case "exit": {
@@ -771,6 +836,102 @@ namespace Transgenesis {
                 s.SetItems(items);
             }
             */
+        }
+
+        public void Update() {
+            i.Update();
+            s.Update();
+        }
+    }
+    class TypeEditor : Component {
+        Stack<Component> screens;
+        Environment env;
+        TranscendenceExtension extension;
+        XElement focused;
+
+        Input i;
+        Suggest s;
+
+        public TypeEditor(Stack<Component> screens, Environment env, TranscendenceExtension extension) {
+            this.screens = screens;
+            this.env = env;
+            this.extension = extension;
+            this.focused = extension.structure;
+
+            i = new Input();
+            s = new Suggest(i);
+        }
+        public void Draw() {
+            Console.Clear();
+
+            foreach(TypeElement e in extension.types.elements) {
+                if (e is TypeRange range) {
+                    //Display unid range
+                } else if (e is TypeGroup group) {
+                    //TO DO: If entity is bound, display unid and design
+                    Console.WriteLine(group.comment);
+                    foreach(var s in group.entities) {
+                        Console.WriteLine($"{s}{(extension.typemap.TryGetValue(s, out XElement design) ? design.Tag() : ""),-32}");
+                    }
+                } else if (e is TypeEntry entry) {
+                    Console.WriteLine($"{entry.entity,-32}{entry.unid, -32}{(extension.typemap.TryGetValue(entry.entity, out XElement design) ? design.Tag() : ""),-32}{entry.comment}");
+                } else if(e is Type entity) {
+                    Console.WriteLine($"{entity.entity, -32}{(extension.typemap.TryGetValue(entity.entity, out XElement design) ? design.Tag() : ""), -32}{entity.comment}");
+                }
+            }
+
+            i.Draw();
+            s.Draw();
+
+        }
+
+        public void Handle(ConsoleKeyInfo k) {
+            i.Handle(k);
+            s.Handle(k);
+
+            string input = i.Text;
+            switch (k.Key) {
+
+
+                case ConsoleKey.Enter: {
+                        string[] parts = input.Split(' ');
+                        switch (parts[0]) {
+                            case "entity":
+
+                                break;
+                            case "exit":
+                                screens.Pop();
+                                break;
+                        }
+                        break;
+                    }
+                //Allow Suggest/History to handle up/down arrows
+                case ConsoleKey.UpArrow:
+                case ConsoleKey.DownArrow:
+                    break;
+                default: {
+
+                        string[] parts = input.Split(' ');
+                        if (parts.Length > 2) {
+                            switch (parts[0]) {
+                                
+                            }
+                        } else {
+                            var empty = new List<string>();
+                            Dictionary<string, Func<List<string>>> autocomplete = new Dictionary<string, Func<List<string>>> {
+                                {"", () => new List<string>{ "entity", "type", "group", "range" } },
+
+                            };
+                            string p = autocomplete.Keys.Last(prefix => input.StartsWith((prefix + " ").TrimStart()));
+                            List<string> all = autocomplete[p]();
+
+                            var items = Global.GetSuggestions(input.Substring(p.Length).TrimStart(), all);
+                            s.SetItems(items);
+                        }
+                        break;
+                    }
+            }
+
         }
 
         public void Update() {
@@ -868,9 +1029,11 @@ namespace Transgenesis {
                     }
                 }
             }
+            /*
             for(int i = s.Length + 1; i < Console.WindowWidth; i++) {
                 Print(' ', ConsoleColor.White, ConsoleColor.Black);
             }
+            */
         }
     }
     class Tooltip : Component {
