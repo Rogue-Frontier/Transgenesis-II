@@ -254,14 +254,23 @@ namespace Transgenesis {
                             } else if (typemap[sub_type] == sub) {
                                 //Ignore if this element was bound earlier (such as during a Parent Type Binding).
                             } else if (typemap[sub_type].Tag().Equals(sub.Tag())) {
-							//If the UNID is bound to a Design with the same tag, then it's probably an override
-							    //out.println(getConsoleMessage2(sub.getName(), String.format("%-15s %s", "[Warning] Override Type:", sub_type)));
+                                //If the UNID is bound to a Design with the same tag, then it's probably an override
+                                //out.println(getConsoleMessage2(sub.getName(), String.format("%-15s %s", "[Warning] Override Type:", sub_type)));
+
+                                //Override for now
+                                typemap[sub_type] = sub;
                             } else {
 							    //out.println(getConsoleMessage2(sub.getName(), String.format("%-15s %s", "[Warning] Duplicate Type:", sub_type)));
                             }
                         } else {
-						    //Depending on the context, we will not be able to identify whether this is defining a completely nonexistent Type or overriding an external type
-						    //out.println(getConsoleMessage2(sub.getName(), String.format("%-15s %-31s %s", "[Warning] Unknown UNID:", sub_type + ";", "It may be an override for an unloaded dependency or it may be nonexistent")));
+                            //Depending on the context, we will not be able to identify whether this is defining a completely nonexistent Type or overriding an external type
+                            //out.println(getConsoleMessage2(sub.getName(), String.format("%-15s %-31s %s", "[Warning] Unknown UNID:", sub_type + ";", "It may be an override for an unloaded dependency or it may be nonexistent")));
+
+                            //For now, we track this type
+                            bool bindUnknown = true;
+                            if(bindUnknown) {
+                                typemap[sub_type] = sub;
+                            }
                         }
                     } else {
 					    //out.println(getConsoleMessage2(sub.getName(), "[Failure] Missing unid= attribute"));
@@ -289,7 +298,7 @@ namespace Transgenesis {
 
         public bool isUnbound() {
             //return getBindCode() != codes.getLastBindCode();
-            return false;
+            return true;
         }
         public bool isUnsaved() {
             //return getSaveCode() != codes.getLastSaveCode();

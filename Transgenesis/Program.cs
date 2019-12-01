@@ -11,6 +11,80 @@ using System.Linq;
 using System.Diagnostics;
 
 namespace Transgenesis {
+    class ConsoleManager {
+        public ConsoleManager(Point p) {
+            this.margin = p;
+        }
+
+        public Point margin;
+        ConsoleColor front = ConsoleColor.White, back = ConsoleColor.Black;
+
+        List<(Point, string)> lines = new List<(Point, string)>();
+        public Point GetCursorPosition() => new Point(Console.CursorLeft, Console.CursorTop);
+        public void ClearLines() => lines.Clear();
+        public void ClearScreen() {
+            lines.ForEach(t => {
+                (Point cursor, string s) = t;
+                Global.SetCursor(cursor);
+                Global.Print(new string(' ', s.Length), front, back);
+            });
+        }
+        public void ResetCursor() {
+            SetCursor(margin);
+        }
+        public void Write(string s, ConsoleColor? front, ConsoleColor? back) {
+            (Console.ForegroundColor, Console.BackgroundColor) = (front ?? this.front, back ?? this.back);
+            lines.Add((GetCursorPosition(), s));
+            Console.Write(s);
+        }
+        public void WriteLine(string s, ConsoleColor? front, ConsoleColor back) {
+            Write(s, front, back);
+            NextLine();
+        }
+        public void ResetLine() {
+            Console.SetCursorPosition(margin.X, Console.CursorTop);
+        }
+        public void NextLine() {
+            Console.CursorTop++;
+            ResetLine();
+        }
+        public void Draw(HighlightEntry h) {
+            var c = ConsoleColor.Green;
+            int highlightStart = h.highlightStart;
+            int highlightLength = h.highlightLength;
+            string str = h.str;
+            if (highlightStart != -1) {
+                Write(str.Substring(0, highlightStart), front, back);
+                if (highlightLength != 0) {
+                    Write(str.Substring(highlightStart, highlightLength), c, back);
+                    Write(str.Substring(highlightStart + highlightLength), front, back);
+                } else {
+                    Write(str.Substring(highlightStart), front, back);
+                }
+            } else {
+                Write(str, front, back);
+            }
+        }
+        public void DrawSelected(HighlightEntry h) {
+            var c = ConsoleColor.Green;
+            int highlightStart = h.highlightStart;
+            int highlightLength = h.highlightLength;
+
+            (ConsoleColor front, ConsoleColor back) = (this.back, this.front);
+            string str = h.str;
+            if (highlightStart != -1) {
+                Write(str.Substring(0, highlightStart), front, back);
+                if (highlightLength != 0) {
+                    Write(str.Substring(highlightStart, highlightLength), c, back);
+                    Write(str.Substring(highlightStart + highlightLength), front, back);
+                } else {
+                    Write(str.Substring(highlightStart), front, back);
+                }
+            } else {
+                Write(str, front, back);
+            }
+        }
+    }
     class Program {
 
         static void Main(string[] args) {
@@ -125,6 +199,15 @@ namespace Transgenesis {
                 bases[subelement] = initialized;
                 result.Add(subelement);
             }
+            //Initialize attributes to default values
+            foreach (XElement attributeType in template.Elements("A")) {
+                string attribute = attributeType.Att("name");
+                string value = attributeType.Att("value");
+                if(value != null) {
+                    result.SetAttributeValue(attribute, value);
+                }
+            }
+
             bases[result] = template;
             return result;
         }
@@ -246,7 +329,7 @@ namespace Transgenesis {
             this.screens = screens;
         }
         public void Draw() {
-
+            Console.Clear();
             Global.SetCursor(0, 0);
             Console.WriteLine("Transgenesis II");
             Console.WriteLine();
@@ -276,12 +359,10 @@ namespace Transgenesis {
                             if(Enum.TryParse<ExtensionTypes>(parts[1], out ExtensionTypes ex)) {
                                 env.CreateExtension(ex, parts[2]);
                             }
-
                             break;
                         case "load":
-                            for(int i = 1; i < parts.Length; i++) {
+                            string path = string.Join(' ', parts.Skip(1));
 
-                            }
                             break;
                         case "edit":
                             if(parts.Length == 2) {
@@ -351,19 +432,29 @@ namespace Transgenesis {
             }
             int tabs = 0;
             foreach(XElement ancestor in ancestors) {
-                Global.PrintLine($"{Tab()}<{ancestor.Name.LocalName}>", ConsoleColor.White, ConsoleColor.Black);
+                Global.PrintLine($"{Tab()}<{ancestor.Name.LocalName}{ShowContextAttributes(ancestor)}>", ConsoleColor.White, ConsoleColor.Black);
                 tabs++;
             }
             if(focused.ElementsBeforeSelf().Count() > 0) {
                 Global.PrintLine($"{Tab()}...", ConsoleColor.White, ConsoleColor.Black);
             }
-            Global.PrintLine($"{Tab()}<{focused.Name.LocalName}>", ConsoleColor.Green, ConsoleColor.Black);
-            tabs++;
-            foreach(XElement child in focused.Elements()) {
-                Global.PrintLine($"{Tab()}<{child.Name.LocalName}/>", ConsoleColor.White, ConsoleColor.Black);
+
+
+            //See if we need to print any children
+            if(focused.HasElements) {
+                Global.PrintLine($"{Tab()}<{focused.Name.LocalName}{ShowAttributes(focused)}>", ConsoleColor.Green, ConsoleColor.Black);
+                tabs++;
+                foreach (XElement child in focused.Elements()) {
+                    Global.PrintLine($"{Tab()}<{child.Name.LocalName}/>", ConsoleColor.White, ConsoleColor.Black);
+                }
+                tabs--;
+                Global.PrintLine($"{Tab()}</{focused.Name.LocalName}>", ConsoleColor.Green, ConsoleColor.Black);
+            } else {
+                Global.PrintLine($"{Tab()}<{focused.Name.LocalName}{ShowAttributes(focused)}/>", ConsoleColor.Green, ConsoleColor.Black);
             }
-            tabs--;
-            Global.PrintLine($"{Tab()}</{focused.Name.LocalName}>", ConsoleColor.Green, ConsoleColor.Black);
+
+
+
             if (focused.ElementsAfterSelf().Count() > 0) {
                 Global.PrintLine($"{Tab()}...", ConsoleColor.White, ConsoleColor.Black);
             }
@@ -378,6 +469,58 @@ namespace Transgenesis {
             s.Draw();
 
             string Tab() => new string('\t', tabs);
+            string ShowContextAttributes(XElement element) {
+                Dictionary<string, string> attributes = new Dictionary<string, string>();
+
+                foreach(var key in new string[] { "unid"}) {
+                    if(element.Att(key, out string value)) {
+                        attributes[key] = value;
+                    }
+                }
+                bool inline = attributes.Count > 1;
+                bool more = attributes.Count < element.Attributes().Count();
+                return AttributesToString(attributes, inline, more);
+            }
+            string ShowAttributes(XElement element) {
+                Dictionary<string, string> attributes = new Dictionary<string, string>();
+                foreach(var attribute in element.Attributes()) {
+                    attributes[attribute.Name.LocalName] = attribute.Value;
+                }
+                bool inline = attributes.Count < 3;
+                return AttributesToString(attributes, inline, false);
+            }
+            string AttributesToString(Dictionary<string,string> attributes, bool inline, bool more) {
+                if (attributes.Count == 0) {
+                    return "";
+                }
+                if (inline) {
+                    StringBuilder result = new StringBuilder();
+                    foreach (string key in attributes.Keys) {
+                        result.Append(" ");
+                        result.Append($@"{key}=""{attributes[key]}""");
+                    }
+                    if(more) {
+                        result.Append(" ");
+                        result.Append("...");
+                    }
+                    return result.ToString();
+                } else {
+                    StringBuilder result = new StringBuilder();
+                    result.Append(" ");
+                    string first = attributes.Keys.First();
+                    result.AppendLine($@"{first}=""{attributes[first]}""");
+                    tabs++;
+                    foreach (string key in attributes.Keys.Skip(1)) {
+                        result.AppendLine($@"{Tab()}{key}=""{attributes[key]}""");
+                    }
+                    if(more) {
+                        result.AppendLine($"{Tab()}...");
+                    }
+                    result.Append(Tab());
+                    tabs--;
+                    return result.ToString();
+                }
+            }
         }
 
         public void Handle(ConsoleKeyInfo k) {
@@ -403,60 +546,144 @@ namespace Transgenesis {
                 case ConsoleKey.Enter: {
                         string[] parts = input.Split(' ');
                         switch (parts[0]) {
-                            case "add":
-                                string elementName = parts[1];
-                                if(env.CanAddElement(focused, env.bases[focused], elementName, out XElement subtemplate)) {
-                                    var subelement = env.FromTemplate(subtemplate);
-                                    focused.Add(subelement);
-                                    i.Clear();
+                            case "add": {
+                                    string elementName = parts[1];
+                                    if (env.CanAddElement(focused, env.bases[focused], elementName, out XElement subtemplate)) {
+                                        var subelement = env.FromTemplate(subtemplate);
+                                        focused.Add(subelement);
+                                        i.Clear();
+                                    }
+                                    break;
                                 }
-                                break;
                             case "set": {
                                 string attribute = parts[1];
                                 string value = string.Join(' ', parts.Skip(2));
                                 if (value.Length > 0) {
                                     focused.SetAttributeValue(attribute, value);
-                                } else {
+                                } else if(!string.IsNullOrEmpty(attribute)) {
                                     focused.Attribute(attribute)?.Remove();
                                 }
-                                    i.Clear();
+                                i.Clear();
                                 break;
                             }
-                            case "remove":
-                                //TO DO
+                            case "bind": {
+                                    extension.updateTypeBindings(env);
+                                    break;
+                                }
+                            case "bindall": {
+                                    foreach (var ext in env.extensions.Values) {
+                                        ext.updateTypeBindings(env);
+                                    }
+                                    break;
+                                }
+                            case "save": {
+                                    extension.Save();
+                                    break;
+                                }
+                            case "saveall": {
+                                    foreach(var extension in env.extensions.Values) {
+                                        extension.Save();
+                                    }
+                                    break;
+                                }
+                            case "remove": {
+                                    //TO DO
+
+                                    //For now, this just removes the current element if it's not the root
+                                    var parent = focused.Parent;
+                                    if (parent != null && Environment.CanRemoveElement(parent, env.bases[focused])) {
+                                        focused.Remove();
+                                        focused = parent;
+                                    }
+                                    break;
+                                }
+                            case "moveup": {
+                                    var before = focused.ElementsBeforeSelf().LastOrDefault();
+                                    if (before != null) {
+                                        focused.Remove();
+                                        before.AddBeforeSelf(focused);
+                                    }
+                                    break;
+                                }
+                            case "movedown": {
+                                    var after = focused.ElementsBeforeSelf().LastOrDefault();
+                                    if (after != null) {
+                                        focused.Remove();
+                                        after.AddAfterSelf(focused);
+                                    }
+                                    break;
+                                }
+                            case "goto": {
+                                    //Go to the specified element
+                                    break;
+                                }
+                            case "root": {
+                                    while (focused.Parent != null) {
+                                        focused = focused.Parent;
+                                    }
+                                    break;
+                                }
+                            case "parent": {
+                                    focused = focused.Parent ?? focused;
+                                    break;
+                                }
+                            /*
+                            case "child":
+                                focused = focused.Elements().FirstOrDefault() ?? focused;
                                 break;
+                            */
+                            case "find":
+                                //Start from the focused element and find elements matching this criteria
+                                break;
+                            case "prev": {
+                                    focused = focused.ElementsAfterSelf().FirstOrDefault() ?? focused;
+                                    break;
+                                }
+                            case "next": {
+                                    focused = focused.ElementsBeforeSelf().LastOrDefault() ?? focused;
+                                    break;
+                                }
                         }
                         break;
                     }
+                //Allow Suggest/History to handle up/down arrows
+                case ConsoleKey.UpArrow:
+                case ConsoleKey.DownArrow:
+                    break;
                 default: {
 
                         string[] parts = input.Split(' ');
                         if (parts.Length > 2) {
                             switch (parts[0]) {
                                 case "set": {
+                                        //Suggest values for the attribute
                                         string attribute = parts[1];
-                                        //Calculate values for attribute
-
-                                        //string rest = string.Join(' ', parts.Skip(2));
-
-
-                                        string rest = parts[2];
                                         var all = env.GetAttributeValues(attribute);
                                         if(focused.Att(attribute, out string value)) {
                                             all.Insert(0, focused.Att(value));
                                         }
-                                        
+                                        string rest = string.Join(' ', parts.Skip(2));
                                         var items = Global.GetSuggestions(rest, all);
                                         s.SetItems(items);
                                         break;
                                     }
                             }
                         } else {
+                            var empty = new List<string>();
                             Dictionary<string, Func<List<string>>> autocomplete = new Dictionary<string, Func<List<string>>> {
                                 {"", () => new List<string>{ "set", "add", "remove" } },
                                 {"set", () => env.bases[focused].GetValidAttributes() },
+                                {"bind", () => empty },
+                                {"bindall", () => empty },
+                                {"save", () => empty },
+                                {"saveall", () => empty },
                                 {"add", () => env.GetAddableElements(focused, env.bases[focused]) },
-                                {"remove", () => env.GetRemovableElements(focused, env.bases[focused]) }
+                                {"remove", () => env.GetRemovableElements(focused, env.bases[focused]) },
+                                {"moveup", () => empty },
+                                {"movedown", () => empty },
+                                {"root", () => empty },
+                                {"parent", () => empty },
+
                             };
                             string p = autocomplete.Keys.Last(prefix => input.StartsWith((prefix + " ").TrimStart()));
                             List<string> all = autocomplete[p]();
@@ -517,12 +744,12 @@ namespace Transgenesis {
         public void Handle(ConsoleKeyInfo k) {
             if(k.KeyChar == 0) {
                 switch (k.Key) {
-                    case ConsoleKey.LeftArrow:
+                    case ConsoleKey.LeftArrow when (k.Modifiers & ConsoleModifiers.Control) == 0:
                         if (cursor > 0) {
                             cursor--;
                         }
                         break;
-                    case ConsoleKey.RightArrow:
+                    case ConsoleKey.RightArrow when (k.Modifiers & ConsoleModifiers.Control) == 0:
                         if (cursor < s.Length) {
                             cursor++;
                         }
@@ -531,9 +758,29 @@ namespace Transgenesis {
             } else {
                 switch(k.Key) {
                     case ConsoleKey.Backspace:
-                        if (s.Length > 0) {
-                            s.Remove(cursor - 1, 1);
-                            cursor--;
+                        if((k.Modifiers & ConsoleModifiers.Control) != 0) {
+                            //Make sure we have characters to delete
+                            if(cursor == 0) {
+                                break;
+                            }
+                            //If we are at a space, just delete it
+                            if(s[cursor-1] == ' ') {
+                                cursor--;
+                                s.Remove(cursor, 1);
+                            } else {
+                                //Otherwise, delete characters until we reach a space
+                                int length = 0;
+                                while(cursor > 0 && s[cursor - 1] != ' ') {
+                                    cursor--;
+                                    length++;
+                                }
+                                s.Remove(cursor, length);
+                            }
+                        } else {
+                            if (s.Length > 0) {
+                                cursor--;
+                                s.Remove(cursor, 1);
+                            }
                         }
                         break;
                     case ConsoleKey.Enter:
@@ -571,28 +818,54 @@ namespace Transgenesis {
             }
         }
     }
+    class Tooltip : Component {
+        public void Draw() {
+        }
+        public void Handle(ConsoleKeyInfo k) {
+        }
+        public void Update() {
+        }
+    }
+    class History : Component {
+        Input i;
+        int index = -1;
+        public List<string> items;
+        public void Update() {
+        }
+
+        public void Handle(ConsoleKeyInfo k) {
+        }
+
+        public void Draw() {
+        }
+    }
     class Suggest : Component {
         Input i;
         int index = -1;
-        public List<HighlightEntry> options;
+        public List<HighlightEntry> items;
         public Point pos = new Point(0, 25);
+        ConsoleManager c;
         public Suggest(Input i) {
             this.i = i;
-            options = new List<HighlightEntry>();
+            items = new List<HighlightEntry>();
+
+            c = new ConsoleManager(pos);
         }
         public Suggest(Input i, List<HighlightEntry> options) {
             this.i = i;
-            this.options = options;
+            this.items = options;
+
+            c = new ConsoleManager(pos);
         }
         public void SetItems(List<HighlightEntry> items) {
-            options = items;
+            this.items = items;
             index = Math.Min(index, items.Count - 1);
             if(index == -1 && items.Count > 0) {
                 index = 0;
             }
         }
         public void Clear() {
-            options.Clear();
+            items.Clear();
             index = -1;
         }
         public void Update() {
@@ -605,7 +878,7 @@ namespace Transgenesis {
                         index--;
                     break;
                 case ConsoleKey.DownArrow:
-                    if (index + 1 < options.Count)
+                    if (index + 1 < items.Count)
                         index++;
                     break;
                 case ConsoleKey.Spacebar:
@@ -618,7 +891,7 @@ namespace Transgenesis {
                     */
                     if (index == -1)
                         break;
-                    var item = options[index];
+                    var item = items[index];
                     if (item.highlightLength == item.str.Length) {
                         break;
                     }
@@ -632,18 +905,29 @@ namespace Transgenesis {
         }
         public void Draw() {
             Global.SetCursor(pos);
-            for(int i = 0; i < options.Count; i++) {
-                var o = options[i];
+            c.ClearLines();
+            c.ResetCursor();
+            for (int i = 0; i < items.Count; i++) {
+                var o = items[i];
                 if (index == i) {
-                    o.Draw(ConsoleColor.Black, ConsoleColor.White);
+                    c.DrawSelected(o);
                 } else {
-                    o.Draw(ConsoleColor.White, ConsoleColor.Black);
+                    c.Draw(o);
                 }
-                ClearAhead();
-                Console.WriteLine();
+                c.NextLine();
+
+                //Begin a new column of items
+                if (i % 16 == 15) {
+                    c.margin.X += 32;
+                    c.ResetCursor();
+                }
+
+                //ClearAhead();
+                //Console.WriteLine();
             }
-            
-            ClearBelow(pos.Y + 6);
+            //Reset the margin after we're done printing
+            c.margin = pos;
+            //ClearBelow(pos.Y + 6);
         }
     }
 

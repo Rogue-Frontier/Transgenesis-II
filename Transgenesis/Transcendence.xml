@@ -387,7 +387,7 @@
             <A name="startingPos" valueType="STRING"/>
             <A name="startingShipCriteria" valueType="STRING"/>
             <A name="startingSystem" valueType="STRING"/>
-            <A name="UNID" valueType="UNID"/>
+            <A name="unid" valueType="UNID"/>
             <A name="welcomeMessage" valueType="STRING"/>
             <E category="?" name="EncounterOverrides">
                 <E category="*" name="Encounter">
@@ -444,7 +444,7 @@
         <A name="name" valueType="STRING"/>
         <A name="private" valueType="BOOLEAN"/>
         <A name="release" valueType="INTEGER"/>
-        <A name="UNID" valueType="UNID"/>
+        <A name="unid" valueType="UNID"/>
         <A name="usesXML" valueType="BOOLEAN"/>
         <A name="version" valueType="STRING"/>
         <E category="*" name="Module">
@@ -1390,7 +1390,7 @@
             <A name="obsolete" valueType="WHOLE"/>
             <A name="plural" valueType="STRING"/>
             <A name="shortName" valueType="STRING"/>
-            <A name="UNID" valueType="UNID"/>
+            <A name="unid" valueType="UNID"/>
             <E category="?" name="Relationships">
                 <E category="*" name="Relationship">
                     <A name="disposition" valueType="DISPOSITION"/>
@@ -1586,7 +1586,7 @@
             <A name="stealth" valueType="INTEGER"/>
             <A name="structuralHitPoints" valueType="STRING"/>
             <A name="timeStopImmune" valueType="BOOLEAN"/>
-            <A name="UNID" valueType="UNID"/>
+            <A name="unid" valueType="UNID"/>
             <A name="unique" valueType="UNIQUE"/>
             <A name="virtual" valueType="BOOLEAN"/>
             <A name="x" valueType="INTEGER"/>
@@ -1701,7 +1701,7 @@
 			<A name="spaceEnvironmentTileSize" valueType="TILE_SIZE"/>
 			<A name="spaceScale" valueType="INTEGER"/>
 			<A name="timeScale" valueType="INTEGER"/>
-			<A name="UNID" valueType="UNID"/>
+			<A name="unid" valueType="UNID"/>
 			<E	name="SystemGroup"	category="1">
 				<E	name="AntiTrojan"	inherit="SystemType:SystemGroup"	category="*">
 					<A	name="debugOnly"	valueType="BOOLEAN"/>

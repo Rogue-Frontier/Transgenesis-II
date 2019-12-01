@@ -5,6 +5,7 @@ namespace Transgenesis {
         public int highlightStart = -1;
         public int highlightLength = 0;
         public string str;
+        /*
         public void Draw(ConsoleColor front = ConsoleColor.White, ConsoleColor back = ConsoleColor.Black) {
             var c = ConsoleColor.Green;
             if (highlightStart != -1) {
@@ -19,5 +20,6 @@ namespace Transgenesis {
                 Print(str);
             }
         }
+        */
     }
 }
