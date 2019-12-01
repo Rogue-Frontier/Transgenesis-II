@@ -146,7 +146,7 @@ namespace Transgenesis {
 
             customAttributeValues = new Dictionary<string, List<string>>();
             foreach(var attributeType in hierarchy.Elements("AttributeType")) {
-                customAttributeValues[attributeType.Att("name")] = new List<string>(attributeType.Value.Split('\r', '\n'));
+                customAttributeValues[attributeType.Att("name")] = new List<string>(attributeType.Value.Split('\r', '\n').Where(s => !string.IsNullOrWhiteSpace(s)));
             }
         }
         public bool CanAddElement(XElement element, XElement template, string subelement, out XElement subtemplate) {
@@ -190,6 +190,49 @@ namespace Transgenesis {
         }
         public List<string> GetRemovableElements(XElement element, XElement template) {
             return template.Elements("E").Select(subtemplate => InitializeTemplate(subtemplate)).Where(subtemplate => CanRemoveElement(element, subtemplate)).Select(subtemplate => subtemplate.Att("name")).ToList();
+        }
+        public bool LoadExtension(XElement structure, string path) {
+            if (Enum.TryParse(structure.Tag(), out ExtensionTypes ex)) {
+                XElement template;
+                switch (ex) {
+                    case ExtensionTypes.TranscendenceAdventure:
+                        template = coreStructures["TranscendenceAdventure"];
+                        break;
+                    case ExtensionTypes.TranscendenceExtension:
+                        template = coreStructures["TranscendenceExtension"];
+                        break;
+                    case ExtensionTypes.TranscendenceLibrary:
+                        template = coreStructures["TranscendenceLibrary"];
+                        break;
+                    case ExtensionTypes.TranscendenceModule:
+                        template = coreStructures["TranscendenceModule"];
+                        break;
+                    default:
+                        return false;
+                }
+                template = InitializeTemplate(template);
+                var extension = new TranscendenceExtension(path, structure);
+                extensions[path] = extension;
+                LoadWithTemplate(structure, template);
+
+                return true;
+            }
+            return false;
+        }
+        public void LoadWithTemplate(XElement structure, XElement template) {
+            bases[structure] = template;
+            Dictionary<string, XElement> subtemplates = new Dictionary<string, XElement>();
+            foreach(XElement subtemplate in template.Elements()) {
+                var initialized = InitializeTemplate(subtemplate);
+                string name = initialized.Att("name");
+                subtemplates[name] = initialized;
+            }
+            foreach(XElement subelement in structure.Elements()) {
+                string name = subelement.Tag();
+                if(subtemplates.TryGetValue(name, out XElement subtemplate) || subtemplates.TryGetValue("*", out subtemplate)) {
+                    LoadWithTemplate(subelement, subtemplate);
+                }
+            }
         }
         public XElement FromTemplate(XElement template) {
             XElement result = new XElement(template.Att("name"));
@@ -266,11 +309,11 @@ namespace Transgenesis {
             */
             return result;
         }
-        public List<string> GetAttributeValues(string attributeName) {
-            if(customAttributeValues.TryGetValue(attributeName, out List<string> values)) {
+        public List<string> GetAttributeValues(string attributeType) {
+            if(customAttributeValues.TryGetValue(attributeType, out List<string> values)) {
                 return values;
-            } else if(Enum.TryParse<AttributeTypes>(attributeName, out AttributeTypes attributeType)) {
-                switch(attributeType) {
+            } else if(Enum.TryParse<AttributeTypes>(attributeType, out AttributeTypes attributeTypeEnum)) {
+                switch(attributeTypeEnum) {
                     //TO DO
                     default:
                         return new List<string>();
@@ -295,9 +338,10 @@ namespace Transgenesis {
                     template = coreStructures["TranscendenceLibrary"];
                     break;
                 case ExtensionTypes.TranscendenceModule:
-                default:
                     template = coreStructures["TranscendenceModule"];
                     break;
+                default:
+                    return;
             }
             template = InitializeTemplate(template);
             structure = FromTemplate(template);
@@ -311,6 +355,8 @@ namespace Transgenesis {
         }
     }
     enum ExtensionTypes {
+        TranscendenceUniverse,
+        CoreLibrary,
         TranscendenceAdventure,
         TranscendenceExtension,
         TranscendenceLibrary,
@@ -336,7 +382,7 @@ namespace Transgenesis {
 
             Console.WriteLine($"Extensions Loaded: {env.extensions.Count}");
             foreach(var e in env.extensions.Values) {
-                Console.WriteLine($"{e.structure.Name.LocalName}{e.path, 18}");
+                Console.WriteLine($"{e.structure.Name.LocalName, -24}{e.structure.Att("name") ?? "", -24}{e.path}");
             }
 
             i.Draw();
@@ -356,13 +402,16 @@ namespace Transgenesis {
                     string[] parts = command.Split(' ');
                     switch(parts.First().ToLower()) {
                         case "create":
-                            if(Enum.TryParse<ExtensionTypes>(parts[1], out ExtensionTypes ex)) {
+                            if(Enum.TryParse(parts[1], out ExtensionTypes ex)) {
                                 env.CreateExtension(ex, parts[2]);
                             }
                             break;
                         case "load":
                             string path = string.Join(' ', parts.Skip(1));
-
+                            XmlDocument doc = new XmlDocument();
+                            doc.Load(path);
+                            var structure = XElement.Parse(doc.OuterXml);
+                            env.LoadExtension(structure, path);
                             break;
                         case "edit":
                             if(parts.Length == 2) {
@@ -377,21 +426,24 @@ namespace Transgenesis {
                     }
 
                     break;
-
-                default:
+                //Allow Suggest/History to handle up/down arrows
+                case ConsoleKey.UpArrow:
+                case ConsoleKey.DownArrow:
                     break;
-            }
-            Dictionary<string, Func<List<string>>> autocomplete = new Dictionary<string, Func<List<string>>> {
+                default:
+                    Dictionary<string, Func<List<string>>> autocomplete = new Dictionary<string, Func<List<string>>> {
                         {"", () => new List<string>{ "create", "load", "edit" } },
                         {"create", () => new List<string>{ "TranscendenceAdventure", "TranscendenceExtension", "TranscendenceLibrary", "TranscendenceModule" } },
                         {"load", () => Directory.GetFiles(Directory.GetCurrentDirectory(), "*.xml").ToList() },
                         {"edit", () => env.extensions.Keys.ToList() }
                     };
-            string str = autocomplete.Keys.Last(prefix => input.StartsWith((prefix + " ").TrimStart()));
-            List<string> all = autocomplete[str]();
+                    string str = autocomplete.Keys.Last(prefix => input.StartsWith((prefix + " ").TrimStart()));
+                    List<string> all = autocomplete[str]();
 
-            var items = Global.GetSuggestions(input.Substring(str.Length).TrimStart(), all);
-            s.SetItems(items);
+                    var items = Global.GetSuggestions(input.Substring(str.Length).TrimStart(), all);
+                    s.SetItems(items);
+                    break;
+            }
 
         }
 
@@ -635,12 +687,20 @@ namespace Transgenesis {
                             case "find":
                                 //Start from the focused element and find elements matching this criteria
                                 break;
-                            case "prev": {
+                            case "next": {
                                     focused = focused.ElementsAfterSelf().FirstOrDefault() ?? focused;
                                     break;
                                 }
-                            case "next": {
+                            case "prev": {
                                     focused = focused.ElementsBeforeSelf().LastOrDefault() ?? focused;
+                                    break;
+                                }
+                            case "types": {
+
+                                    break;
+                                }
+                            case "exit": {
+                                    screens.Pop();
                                     break;
                                 }
                         }
@@ -658,9 +718,10 @@ namespace Transgenesis {
                                 case "set": {
                                         //Suggest values for the attribute
                                         string attribute = parts[1];
-                                        var all = env.GetAttributeValues(attribute);
+                                        string attributeType = env.bases[focused].Elements("A").FirstOrDefault(e => e.Att("name") == attribute).Att("valueType");
+                                        var all = env.GetAttributeValues(attributeType);
                                         if(focused.Att(attribute, out string value)) {
-                                            all.Insert(0, focused.Att(value));
+                                            all.Insert(0, value);
                                         }
                                         string rest = string.Join(' ', parts.Skip(2));
                                         var items = Global.GetSuggestions(rest, all);
@@ -671,18 +732,10 @@ namespace Transgenesis {
                         } else {
                             var empty = new List<string>();
                             Dictionary<string, Func<List<string>>> autocomplete = new Dictionary<string, Func<List<string>>> {
-                                {"", () => new List<string>{ "set", "add", "remove" } },
+                                {"", () => new List<string>{ "set", "add", "remove", "bind", "bindall", "save", "saveall", "moveup", "movedown", "root", "parent", "next", "prev", "types", "exit" } },
                                 {"set", () => env.bases[focused].GetValidAttributes() },
-                                {"bind", () => empty },
-                                {"bindall", () => empty },
-                                {"save", () => empty },
-                                {"saveall", () => empty },
                                 {"add", () => env.GetAddableElements(focused, env.bases[focused]) },
                                 {"remove", () => env.GetRemovableElements(focused, env.bases[focused]) },
-                                {"moveup", () => empty },
-                                {"movedown", () => empty },
-                                {"root", () => empty },
-                                {"parent", () => empty },
 
                             };
                             string p = autocomplete.Keys.Last(prefix => input.StartsWith((prefix + " ").TrimStart()));

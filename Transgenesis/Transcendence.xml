@@ -371,7 +371,14 @@
 		gladiator
 		zoanthrope
 	</AttributeType>
-	
+	<E category="mod" name="TranscendenceUniverse" inherit="Hierarchy:TranscendenceLibrary">
+		<E category="*" name="CoreLibrary">
+			<A name="filename" valueType="FILENAME"/>
+		</E>
+		<E category="*" name="TranscendenceAdventure">
+			<A name="filename" valueType="FILENAME"/>
+		</E>
+	</E>
     <E category="1" name="TranscendenceAdventure" inherit="Hierarchy:TranscendenceExtension">
         <E category="1" name="AdventureDesc" inherit="DesignTypeBase">
             <A name="adventureUNID" valueType="UNID"/>
@@ -432,6 +439,7 @@
 
     </E>
 	<E category="mod" name="TranscendenceExtension" inherit="Hierarchy:TranscendenceLibrary"/>
+	<E category="mod" name="CoreLibrary" inherit="Hierarchy:TranscendenceLibrary"/>
     <E category="mod" name="TranscendenceLibrary" inherit="Hierarchy:TranscendenceModule">
         <A name="apiVersion" valueType="INTEGER"/>
         <A name="autoInclude" valueType="BOOLEAN"/>

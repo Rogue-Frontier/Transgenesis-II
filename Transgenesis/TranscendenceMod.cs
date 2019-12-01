@@ -315,7 +315,7 @@ namespace Transgenesis {
     }
 
     class TypeManager {
-        List<TypeElement> elements;  //TO DO: Make sure that entries and ranges are correctly sorted at extension loading time if no working metadata file is available
+        List<TypeElement> elements = new List<TypeElement>();  //TO DO: Make sure that entries and ranges are correctly sorted at extension loading time if no working metadata file is available
 
         public (Dictionary<string, string>, Dictionary<string,string>) BindAll() {
             Dictionary<string, string> unid2entity = new Dictionary<string, string>();
