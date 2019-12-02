@@ -147,7 +147,10 @@ namespace Transgenesis {
             foreach(XElement subelement in structure.Elements()) {
                 string name = subelement.Tag();
                 if(subtemplates.TryGetValue(name, out XElement subtemplate) || subtemplates.TryGetValue("*", out subtemplate)) {
+                    //Initialize subelement base
                     LoadWithTemplate(subelement, subtemplate);
+                } else {
+                    //Otherwise this element has no base
                 }
             }
         }

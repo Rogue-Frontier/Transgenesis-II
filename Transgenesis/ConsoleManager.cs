@@ -4,6 +4,12 @@ using System.Drawing;
 using static Transgenesis.Global;
 
 namespace Transgenesis {
+    class Theme {
+        public ConsoleColor front = ConsoleColor.White, back = ConsoleColor.Black;
+        public void Deconstruct(out ConsoleColor front, out ConsoleColor back) {
+            (front, back) = (this.front, this.back);
+        }
+    }
     class ConsoleManager {
         public ConsoleManager(Point p) {
             this.margin = p;
@@ -15,12 +21,16 @@ namespace Transgenesis {
         List<(Point, string)> lines = new List<(Point, string)>();
         public Point GetCursorPosition() => new Point(Console.CursorLeft, Console.CursorTop);
         public void ClearLines() => lines.Clear();
-        public void ClearScreen() {
+        public void Clear() {
+            ClearLines();
+            Console.Clear();
+            /*
             lines.ForEach(t => {
                 (Point cursor, string s) = t;
                 Global.SetCursor(cursor);
                 Global.Print(new string(' ', s.Length), front, back);
             });
+            */
         }
         public void ResetCursor() {
             SetCursor(margin);

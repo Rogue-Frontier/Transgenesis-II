@@ -54,7 +54,7 @@ namespace Transgenesis {
                 case ConsoleKey.Enter:
                     string command = i.Text;
                     i.Clear();
-
+                    s.Clear();
                     string[] parts = command.Split(' ');
                     switch (parts.First().ToLower()) {
                         case "create":
@@ -70,7 +70,7 @@ namespace Transgenesis {
                                 break;
                             }
                         case "reloadall": {
-                                var extensions = env.extensions.Values;
+                                var extensions = new List<TranscendenceExtension>(env.extensions.Values);
                                 foreach (var e in extensions) {
                                     env.Unload(e);
                                 }
@@ -106,7 +106,7 @@ namespace Transgenesis {
                                 if (env.extensions.TryGetValue(path, out TranscendenceExtension existing)) {
                                     env.Unload(existing);
                                 }
-                                Load(path, true);
+                                LoadFolder(path, true);
                                 break;
                             }
                         case "load": {
@@ -115,7 +115,7 @@ namespace Transgenesis {
                                 if(env.extensions.TryGetValue(path, out TranscendenceExtension existing)) {
                                     //env.Unload(existing);
                                 } else {
-                                    Load(path);
+                                    LoadFolder(path);
                                 }
                                 
                                 break;
@@ -127,7 +127,7 @@ namespace Transgenesis {
                                     //env.Unload(existing);
                                     LoadModules(existing);
                                 } else {
-                                    Load(path, true);
+                                    LoadFolder(path, true);
                                 }
                                 
 
@@ -187,9 +187,17 @@ namespace Transgenesis {
 
             void LoadFolder(string path, bool modules = false) {
                 if(Directory.Exists(path)) {
-                    LoadFolder(path, modules);
+                    var files = Directory.GetFiles(path);
+                    foreach (var subpath in files) {
+                        LoadFolder(subpath, modules);
+                    }
+
+                    var directories = Directory.GetDirectories(path);
+                    foreach (var subpath in directories) {
+                        LoadFolder(subpath, modules);
+                    }
                 }
-                if(File.Exists(path)) {
+                if(File.Exists(path) && Path.GetExtension(path)==".xml") {
                     Load(path, modules);
                 }
             }
