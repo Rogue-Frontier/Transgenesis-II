@@ -18,27 +18,29 @@ namespace Transgenesis {
         Input i;
         Suggest s;
         Environment env;
+        ConsoleManager c;
 
         public Commander(Stack<IComponent> screens) {
-            i = new Input();
-            s = new Suggest(i);
+            c = new ConsoleManager(new Point(0, 0));
+            i = new Input(c);
+            s = new Suggest(i, c);
             env = new Environment();
             this.screens = screens;
         }
         public void Draw() {
-            Console.Clear();
-            Global.SetCursor(0, 0);
-            Console.WriteLine("Transgenesis II");
-            Console.WriteLine();
+            c.Clear();
+            c.SetCursor(new Point(0, 0));
+            c.WriteLine("Transgenesis II");
+            c.NextLine();
 
-            Console.WriteLine($"Extensions Loaded: {env.extensions.Count}");
+            c.WriteLine($"Extensions Loaded: {env.extensions.Count}");
             foreach (var e in env.extensions.Values) {
                 if(e.structure.Att("name", out string name) || (e.parent != null && e.parent.structure.Att("name", out name))) {
                     name = $@"""{name}""";
                 } else {
                     name = "";
                 }
-                Console.WriteLine($"{e.structure.Name.LocalName,-24}{name,-32}{e.path}");
+                c.WriteLine($"{e.structure.Name.LocalName,-24}{name,-32}{e.path}");
             }
 
             i.Draw();
@@ -136,7 +138,7 @@ namespace Transgenesis {
                         case "open": {
                                 string path = Path.GetFullPath(string.Join(' ', parts.Skip(1)).Trim());
                                 if (env.extensions.TryGetValue(path, out TranscendenceExtension result)) {
-                                    screens.Push(new ExtensionEditor(screens, env, result));
+                                    screens.Push(new ExtensionEditor(screens, env, result, c));
                                 }
 
                                 break;
@@ -145,7 +147,7 @@ namespace Transgenesis {
                             if (parts.Length == 2) {
                                 string ext = parts[1];
                                 if (env.extensions.TryGetValue(ext, out TranscendenceExtension result)) {
-                                    screens.Push(new ExtensionEditor(screens, env, result));
+                                    screens.Push(new ExtensionEditor(screens, env, result, c));
                                 }
                             } else {
 
@@ -155,7 +157,7 @@ namespace Transgenesis {
                             if (parts.Length == 2) {
                                 string ext = parts[1];
                                 if (env.extensions.TryGetValue(ext, out TranscendenceExtension result)) {
-                                    screens.Push(new TypeEditor(screens, env, result));
+                                    screens.Push(new TypeEditor(screens, env, result, c));
                                 }
                             } else {
 
@@ -234,20 +236,21 @@ namespace Transgenesis {
         Stack<IComponent> screens;
         Environment env;
         TranscendenceExtension extension;
+        ConsoleManager c;
 
         XElement focused;
 
         Input i;
         Suggest s;
 
-        public ExtensionEditor(Stack<IComponent> screens, Environment env, TranscendenceExtension extension) {
+        public ExtensionEditor(Stack<IComponent> screens, Environment env, TranscendenceExtension extension, ConsoleManager c) {
             this.screens = screens;
             this.env = env;
             this.extension = extension;
             this.focused = extension.structure;
 
-            i = new Input();
-            s = new Suggest(i);
+            i = new Input(c);
+            s = new Suggest(i, c);
         }
         public void Draw() {
             Console.Clear();
@@ -485,7 +488,7 @@ namespace Transgenesis {
                                     break;
                                 }
                             case "types": {
-                                    screens.Push(new TypeEditor(screens, env, extension));
+                                    screens.Push(new TypeEditor(screens, env, extension, c));
                                     break;
                                 }
                             case "exit": {
@@ -570,18 +573,20 @@ namespace Transgenesis {
         Environment env;
         TranscendenceExtension extension;
         XElement focused;
+        ConsoleManager c;
 
         Input i;
         Suggest s;
 
-        public TypeEditor(Stack<IComponent> screens, Environment env, TranscendenceExtension extension) {
+        public TypeEditor(Stack<IComponent> screens, Environment env, TranscendenceExtension extension, ConsoleManager c) {
             this.screens = screens;
             this.env = env;
             this.extension = extension;
             this.focused = extension.structure;
+            this.c = c;
 
-            i = new Input();
-            s = new Suggest(i);
+            i = new Input(c);
+            s = new Suggest(i, c);
         }
         public void Draw() {
             Console.Clear();
@@ -662,6 +667,7 @@ namespace Transgenesis {
         }
     }
     class Input : IComponent {
+        ConsoleManager c;
         private StringBuilder s = new StringBuilder();
         public int cursor = 0;
         public string Text {
@@ -671,6 +677,9 @@ namespace Transgenesis {
                 s.Append(value);
                 cursor = s.Length;
             }
+        }
+        public Input(ConsoleManager c) {
+            this.c = c;
         }
         public Point pos = new Point(0, 24);
         public void Clear() {
@@ -736,18 +745,17 @@ namespace Transgenesis {
             }
         }
         public void Draw() {
-            Global.SetCursor(pos);
-
+            c.SetCursor(pos);
             if (cursor == s.Length) {
-                Print(Text, ConsoleColor.White, ConsoleColor.Black);
-                Print(" ", ConsoleColor.Black, ConsoleColor.White);
+                c.Write(Text);
+                c.Write(" ");
             } else {
                 string text = Text;
                 for (int i = 0; i < text.Length; i++) {
                     if (i == cursor) {
-                        Print(text[i], ConsoleColor.Black, ConsoleColor.White);
+                        c.WriteInvert(text[i]);
                     } else {
-                        Print(text[i], ConsoleColor.White, ConsoleColor.Black);
+                        c.Write(text[i]);
                     }
                 }
             }
@@ -785,17 +793,16 @@ namespace Transgenesis {
         public List<HighlightEntry> items;
         public Point pos = new Point(0, 25);
         ConsoleManager c;
-        public Suggest(Input i) {
+        public Suggest(Input i, ConsoleManager c) {
             this.i = i;
             items = new List<HighlightEntry>();
-
-            c = new ConsoleManager(pos);
+            this.c = c;
         }
-        public Suggest(Input i, List<HighlightEntry> options) {
+        public Suggest(Input i, List<HighlightEntry> options, ConsoleManager c) {
             this.i = i;
             this.items = options;
 
-            c = new ConsoleManager(pos);
+            this.c = c;
         }
         public void SetItems(List<HighlightEntry> items) {
             this.items = items;
@@ -850,9 +857,7 @@ namespace Transgenesis {
             }
         }
         public void Draw() {
-            Global.SetCursor(pos);
-            c.ClearLines();
-            c.ResetCursor();
+            c.SetCursor(pos);
             for (int i = 0; i < items.Count; i++) {
                 var o = items[i];
                 if (index == i) {

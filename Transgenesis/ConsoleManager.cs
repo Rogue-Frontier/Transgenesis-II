@@ -5,7 +5,7 @@ using static Transgenesis.Global;
 
 namespace Transgenesis {
     class Theme {
-        public ConsoleColor front = ConsoleColor.White, back = ConsoleColor.Black;
+        public ConsoleColor front = ConsoleColor.Cyan, back = ConsoleColor.Black;
         public void Deconstruct(out ConsoleColor front, out ConsoleColor back) {
             (front, back) = (this.front, this.back);
         }
@@ -13,10 +13,11 @@ namespace Transgenesis {
     class ConsoleManager {
         public ConsoleManager(Point p) {
             this.margin = p;
+            theme = new Theme();
         }
 
         public Point margin;
-        ConsoleColor front = ConsoleColor.White, back = ConsoleColor.Black;
+        Theme theme;
 
         List<(Point, string)> lines = new List<(Point, string)>();
         public Point GetCursorPosition() => new Point(Console.CursorLeft, Console.CursorTop);
@@ -32,15 +33,26 @@ namespace Transgenesis {
             });
             */
         }
+        public void SetCursor(Point p) => Global.SetCursor(p);
         public void ResetCursor() {
             SetCursor(margin);
         }
-        public void Write(string s, ConsoleColor? front, ConsoleColor? back) {
-            (Console.ForegroundColor, Console.BackgroundColor) = (front ?? this.front, back ?? this.back);
+        public void Write(string s, ConsoleColor? front = null, ConsoleColor? back = null) {
+            (Console.ForegroundColor, Console.BackgroundColor) = (front ?? theme.front, back ?? theme.back);
             lines.Add((GetCursorPosition(), s));
             Console.Write(s);
         }
-        public void WriteLine(string s, ConsoleColor? front, ConsoleColor back) {
+        public void Write(char c, ConsoleColor? front = null, ConsoleColor? back = null) {
+            (Console.ForegroundColor, Console.BackgroundColor) = (front ?? theme.front, back ?? theme.back);
+            lines.Add((GetCursorPosition(), c.ToString()));
+            Console.Write(c);
+        }
+        public void WriteInvert(char c, ConsoleColor? front = null, ConsoleColor? back = null) {
+            (Console.BackgroundColor, Console.ForegroundColor) = (front ?? theme.front, back ?? theme.back);
+            lines.Add((GetCursorPosition(), c.ToString()));
+            Console.Write(c);
+        }
+        public void WriteLine(string s, ConsoleColor? front = null, ConsoleColor? back = null) {
             Write(s, front, back);
             NextLine();
         }
@@ -56,6 +68,8 @@ namespace Transgenesis {
             int highlightStart = h.highlightStart;
             int highlightLength = h.highlightLength;
             string str = h.str;
+
+            (var front, var back) = theme;
             if (highlightStart != -1) {
                 Write(str.Substring(0, highlightStart), front, back);
                 if (highlightLength != 0) {
@@ -73,15 +87,15 @@ namespace Transgenesis {
             int highlightStart = h.highlightStart;
             int highlightLength = h.highlightLength;
 
-            (ConsoleColor front, ConsoleColor back) = (this.back, this.front);
+            (var front, var back) = theme;
             string str = h.str;
             if (highlightStart != -1) {
-                Write(str.Substring(0, highlightStart), front, back);
+                Write(str.Substring(0, highlightStart), back, front);
                 if (highlightLength != 0) {
-                    Write(str.Substring(highlightStart, highlightLength), c, back);
-                    Write(str.Substring(highlightStart + highlightLength), front, back);
+                    Write(str.Substring(highlightStart, highlightLength), c, front);
+                    Write(str.Substring(highlightStart + highlightLength), back, front);
                 } else {
-                    Write(str.Substring(highlightStart), front, back);
+                    Write(str.Substring(highlightStart), back, front);
                 }
             } else {
                 Write(str, front, back);
