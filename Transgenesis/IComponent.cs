@@ -33,7 +33,12 @@ namespace Transgenesis {
 
             Console.WriteLine($"Extensions Loaded: {env.extensions.Count}");
             foreach (var e in env.extensions.Values) {
-                Console.WriteLine($"{e.structure.Name.LocalName,-24}{e.structure.Att("name") ?? "",-24}{e.path}");
+                if(e.structure.Att("name", out string name) || (e.parent != null && e.parent.structure.Att("name", out name))) {
+                    name = $@"""{name}""";
+                } else {
+                    name = "";
+                }
+                Console.WriteLine($"{e.structure.Name.LocalName,-24}{name,-32}{e.path}");
             }
 
             i.Draw();
@@ -59,35 +64,77 @@ namespace Transgenesis {
                             break;
                         case "unload": {
                                 string path = Path.GetFullPath(string.Join(' ', parts.Skip(1)).Trim());
-                                if (env.extensions.ContainsKey(path)) {
-                                    env.extensions.Remove(path);
-                                    //TO DO
-                                    //Clear data from bases
+                                if (env.extensions.TryGetValue(path, out TranscendenceExtension existing)) {
+                                    env.Unload(existing);
                                 }
+                                break;
+                            }
+                        case "reloadall": {
+                                var extensions = env.extensions.Values;
+                                foreach (var e in extensions) {
+                                    env.Unload(e);
+                                }
+                                foreach(var e in extensions) {
+                                    Load(e.path);
+                                }
+                                break;
+                            }
+                        case "reloadallmodules": {
+                                var extensions = env.extensions.Values;
+                                foreach (var e in extensions) {
+                                    env.Unload(e);
+                                }
+                                foreach(var e in extensions) {
+                                    //If this extension was already reloaded due to a parent extension, skip it
+                                    if(env.extensions.ContainsKey(e.path)) {
+                                        continue;
+                                    }
+                                    Load(e.path, true);
+                                }
+                                break;
+                            }
+                        case "reload": {
+                                string path = Path.GetFullPath(string.Join(' ', parts.Skip(1)).Trim());
+                                if (env.extensions.TryGetValue(path, out TranscendenceExtension existing)) {
+                                    env.Unload(existing);
+                                }
+                                Load(path);
+                                break;
+                            }
+                        case "reloadmodules": {
+                                string path = Path.GetFullPath(string.Join(' ', parts.Skip(1)).Trim());
+                                if (env.extensions.TryGetValue(path, out TranscendenceExtension existing)) {
+                                    env.Unload(existing);
+                                }
+                                Load(path, true);
                                 break;
                             }
                         case "load": {
                                 string path = Path.GetFullPath(string.Join(' ', parts.Skip(1)).Trim());
-                                string xml = File.ReadAllText(path);
-                                //Cheat the XML reader by escaping ampersands so we don't parse entities
-                                xml = xml.Replace("&", "&amp;");
-                                XmlDocument doc = new XmlDocument();
-                                doc.LoadXml(xml);
-
-                                env.LoadExtension(doc, path);
+                                //Don't reload the extension
+                                if(env.extensions.TryGetValue(path, out TranscendenceExtension existing)) {
+                                    //env.Unload(existing);
+                                } else {
+                                    Load(path);
+                                }
+                                
+                                break;
+                            }
+                        case "loadmodules": {
+                                string path = Path.GetFullPath(string.Join(' ', parts.Skip(1)).Trim());
+                                //Don't reload the extension
+                                if (env.extensions.TryGetValue(path, out TranscendenceExtension existing)) {
+                                    //env.Unload(existing);
+                                    LoadModules(existing);
+                                } else {
+                                    Load(path, true);
+                                }
+                                
 
                                 break;
                             }
                         case "open": {
                                 string path = Path.GetFullPath(string.Join(' ', parts.Skip(1)).Trim());
-                                string xml = File.ReadAllText(path);
-                                //Cheat the XML reader by escaping ampersands so we don't parse entities
-                                xml = xml.Replace("&", "&amp;");
-                                XmlDocument doc = new XmlDocument();
-                                doc.LoadXml(xml);
-
-                                env.LoadExtension(doc, path);
-
                                 if (env.extensions.TryGetValue(path, out TranscendenceExtension result)) {
                                     screens.Push(new ExtensionEditor(screens, env, result));
                                 }
@@ -138,6 +185,35 @@ namespace Transgenesis {
                     break;
             }
 
+            void LoadFolder(string path, bool modules = false) {
+                if(Directory.Exists(path)) {
+                    LoadFolder(path, modules);
+                }
+                if(File.Exists(path)) {
+                    Load(path, modules);
+                }
+            }
+            void Load(string path, bool modules = false) {
+                string xml = File.ReadAllText(path);
+                //Cheat the XML reader by escaping ampersands so we don't parse entities
+                //xml = xml.Replace("&", "&amp;");
+                XmlDocument doc = new XmlDocument();
+                doc.LoadXml(xml);
+
+                env.LoadExtension(doc, path, out TranscendenceExtension e);
+                if(modules) {
+                    LoadModules(e);
+                }
+            }
+            void LoadModules(TranscendenceExtension e) {
+                foreach (var module in e.structure.Elements()) {
+                    if (module.Tag() == "Module" || module.Tag() == "CoreLibrary") {
+                        string filename = module.Att("filename");
+                        string path = Path.Combine(Directory.GetParent(e.path).FullName, filename);
+                        Load(path, true);
+                    }
+                }
+            }
         }
 
         public void Update() {
@@ -507,14 +583,14 @@ namespace Transgenesis {
                     //Display unid range
                 } else if (e is TypeGroup group) {
                     //TO DO: If entity is bound, display unid and design
-                    Console.WriteLine(group.comment);
+                    //Console.WriteLine(group.comment);
                     foreach (var s in group.entities) {
                         Console.WriteLine($"{s}{(extension.typemap.TryGetValue(s, out XElement design) ? design.Tag() : ""),-32}");
                     }
                 } else if (e is TypeEntry entry) {
-                    Console.WriteLine($"{entry.entity,-32}{entry.unid,-32}{(extension.typemap.TryGetValue(entry.entity, out XElement design) ? design.Tag() : ""),-32}{entry.comment}");
+                    Console.WriteLine($"{entry.entity,-32}{entry.unid,-32}{(extension.typemap.TryGetValue(entry.entity, out XElement design) ? design.Tag() : ""),-32}"); //{entry.comment}
                 } else if (e is Type entity) {
-                    Console.WriteLine($"{entity.entity,-32}{(extension.typemap.TryGetValue(entity.entity, out XElement design) ? design.Tag() : ""),-32}{entity.comment}");
+                    Console.WriteLine($"{entity.entity,-32}{(extension.typemap.TryGetValue(entity.entity, out XElement design) ? design.Tag() : ""),-32}"); //{entity.comment}
                 }
             }
 

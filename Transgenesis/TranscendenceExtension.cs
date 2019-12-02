@@ -8,7 +8,7 @@ using System.Xml;
 
 namespace Transgenesis {
     class TranscendenceExtension {
-        TranscendenceExtension parent;
+        public TranscendenceExtension parent;
         public string path;
         public TypeManager types;
         public Dictionary<string, XElement> typemap;
@@ -354,6 +354,7 @@ namespace Transgenesis {
                 }
             }
             definedUNIDs.ForEach(e => e.BindAll(unid2entity, entity2unid));
+            //TO DO: Type and TypeGroup need to auto-generate UNIDs
             generatedUNIDs.ForEach(e => e.BindAll(unid2entity, entity2unid));
             return (unid2entity, entity2unid);
         }
@@ -396,44 +397,39 @@ namespace Transgenesis {
 	//Specifies a single type that will get an automatically-generated UNID
 	class Type : TypeElement {
 
-        public string comment;
+        //public string comment;
         public string entity;
-        public Type() : this(Types.COMMENT_DEFAULT, Types.ENTITY_DEFAULT) {
-            
-        }
+        /*
         public Type(String comment, String type) {
             this.comment = comment;
             this.entity = type;
         }
-        public virtual void BindAll(Dictionary<string, string> unid2entity, Dictionary<string, string> entity2unid) {}
+        */
+        public Type(string type) {
+            this.entity = type;
+        }
+        public void BindAll(Dictionary<string, string> unid2entity, Dictionary<string, string> entity2unid) {}
         public XElement GetXMLOutput() {
             XElement result = new XElement("Type");
-            result.SetAttributeValue("comment", comment);
+            //result.SetAttributeValue("comment", comment);
             result.SetAttributeValue("entity", entity);
             return result;
         }
 	}
 
     //Specifies a single type bound to a UNID
-    class TypeEntry : Type {
-        public string unid;
-        public TypeEntry() : this(Types.UNID_DEFAULT) {
-        }
-        public TypeEntry(String unid) : base() {
+    class TypeEntry : TypeElement {
+        public string unid, entity;
+        public TypeEntry(string unid, string entity) {
             this.unid = unid;
+            this.entity = entity;
         }
-        public TypeEntry(string unid, string entity) : base(Types.COMMENT_DEFAULT, entity) {
-            this.unid = unid;
-        }
-        public TypeEntry(String comment, String unid, String entity) : base(comment, entity) {
-            this.unid = unid;
-        }
-        public override void BindAll(Dictionary<string, string> unid2entity, Dictionary<string, string> entity2unid) {
+        public void BindAll(Dictionary<string, string> unid2entity, Dictionary<string, string> entity2unid) {
             Types.BindEntry(unid2entity, entity2unid, unid, entity);
         }
         public XElement GetXMLOutput() {
             XElement result = new XElement("TypeEntry");
-            result.SetAttributeValue("comment", comment);
+            //result.SetAttributeValue("comment", comment);
             result.SetAttributeValue("unid", unid);
             result.SetAttributeValue("entity", entity);
             return result;
@@ -442,9 +438,9 @@ namespace Transgenesis {
 	//Specifies a group of types that will get automatically-generated UNIDs
 	class TypeGroup : TypeElement {
 
-        public string comment;
+        //public string comment;
         public List<string> entities;
-
+        /*
         public TypeGroup() : this(Types.COMMENT_DEFAULT, new List<string>()) {
         }
         public TypeGroup(String comment, List<string> entities) {
@@ -452,38 +448,39 @@ namespace Transgenesis {
             this.entities = new List<string>();
             this.entities.AddRange(entities);
         }
+        */
+        public TypeGroup(List<string> entities) {
+            //this.comment = comment;
+            this.entities = new List<string>(entities);
+        }
         public void BindAll(Dictionary<string, string> unid2entity, Dictionary<string, string> entity2unid) { }
         public XElement GetXMLOutput() {
             XElement result = new XElement("TypeGroup");
-            result.SetAttributeValue("comment", comment);
+            //result.SetAttributeValue("comment", comment);
             result.SetAttributeValue("entities", string.Join(' ', entities));
             return result;
         }
 	}
 	        //Specifies a group of types bound to a range of UNIDs on an interval
-	class TypeRange : TypeGroup {
+	class TypeRange : TypeElement {
 
-        public String unid_min, unid_max;
+        public string unid_min, unid_max;
+        List<string> entities;
         public TypeRange() :
             this("[Min UNID]", "[Max UNID]") {
         }
-        public TypeRange(String unid_min, String unid_max) : base() {
+        public TypeRange(string unid_min, string unid_max) : base() {
+            this.unid_min = unid_min;
+            this.unid_max = unid_max;
+            entities = new List<string>();
+        }
+        public TypeRange(string comment, string unid_min, string unid_max, List<string> entities) {
             this.unid_min = unid_min;
             this.unid_max = unid_max;
         }
-        public TypeRange(String comment, String unid_min, String unid_max, List<string> entities) : base(comment, entities) {
-            this.unid_min = unid_min;
-            this.unid_max = unid_max;
-        }
-        public String getUNIDMin() {
-            return unid_min;
-        }
-        public String getUNIDMax() {
-            return unid_max;
-        }
-        public XElement getXMLOutput() {
+        public XElement GetXMLOutput() {
             XElement result = new XElement("TypeRange");
-            result.SetAttributeValue("comment", comment);
+            //result.SetAttributeValue("comment", comment);
             result.SetAttributeValue("unid_min", unid_min);
             result.SetAttributeValue("unid_max", unid_max);
             result.SetAttributeValue("entities", string.Join(' ', entities));

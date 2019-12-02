@@ -80,7 +80,20 @@ namespace Transgenesis {
         public List<string> GetRemovableElements(XElement element, XElement template) {
             return template.Elements("E").Select(subtemplate => InitializeTemplate(subtemplate)).Where(subtemplate => CanRemoveElement(element, subtemplate)).Select(subtemplate => subtemplate.Att("name")).ToList();
         }
-        public bool LoadExtension(XmlDocument doc, string path) {
+        public void Unload(TranscendenceExtension e) {
+            extensions.Remove(e.path);
+            //TO DO
+            //Clear data from bases
+            Unload(e.structure);
+
+            void Unload(XElement element) {
+                bases.Remove(element);
+                foreach(var subelement in element.Elements()) {
+                    Unload(subelement);
+                }
+            }
+        }
+        public bool LoadExtension(XmlDocument doc, string path, out TranscendenceExtension e) {
             var structure = XElement.Parse(doc.OuterXml);
             if (Enum.TryParse(structure.Tag(), out ExtensionTypes ex)) {
                 XElement template;
@@ -98,22 +111,29 @@ namespace Transgenesis {
                         template = coreStructures["TranscendenceModule"];
                         break;
                     default:
+                        e = null;
                         return false;
                 }
                 template = InitializeTemplate(template);
                 var extension = new TranscendenceExtension(path, structure);
 
+                if(extensions.TryGetValue(path, out TranscendenceExtension existing)) {
+                    Unload(existing);
+                }
+
                 extensions[path] = extension;
                 LoadWithTemplate(structure, template);
 
                 //Load entities
-                foreach(XmlEntity entity in doc.DocumentType.Entities) {
-                    extension.types.elements.Add(new TypeEntry(entity.InnerText, entity.Name));
-
+                if(doc?.DocumentType?.Entities != null) {
+                    foreach (XmlEntity entity in doc.DocumentType.Entities) {
+                        extension.types.elements.Add(new TypeEntry(entity.InnerText, entity.Name));
+                    }
                 }
-
+                e = extension;
                 return true;
             }
+            e = null;
             return false;
         }
         public void LoadWithTemplate(XElement structure, XElement template) {
