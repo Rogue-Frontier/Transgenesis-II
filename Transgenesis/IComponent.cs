@@ -59,11 +59,45 @@ namespace Transgenesis {
                     s.Clear();
                     string[] parts = command.Split(' ');
                     switch (parts.First().ToLower()) {
-                        case "create":
-                            if (Enum.TryParse(parts[1], out ExtensionTypes ex)) {
-                                env.CreateExtension(ex, parts[2]);
+                        case "theme": {
+                                var theme = c.theme;
+                                if (parts.Length == 1) {
+                                    Reset();
+                                    break;
+                                }
+                                switch (parts[1]) {
+                                    case "blue":
+                                        theme.front = Color.FromArgb(0x0069E7);
+                                        theme.highlight = Color.White;
+                                        break;
+                                    case "green":
+                                        theme.front = Color.FromArgb(0xA8B70E);
+                                        theme.highlight = Color.Chocolate;
+                                        break;
+                                    case "pine":
+                                        theme.front = Color.FromArgb(0x00766B);
+                                        theme.highlight = Color.Magenta;
+                                        break;
+                                    case "orange":
+                                        theme.front = Color.FromArgb(0xFF9207);
+                                        theme.highlight = Color.Blue;
+                                        break;
+                                    default:
+                                        Reset();
+                                        break;
+                                }
+                                void Reset() {
+                                    theme.front = Color.White;
+                                    theme.highlight = Color.Green;
+                                }
+                                break;
                             }
-                            break;
+                        case "create": {
+                                if (Enum.TryParse(parts[1], out ExtensionTypes ex)) {
+                                    env.CreateExtension(ex, parts[2]);
+                                }
+                                break;
+                            }
                         case "unload": {
                                 string path = Path.GetFullPath(string.Join(' ', parts.Skip(1)).Trim());
                                 if (env.extensions.TryGetValue(path, out TranscendenceExtension existing)) {
@@ -107,7 +141,11 @@ namespace Transgenesis {
                                 string path = Path.GetFullPath(string.Join(' ', parts.Skip(1)).Trim());
                                 if (env.extensions.TryGetValue(path, out TranscendenceExtension existing)) {
                                     env.Unload(existing);
+                                    foreach (var module in env.extensions.Values.Where(e => e.parent == existing)) {
+                                        env.Unload(module);
+                                    }
                                 }
+                                
                                 LoadFolder(path, true);
                                 break;
                             }
@@ -143,28 +181,21 @@ namespace Transgenesis {
 
                                 break;
                             }
-                        case "edit":
-                            if (parts.Length == 2) {
-                                string ext = parts[1];
-                                if (env.extensions.TryGetValue(ext, out TranscendenceExtension result)) {
+                        case "edit": {
+                                string path = Path.GetFullPath(string.Join(' ', parts.Skip(1)).Trim());
+                                if (env.extensions.TryGetValue(path, out TranscendenceExtension result)) {
                                     screens.Push(new ExtensionEditor(screens, env, result, c));
                                 }
-                            } else {
-
+                                break;
                             }
-                            break;
-                        case "types":
-                            if (parts.Length == 2) {
-                                string ext = parts[1];
-                                if (env.extensions.TryGetValue(ext, out TranscendenceExtension result)) {
+                        case "types": {
+                                string path = Path.GetFullPath(string.Join(' ', parts.Skip(1)).Trim());
+                                if (env.extensions.TryGetValue(path, out TranscendenceExtension result)) {
                                     screens.Push(new TypeEditor(screens, env, result, c));
                                 }
-                            } else {
-
+                                break;
                             }
-                            break;
                     }
-
                     break;
                 //Allow Suggest/History to handle up/down arrows
                 case ConsoleKey.UpArrow:
@@ -172,12 +203,16 @@ namespace Transgenesis {
                     break;
                 default:
                     Dictionary<string, Func<List<string>>> autocomplete = new Dictionary<string, Func<List<string>>> {
-                        {"", () => new List<string>{ "create", "load", "edit", "open", "unload" } },
+                        {"", () => new List<string>{ "types", "theme", "create", "load", "unload", "edit", "open", "reload", "reloadmodules", "reloadall", "reloadallmodules", "load", "loadmodules" } },
+                        {"theme", () => new List<string>{ "blue", "green", "pine", "orange", "default"} },
                         {"create", () => new List<string>{ "TranscendenceAdventure", "TranscendenceExtension", "TranscendenceLibrary", "TranscendenceModule" } },
                         {"load", () => Directory.GetFiles(Directory.GetCurrentDirectory(), "*.xml").ToList() },
+                        {"loadmodules", () => Directory.GetFiles(Directory.GetCurrentDirectory(), "*.xml").ToList() },
                         {"unload", () => env.extensions.Keys.ToList() },
                         {"edit", () => env.extensions.Keys.ToList() },
-                        {"open", () => Directory.GetFiles(Directory.GetCurrentDirectory(), "*.xml").ToList() }
+                        {"open", () => Directory.GetFiles(Directory.GetCurrentDirectory(), "*.xml").ToList() },
+                        {"reload", () => env.extensions.Keys.ToList() },
+                        {"reloadmodules", () => env.extensions.Keys.ToList() },
                     };
                     string str = autocomplete.Keys.Last(prefix => input.StartsWith((prefix + " ").TrimStart()));
                     List<string> all = autocomplete[str]();
@@ -248,9 +283,10 @@ namespace Transgenesis {
             this.env = env;
             this.extension = extension;
             this.focused = extension.structure;
-
+            this.c = c;
             i = new Input(c);
             s = new Suggest(i, c);
+
         }
         public void Draw() {
             Console.Clear();
