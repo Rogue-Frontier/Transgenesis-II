@@ -252,7 +252,7 @@ namespace Transgenesis {
             void Load(string path, bool modules = false) {
                 string xml = File.ReadAllText(path);
                 //Cheat the XML reader by escaping ampersands so we don't parse entities
-                //xml = xml.Replace("&", "&amp;");
+                xml = xml.Replace("&", "&amp;");
                 XmlDocument doc = new XmlDocument();
                 doc.LoadXml(xml);
 

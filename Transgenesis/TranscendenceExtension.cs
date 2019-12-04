@@ -172,21 +172,8 @@ namespace Transgenesis {
                         String libraryPath = Path.Combine(Path.GetRelativePath(path, ".."), sub.Att("filename"));
 				//out.println(getConsoleMessage("[General] Looking for " + subName + " " + libraryPath));
                         //Make sure that Library Types are defined in our TypeManager so that they always work in-game
-                        found = false;
-                        foreach (TranscendenceExtension m in e.extensions.Values) {
-                            if (
-                                    m.structure.Name.LocalName.Equals(structure.Name.LocalName) &&
-                                    Path.GetFullPath(m.path).Equals(libraryPath)) {
-                                dependencies.Add(m);
-                                found = true;
-                                break;
-                            }
-                        }
-
-                        if (!found) {
-					//out.println(getConsoleMessage("[Warning] " + subName + " " + libraryPath + " could not be found. It may be unloaded."));
-                        } else {
-					//out.println(getConsoleMessage("[Success] " + subName + " " + libraryPath + " found."));
+                        if(e.extensions.TryGetValue(libraryPath, out TranscendenceExtension library)) {
+                            dependencies.Add(library);
                         }
                         break;
                 }
@@ -233,19 +220,11 @@ namespace Transgenesis {
                         String modulePath = Path.Combine(Path.GetRelativePath(path, ".."), moduleFilename);
 				//Look for our module in the Extensions list
 				//out.println(getConsoleMessage("[General] Looking for Module " + modulePath + "."));
-                        bool found = false;
-                        foreach (TranscendenceExtension e in env.extensions.Values) {
-                            if (Path.GetFullPath(e.path).Equals(modulePath)) {
-                                modules.Add(e);
-                                e.parent = this;
-                                found = true;
-                                break;
-                            }
-                        }
-                        if (!found) {
-					//out.println(getConsoleMessage("[Warning] Module " + modulePath + " could not be found. It may be unloaded."));
+                        if(env.extensions.TryGetValue(modulePath, out TranscendenceExtension e)) {
+                            e.parent = this;
+                            modules.Add(e);
                         } else {
-					//out.println(getConsoleMessage("[Success] Module " + modulePath + " found."));
+
                         }
                         //Maybe we should automatically load the module if it is not loaded already
                         break;

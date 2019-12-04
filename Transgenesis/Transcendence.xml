@@ -420,7 +420,7 @@
                     <A name="level" valueType="WHOLE"/>
                 </E>
             </E>
-            <E category="?" name="Language">
+            <E category="?" name="Language" inherit="DesignTypeBase:Language">
                 <E category="?" name="Text">
                     <A name="id" value="description" valueType="STRING"/>
                 </E>
@@ -709,199 +709,25 @@
                 <A name="stealth" valueType="WHOLE"/>
                 <A name="useHealerToRegen" valueType="BOOLEAN"/>
             </E>
-            <E category="?" name="AutoDefenseDevice" inherit="ItemType:DeviceType">
+            <E category="?" name="AutoDefenseDevice" inherit="DesignTypes:ItemType:DeviceType">
                 <A name="fireRate" valueType="WHOLE"/>
                 <A name="interceptRange" valueType="WHOLE"/>
                 <A name="target" value="missiles" valueType="STRING"/>
                 <A name="targetCriteria" valueType="STRING"/>
                 <A name="weapon" valueType="TYPE_WEAPON"/>
             </E>
-            <E category="?" name="CargoHoldDevice" inherit="ItemType:DeviceType">
+            <E category="?" name="CargoHoldDevice" inherit="DesignTypes:ItemType:DeviceType">
                 <A name="cargoSpace" valueType="INTEGER"/>
             </E>
-			;W.I.P.: Clean up
-            <E category="?" name="Components">
-                <E category="*" name="Item">
-                    <A name="chance" valueType="WHOLE"/>
-                    <A name="count" valueType="WHOLE"/>
-                    <A name="criteria" valueType="STRING"/>
-                    <A name="damaged" valueType="WHOLE"/>
-                    <A name="debugOnly" valueType="BOOLEAN"/>
-                    <A name="enhanced" valueType="WHOLE"/>
-                    <A name="enhancement" valueType="STRING"/>
-                    <A name="item" valueType="TYPE_ITEM"/>
-                    <A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
-                </E>
-                <E category="*" name="Table">
-                    <A name="chance" valueType="WHOLE"/>
-                    <A name="count" valueType="WHOLE"/>
-                    <A name="criteria" valueType="STRING"/>
-                    <A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
-                    <E category="*" name="Item">
-                        <A name="chance" valueType="WHOLE"/>
-                        <A name="count" valueType="WHOLE"/>
-                        <A name="criteria" valueType="STRING"/>
-                        <A name="damaged" valueType="WHOLE"/>
-                        <A name="debugOnly" valueType="BOOLEAN"/>
-                        <A name="enhanced" valueType="WHOLE"/>
-                        <A name="enhancement" valueType="STRING"/>
-                        <A name="item" valueType="TYPE_ITEM"/>
-                        <A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
-                    </E>
-                    <E category="*" inherit="Components:Table" name="Table"/>
-                    <E category="*" name="RandomItem">
-                        <A name="attributes" valueType="STRING"/>
-                        <A name="categories" valueType="STRING"/>
-                        <A name="chance" valueType="WHOLE"/>
-                        <A name="count" valueType="WHOLE"/>
-                        <A name="criteria" valueType="STRING"/>
-                        <A name="damaged" valueType="WHOLE"/>
-                        <A name="enhanced" valueType="WHOLE"/>
-                        <A name="enhancement" valueType="STRING"/>
-                        <A name="level" valueType="WHOLE"/>
-                        <A name="levelCurve" valueType="WHOLE"/>
-                        <A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
-                        <A name="modifiers" valueType="STRING"/>
-                    </E>
-                    <E category="*" name="Group">
-                        <A name="chance" valueType="WHOLE"/>
-                        <A name="count" valueType="WHOLE"/>
-                        <A name="criteria" valueType="STRING"/>
-                        <A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
-                        <A name="levelValue" valueType="LEVEL_VALUE"/>
-                        <A name="value" valueType="WHOLE"/>
-                        <E category="*" name="Item">
-                            <A name="chance" valueType="WHOLE"/>
-                            <A name="count" valueType="WHOLE"/>
-                            <A name="criteria" valueType="STRING"/>
-                            <A name="damaged" valueType="WHOLE"/>
-                            <A name="debugOnly" valueType="BOOLEAN"/>
-                            <A name="enhanced" valueType="WHOLE"/>
-                            <A name="enhancement" valueType="STRING"/>
-                            <A name="item" valueType="TYPE_ITEM"/>
-                            <A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
-                        </E>
-                        <E category="*" inherit="Components:Table" name="Table"/>
-                        <E category="*" name="RandomItem">
-                            <A name="attributes" valueType="STRING"/>
-                            <A name="categories" valueType="STRING"/>
-                            <A name="chance" valueType="WHOLE"/>
-                            <A name="count" valueType="WHOLE"/>
-                            <A name="criteria" valueType="STRING"/>
-                            <A name="damaged" valueType="WHOLE"/>
-                            <A name="enhanced" valueType="WHOLE"/>
-                            <A name="enhancement" valueType="STRING"/>
-                            <A name="level" valueType="WHOLE"/>
-                            <A name="levelCurve" valueType="WHOLE"/>
-                            <A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
-                            <A name="modifiers" valueType="STRING"/>
-                        </E>
-                        <E category="*" inherit="Table:Group" name="Group"/>
-                        <E category="*" inherit="Table:Group" name="Components"/>
-                        <E category="*" inherit="Table:Group" name="Items"/>
-                        <E category="*" inherit="Table:Group" name="AverageValue"/>
-                        <E category="*" name="Lookup">
-                            <A name="chance" valueType="WHOLE"/>
-                            <A name="count" valueType="WHOLE"/>
-                            <A name="criteria" valueType="STRING"/>
-                            <A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
-                            <A name="table" valueType="TYPE_ITEM_TABLE"/>
-                        </E>
-                        <E category="*" inherit="Components:Table" name="LevelTable"/>
-                        <E category="*" inherit="Components:Table" name="LocationCriteria"/>
-                        <E category="*" name="Null"/>
-                    </E>
-                    <E category="*" inherit="Table:Group" name="Components"/>
-                    <E category="*" inherit="Table:Group" name="Items"/>
-                    <E category="*" inherit="Table:Group" name="AverageValue"/>
-                    <E category="*" name="Lookup">
-                        <A name="chance" valueType="WHOLE"/>
-                        <A name="count" valueType="WHOLE"/>
-                        <A name="criteria" valueType="STRING"/>
-                        <A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
-                        <A name="table" valueType="TYPE_ITEM_TABLE"/>
-                    </E>
-                    <E category="*" inherit="Components:Table" name="LevelTable"/>
-                    <E category="*" inherit="Components:Table" name="LocationCriteria"/>
-                    <E category="*" name="Null"/>
-                </E>
-                <E category="*" name="RandomItem">
-                    <A name="attributes" valueType="STRING"/>
-                    <A name="categories" valueType="STRING"/>
-                    <A name="chance" valueType="WHOLE"/>
-                    <A name="count" valueType="WHOLE"/>
-                    <A name="criteria" valueType="STRING"/>
-                    <A name="damaged" valueType="WHOLE"/>
-                    <A name="enhanced" valueType="WHOLE"/>
-                    <A name="enhancement" valueType="STRING"/>
-                    <A name="level" valueType="WHOLE"/>
-                    <A name="levelCurve" valueType="WHOLE"/>
-                    <A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
-                    <A name="modifiers" valueType="STRING"/>
-                </E>
-                <E category="*" inherit="Table:Group" name="Group"/>
-                <E category="*" inherit="Table:Group" name="Components"/>
-                <E category="*" inherit="Table:Group" name="Items"/>
-                <E category="*" inherit="Table:Group" name="AverageValue"/>
-                <E category="*" name="Lookup">
-                    <A name="chance" valueType="WHOLE"/>
-                    <A name="count" valueType="WHOLE"/>
-                    <A name="criteria" valueType="STRING"/>
-                    <A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
-                    <A name="table" valueType="TYPE_ITEM_TABLE"/>
-                </E>
-                <E category="*" inherit="Components:Table" name="LevelTable"/>
-                <E category="*" inherit="Components:Table" name="LocationCriteria"/>
-                <E category="*" name="Null"/>
-                <E category="*" name="Item">
-                    <A name="chance" valueType="WHOLE"/>
-                    <A name="count" valueType="WHOLE"/>
-                    <A name="criteria" valueType="STRING"/>
-                    <A name="damaged" valueType="WHOLE"/>
-                    <A name="debugOnly" valueType="BOOLEAN"/>
-                    <A name="enhanced" valueType="WHOLE"/>
-                    <A name="enhancement" valueType="STRING"/>
-                    <A name="item" valueType="TYPE_ITEM"/>
-                    <A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
-                </E>
-                <E category="*" inherit="Components:Table" name="Table"/>
-                <E category="*" name="RandomItem">
-                    <A name="attributes" valueType="STRING"/>
-                    <A name="categories" valueType="STRING"/>
-                    <A name="chance" valueType="WHOLE"/>
-                    <A name="count" valueType="WHOLE"/>
-                    <A name="criteria" valueType="STRING"/>
-                    <A name="damaged" valueType="WHOLE"/>
-                    <A name="enhanced" valueType="WHOLE"/>
-                    <A name="enhancement" valueType="STRING"/>
-                    <A name="level" valueType="WHOLE"/>
-                    <A name="levelCurve" valueType="WHOLE"/>
-                    <A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
-                    <A name="modifiers" valueType="STRING"/>
-                </E>
-                <E category="*" inherit="Table:Group" name="Group"/>
-                <E category="*" inherit="Table:Group" name="Components"/>
-                <E category="*" inherit="Table:Group" name="Items"/>
-                <E category="*" inherit="Table:Group" name="AverageValue"/>
-                <E category="*" name="Lookup">
-                    <A name="chance" valueType="WHOLE"/>
-                    <A name="count" valueType="WHOLE"/>
-                    <A name="criteria" valueType="STRING"/>
-                    <A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
-                    <A name="table" valueType="TYPE_ITEM_TABLE"/>
-                </E>
-                <E category="*" inherit="Components:Table" name="LevelTable"/>
-                <E category="*" inherit="Components:Table" name="LocationCriteria"/>
-                <E category="*" name="Null"/>
-            </E>
-            <E category="?" name="CyberDeckDevice" inherit="ItemType:DeviceType">
+            <E category="?" name="Components" inherit="ItemGenerator"/>
+            <E category="?" name="CyberDeckDevice" inherit="DesignTypes:ItemType:DeviceType">
                 <A name="aiLevel" valueType="WHOLE"/>
                 <A name="attackChance" valueType="WHOLE"/>
                 <A name="program" valueType="PROGRAM"/>
                 <A name="programName" valueType="STRING"/>
                 <A name="range" valueType="WHOLE"/>
             </E>
-            <E category="?" name="DriveDevice" inherit="ItemType:DeviceType">
+            <E category="?" name="DriveDevice" inherit="DesignTypes:ItemType:DeviceType">
                 <A name="inertialessDrive" valueType="BOOLEAN"/>
                 <A name="maxRotationRate" valueType="DECIMAL"/>
                 <A name="maxSpeed" valueType="WHOLE"/>
@@ -911,7 +737,7 @@
                 <A name="rotationStopAccel" valueType="DECIMAL"/>
                 <A name="thrust" valueType="DECIMAL"/>
             </E>
-            <E category="?" name="EnhancerDevice" inherit="ItemType:DeviceType">
+            <E category="?" name="EnhancerDevice" inherit="DesignTypes:ItemType:DeviceType">
                 <A name="activateAdj" valueType="WHOLE"/>
                 <A name="criteria" valueType="STRING"/>
                 <A name="damageAdj" valueType="INTEGER_SEQUENCE"/>
@@ -950,17 +776,17 @@
                 <A name="key" valueType="CHARACTER"/>
                 <A name="uninstalledOnly" valueType="BOOLEAN"/>
             </E>
-            <E category="?" name="MiscellaneousDevice" inherit="ItemType:DeviceType">
+            <E category="?" name="MiscellaneousDevice" inherit="DesignTypes:ItemType:DeviceType">
                 <A name="capacitorPowerUse" valueType="WHOLE"/>
                 <A name="powerRating" valueType="WHOLE"/>
                 <A name="powerToActivate" valueType="WHOLE"/>
                 <A name="powerUse" valueType="WHOLE"/>
             </E>
-            <E category="?" name="Missile" inherit="ItemType:DeviceType">
+            <E category="?" name="Missile" inherit="DesignTypes:ItemType:DeviceType">
                 <A name="W.I.P." valueType="STRING"/>
             </E>
             <E category="?" name="Names"/>
-            <E category="?" name="ReactorDevice" inherit="ItemType:DeviceType">
+            <E category="?" name="ReactorDevice" inherit="DesignTypes:ItemType:DeviceType">
                 <A name="fuelCapacity" valueType="WHOLE"/>
                 <A name="fuelCriteria" valueType="STRING"/>
                 <A name="maxFuel" valueType="WHOLE"/>
@@ -973,10 +799,10 @@
                 <A name="reactorEfficiency" valueType="WHOLE"/>
                 <A name="reactorPower" valueType="WHOLE"/>
             </E>
-            <E category="?" name="RepairerDevice" inherit="ItemType:DeviceType">
+            <E category="?" name="RepairerDevice" inherit="DesignTypes:ItemType:DeviceType">
 			    <A name="W.I.P." valueType="STRING"/>
             </E>
-            <E category="?" name="Shields" inherit="ItemType:DeviceType">
+            <E category="?" name="Shields" inherit="DesignTypes:ItemType:DeviceType">
                 <A name="absorbAdj" valueType="WHOLE"/>
                 <A name="armorShield" valueType="WHOLE"/>
                 <A name="category" valueType="CATEGORY_DEVICE"/>
@@ -999,7 +825,7 @@
                 <A name="regenTime" valueType="WHOLE"/>
                 <A name="weaponSuppress" valueType="STRING"/>
             </E>
-            <E category="?" name="SolarDevice" inherit="ItemType:DeviceType">
+            <E category="?" name="SolarDevice" inherit="DesignTypes:ItemType:DeviceType">
                 <A name="category" valueType="CATEGORY_DEVICE"/>
                 <A name="deviceSlotCategory" valueType="CATEGORY_DEVICE"/>
                 <A name="deviceSlots" valueType="WHOLE"/>
@@ -1014,11 +840,9 @@
                     <A name="type" valueType="STRING"/>
                 </E>
             </E>
-            <E category="?" name="Weapon" inherit="ItemType:DeviceType"/>
-            <E category="?" inherit="DesignTypeBase:Communications"/>
-            <E category="?" inherit="DesignTypeBase:StaticData"/>
-            <E category="?" inherit="DesignTypeBase:StaticData"/>
-            <E category="?" inherit="DesignTypeBase:Language"/>
+            <E category="?" name="Weapon" inherit="DesignTypes:ItemType:DeviceType">
+				<A name="W.I.P." valueType="STRING"/>
+			</E>
             <E category="?" name="Events" inherit="DesignTypeBase:Events">
                 <E category="?" name="CanBeInstalled"/>
                 <E category="?" name="CanBeUninstalled"/>
@@ -1035,9 +859,6 @@
                 <E category="?" name="OnRemovedAsEnhancement"/>
                 <E category="?" name="OnUninstall"/>
             </E>
-            <E category="?" inherit="DesignTypeBase:DockScreens"/>
-            <E category="?" inherit="DesignTypeBase:DisplayAttributes"/>
-            <E category="?" inherit="DesignTypeBase:DisplayAttributes"/>
         </E>
         <E category="*" name="MissionType" inherit="DesignTypeBase">
             <A name="allowPlayerDelete" value="false" valueType="BOOLEAN"/>
@@ -1053,10 +874,7 @@
             <A name="noFailureOnOwnerDestroyed" value="false" valueType="BOOLEAN"/>
             <A name="noStats" value="false" valueType="BOOLEAN"/>
             <A name="priority" value="1" valueType="WHOLE"/>
-            <E category="?" inherit="DesignTypeBase:Communications"/>
-            <E category="?" inherit="DesignTypeBase:StaticData"/>
-            <E category="?" inherit="DesignTypeBase:StaticData"/>
-            <E category="?" name="Language">
+            <E category="?" name="Language" inherit="DesignTypeBase:Language">
                 <E category="?" name="Text">
                     <A name="id" value="Name" valueType="STRING"/>
                 </E>
@@ -1110,9 +928,6 @@
             <E category="?" name="Events" inherit="DesignTypeBase:Events">
 				<A name="W.I.P." valueType="STRING"/>
 			</E>
-            <E category="?" inherit="DesignTypeBase:DockScreens"/>
-            <E category="?" inherit="DesignTypeBase:DisplayAttributes"/>
-            <E category="?" inherit="DesignTypeBase:DisplayAttributes"/>
         </E>
         <E category="*" name="NameGenerator" inherit="DesignTypeBase"/>
         <E category="*" name="OverlayType" inherit="DesignTypeBase">
@@ -1173,49 +988,7 @@
                 <A name="reverseArticle" valueType="BOOLEAN"/>
                 <A name="secondPlural" valueType="BOOLEAN"/>
             </E>
-			;W.I.P.: Clean up
-            <E category="?" name="Items">
-                <E category="*" name="Item">
-                    <A name="chance" valueType="WHOLE"/>
-                    <A name="count" valueType="WHOLE"/>
-                    <A name="criteria" valueType="STRING"/>
-                    <A name="damaged" valueType="WHOLE"/>
-                    <A name="debugOnly" valueType="BOOLEAN"/>
-                    <A name="enhanced" valueType="WHOLE"/>
-                    <A name="enhancement" valueType="STRING"/>
-                    <A name="item" valueType="TYPE_ITEM"/>
-                    <A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
-                </E>
-                <E category="*" inherit="Components:Table" name="Table"/>
-                <E category="*" name="RandomItem">
-                    <A name="attributes" valueType="STRING"/>
-                    <A name="categories" valueType="STRING"/>
-                    <A name="chance" valueType="WHOLE"/>
-                    <A name="count" valueType="WHOLE"/>
-                    <A name="criteria" valueType="STRING"/>
-                    <A name="damaged" valueType="WHOLE"/>
-                    <A name="enhanced" valueType="WHOLE"/>
-                    <A name="enhancement" valueType="STRING"/>
-                    <A name="level" valueType="WHOLE"/>
-                    <A name="levelCurve" valueType="WHOLE"/>
-                    <A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
-                    <A name="modifiers" valueType="STRING"/>
-                </E>
-                <E category="*" inherit="Table:Group" name="Group"/>
-                <E category="*" inherit="Table:Group" name="Components"/>
-                <E category="*" inherit="Table:Group" name="Items"/>
-                <E category="*" inherit="Table:Group" name="AverageValue"/>
-                <E category="*" name="Lookup">
-                    <A name="chance" valueType="WHOLE"/>
-                    <A name="count" valueType="WHOLE"/>
-                    <A name="criteria" valueType="STRING"/>
-                    <A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
-                    <A name="table" valueType="TYPE_ITEM_TABLE"/>
-                </E>
-                <E category="*" inherit="Components:Table" name="LevelTable"/>
-                <E category="*" inherit="Components:Table" name="LocationCriteria"/>
-                <E category="*" name="Null"/>
-            </E>
+            <E category="?" name="Items" inherit="ItemGenerator"/>
 			;W.I.P.: Clean up
             <E category="?" name="Devices">
                 <E category="*" name="Device">
@@ -1234,48 +1007,8 @@
                     <A name="posRadius" valueType="INTEGER"/>
                     <A name="posZ" valueType="INTEGER"/>
                     <A name="secondaryWeapon" valueType="BOOLEAN"/>
-                    <E category="*" name="Item">
-                        <A name="chance" valueType="WHOLE"/>
-                        <A name="count" valueType="WHOLE"/>
-                        <A name="criteria" valueType="STRING"/>
-                        <A name="damaged" valueType="WHOLE"/>
-                        <A name="debugOnly" valueType="BOOLEAN"/>
-                        <A name="enhanced" valueType="WHOLE"/>
-                        <A name="enhancement" valueType="STRING"/>
-                        <A name="item" valueType="TYPE_ITEM"/>
-                        <A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
-                    </E>
-                    <E category="*" inherit="Components:Table" name="Table"/>
-                    <E category="*" name="RandomItem">
-                        <A name="attributes" valueType="STRING"/>
-                        <A name="categories" valueType="STRING"/>
-                        <A name="chance" valueType="WHOLE"/>
-                        <A name="count" valueType="WHOLE"/>
-                        <A name="criteria" valueType="STRING"/>
-                        <A name="damaged" valueType="WHOLE"/>
-                        <A name="enhanced" valueType="WHOLE"/>
-                        <A name="enhancement" valueType="STRING"/>
-                        <A name="level" valueType="WHOLE"/>
-                        <A name="levelCurve" valueType="WHOLE"/>
-                        <A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
-                        <A name="modifiers" valueType="STRING"/>
-                    </E>
-                    <E category="*" inherit="Table:Group" name="Group"/>
-                    <E category="*" inherit="Table:Group" name="Components"/>
-                    <E category="*" inherit="Table:Group" name="Items"/>
-                    <E category="*" inherit="Table:Group" name="AverageValue"/>
-                    <E category="*" name="Lookup">
-                        <A name="chance" valueType="WHOLE"/>
-                        <A name="count" valueType="WHOLE"/>
-                        <A name="criteria" valueType="STRING"/>
-                        <A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
-                        <A name="table" valueType="TYPE_ITEM_TABLE"/>
-                    </E>
-                    <E category="*" inherit="Components:Table" name="LevelTable"/>
-                    <E category="*" inherit="Components:Table" name="LocationCriteria"/>
-                    <E category="*" name="Null"/>
                 </E>
-                <E category="*" inherit="Devices:Device" name="Item"/>
+                <E category="*" inherit="DesignTypes:ShipClass:Devices:Device" name="Item"/>
                 <E category="*" name="DeviceSlot">
                     <A name="chance" valueType="WHOLE"/>
                     <A name="criteria" valueType="STRING"/>
@@ -1295,8 +1028,8 @@
                 <E category="*" name="Table">
                     <A name="chance" valueType="WHOLE"/>
                     <A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
-                    <E category="*" inherit="Devices:Device" name="Device"/>
-                    <E category="*" inherit="Devices:Device" name="Item"/>
+                    <E category="*" inherit="DesignTypes:ShipClass:Devices:Device" name="Device"/>
+                    <E category="*" inherit="DesignTypes:ShipClass:Devices:Device" name="Item"/>
                     <E category="*" name="DeviceSlot">
                         <A name="chance" valueType="WHOLE"/>
                         <A name="criteria" valueType="STRING"/>
@@ -1313,15 +1046,15 @@
                         <A name="posZ" valueType="INTEGER"/>
                         <A name="secondaryWeapon" valueType="BOOLEAN"/>
                     </E>
-                    <E category="*" inherit="Devices:Table" name="Table"/>
-                    <E category="*" inherit="Devices:Table" name="Group"/>
-                    <E category="*" inherit="Devices:Table" name="Devices"/>
-                    <E category="*" inherit="Devices:Table" name="LevelTable"/>
+                    <E category="*" inherit="DesignTypes:ShipClass:Devices:Table" name="Table"/>
+                    <E category="*" inherit="DesignTypes:ShipClass:Devices:Table" name="Group"/>
+                    <E category="*" inherit="DesignTypes:ShipClass:Devices:Table" name="Devices"/>
+                    <E category="*" inherit="DesignTypes:ShipClass:Devices:Table" name="LevelTable"/>
                     <E category="*" name="Null"/>
                 </E>
-                <E category="*" inherit="Devices:Table" name="Group"/>
-                <E category="*" inherit="Devices:Table" name="Devices"/>
-                <E category="*" inherit="Devices:Table" name="LevelTable"/>
+                <E category="*" inherit="DesignTypes:ShipClass:Devices:Table" name="Group"/>
+                <E category="*" inherit="DesignTypes:ShipClass:Devices:Table" name="Devices"/>
+                <E category="*" inherit="DesignTypes:ShipClass:Devices:Table" name="LevelTable"/>
                 <E category="*" name="Null"/>
             </E>
             <E category="?" inherit="DesignTypeBase:Communications"/>
@@ -1406,10 +1139,7 @@
                     <A name="sovereign" valueType="TYPE_SOVEREIGN"/>
                 </E>
             </E>
-            <E category="?" inherit="DesignTypeBase:Communications"/>
-            <E category="?" inherit="DesignTypeBase:StaticData"/>
-            <E category="?" inherit="DesignTypeBase:GlobalData"/>
-            <E category="?" name="Language">
+            <E category="?" name="Language" inherit="DesignTypeBase:Language">
                 <E category="?" name="Text">
                     <A name="id" value="AttackTarget" valueType="STRING"/>
                 </E>
@@ -1490,10 +1220,6 @@
                     <A name="text" valueType="STRING"/>
                 </E>
             </E>
-            <E category="?" inherit="DesignTypeBase:Events"/>
-            <E category="?" inherit="DesignTypeBase:DockScreens"/>
-            <E category="?" inherit="DesignTypeBase:DisplayAttributes"/>
-            <E category="?" inherit="DesignTypeBase:DisplayAttributes"/>
         </E>
         <E category="*" name="SpaceEnvironmentType" inherit="DesignTypeBase">
             <A name="autoEdges" valueType="BOOLEAN"/>
@@ -2079,18 +1805,186 @@
 			<E category="?" inherit="DesignTypeBase:AttributeDesc"/>
 		</E>
         <E category="*" name="TemplateType" inherit="DesignTypeBase">
-            <E category="?" inherit="DesignTypeBase:Communications"/>
-            <E category="?" inherit="DesignTypeBase:StaticData"/>
-            <E category="?" inherit="DesignTypeBase:GlobalData"/>
-            <E category="?" inherit="DesignTypeBase:Language"/>
             <E category="?" inherit="DesignTypeBase:Events">
 				<E category="?" name="GetTypeSource"/>
 			</E>
-            <E category="?" inherit="DesignTypeBase:DockScreens"/>
-            <E category="?" inherit="DesignTypeBase:DisplayAttributes"/>
-            <E category="?" inherit="DesignTypeBase:AttributeDesc"/>
         </E>
         <E category="*" name="Type" inherit="DesignTypeBase"/>
+	</E>
+	;W.I.P. Clean up
+	<E category="virtual" id="DeviceGenerator">
+	
+	</E>
+	<E category="virtual" id="EnhancementGenerator">
+		<A name="enhanced" valueType="WHOLE_100"/>
+		<A name="enhancement" valueType="ENHANCEMENT"/>
+	</E>
+	<E category="virtual" id="ItemGenerator">
+		<E category="*" name="Item" inherit="EnhancementGenerator">
+			<A name="item" valueType="UNID"/>
+			<A name="damaged" valueType="WHOLE_100"/>
+			<A name="debugOnly" valueType="BOOL"/>
+		</E>
+		<E category="*" name="Table">
+			<E category="*" inherit="ItemGenerator:Item">
+				<A name="chance" valueType="WHOLE_100"/>
+				<A name="count" valueType="DICE_RANGE"/>
+			</E>
+			<E category="*" inherit="ItemGenerator:Table">
+				<A name="chance" valueType="WHOLE_100"/>
+				<A name="count" valueType="DICE_RANGE"/>
+			</E>
+			<E category="*" inherit="ItemGenerator:RandomItem">
+				<A name="chance" valueType="WHOLE_100"/>
+				<A name="count" valueType="DICE_RANGE"/>
+			</E>
+			<E category="*" inherit="ItemGenerator:Group">
+				<A name="chance" valueType="WHOLE_100"/>
+				<A name="count" valueType="DICE_RANGE"/>
+			</E>
+			<E category="*" inherit="ItemGenerator:Components">
+				<A name="chance" valueType="WHOLE_100"/>
+				<A name="count" valueType="DICE_RANGE"/>
+			</E>
+			<E category="*" inherit="ItemGenerator:Group">
+				<A name="chance" valueType="WHOLE_100"/>
+				<A name="count" valueType="DICE_RANGE"/>
+			</E>
+			<E category="*" inherit="ItemGenerator:AverageValue">
+				<A name="chance" valueType="WHOLE_100"/>
+				<A name="count" valueType="DICE_RANGE"/>
+			</E>
+			<E category="*" inherit="ItemGenerator:Lookup">
+				<A name="chance" valueType="WHOLE_100"/>
+				<A name="count" valueType="DICE_RANGE"/>
+			</E>
+			<E category="*" inherit="ItemGenerator:LevelTable">
+				<A name="chance" valueType="WHOLE_100"/>
+				<A name="count" valueType="DICE_RANGE"/>
+			</E>
+			<E category="*" inherit="ItemGenerator:LocationCriteria">
+				<A name="chance" valueType="WHOLE_100"/>
+				<A name="count" valueType="DICE_RANGE"/>
+			</E>
+			<E category="*" inherit="ItemGenerator:Null">
+				<A name="chance" valueType="WHOLE_100"/>
+				<A name="count" valueType="DICE_RANGE"/>
+			</E>
+		</E>
+		<E category="*" name="RandomItem" inherit="EnhancementGenerator">
+			<A name="criteria" valueType="ITEM_CRITERIA"/>
+			<A name="attributes" valueType="ITEM_ATTRIBUTES"/>
+			<A name="modifiers" valueType="ITEM_ATTRIBUTES"/>
+			<A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
+			<A name="level" valueType="INTEGER"/>
+			<A name="levelCurve" valueType="INTEGER"/>
+			<A name="damaged" valueType="WHOLE_100"/>
+		</E>
+		<E category="*" name="Group" inherit="ItemGenerator:Table">
+		</E>
+		<E category="*" name="Components" inherit="ItemGenerator:Group">
+		</E>
+		<E category="*" name="Items" inherit="ItemGenerator:Group">
+		</E>
+		<E category="*" name="AverageValue" inherit="ItemGenerator:Group">
+		</E>
+		<E category="*" name="Lookup">
+			<A name="table" valueType="UNID_ITEM_TABLE"/>
+		</E>
+		<E category="*" name="LevelTable">
+			<E category="*" inherit="ItemGenerator:Item">
+				<A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
+				<A name="count" valueType="DICE_RANGE"/>
+			</E>
+			<E category="*" inherit="ItemGenerator:Table">
+				<A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
+				<A name="count" valueType="DICE_RANGE"/>
+			</E>
+			<E category="*" inherit="ItemGenerator:RandomItem">
+				<A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
+				<A name="count" valueType="DICE_RANGE"/>
+			</E>
+			<E category="*" inherit="ItemGenerator:Group">
+				<A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
+				<A name="count" valueType="DICE_RANGE"/>
+			</E>
+			<E category="*" inherit="ItemGenerator:Components">
+				<A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
+				<A name="count" valueType="DICE_RANGE"/>
+			</E>
+			<E category="*" inherit="ItemGenerator:Group">
+				<A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
+				<A name="count" valueType="DICE_RANGE"/>
+			</E>
+			<E category="*" inherit="ItemGenerator:AverageValue">
+				<A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
+				<A name="count" valueType="DICE_RANGE"/>
+			</E>
+			<E category="*" inherit="ItemGenerator:Lookup">
+				<A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
+				<A name="count" valueType="DICE_RANGE"/>
+			</E>
+			<E category="*" inherit="ItemGenerator:LevelTable">
+				<A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
+				<A name="count" valueType="DICE_RANGE"/>
+			</E>
+			<E category="*" inherit="ItemGenerator:LocationCriteria">
+				<A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
+				<A name="count" valueType="DICE_RANGE"/>
+			</E>
+			<E category="*" inherit="ItemGenerator:Null">
+				<A name="levelFrequency" valueType="LEVEL_FREQUENCY"/>
+				<A name="count" valueType="DICE_RANGE"/>
+			</E>
+		</E>
+		<E category="*" name="LocationCriteriaTable">
+			<E category="*" inherit="ItemGenerator:Item">
+				<A name="criteria" valueType="LOCATION_CRITERIA"/>
+				<A name="count" valueType="DICE_RANGE"/>
+			</E>
+			<E category="*" inherit="ItemGenerator:Table">
+				<A name="criteria" valueType="LOCATION_CRITERIA"/>
+				<A name="count" valueType="DICE_RANGE"/>
+			</E>
+			<E category="*" inherit="ItemGenerator:RandomItem">
+				<A name="criteria" valueType="LOCATION_CRITERIA"/>
+				<A name="count" valueType="DICE_RANGE"/>
+			</E>
+			<E category="*" inherit="ItemGenerator:Group">
+				<A name="criteria" valueType="LOCATION_CRITERIA"/>
+				<A name="count" valueType="DICE_RANGE"/>
+			</E>
+			<E category="*" inherit="ItemGenerator:Components">
+				<A name="criteria" valueType="LOCATION_CRITERIA"/>
+				<A name="count" valueType="DICE_RANGE"/>
+			</E>
+			<E category="*" inherit="ItemGenerator:Group">
+				<A name="criteria" valueType="LOCATION_CRITERIA"/>
+				<A name="count" valueType="DICE_RANGE"/>
+			</E>
+			<E category="*" inherit="ItemGenerator:AverageValue">
+				<A name="criteria" valueType="LOCATION_CRITERIA"/>
+				<A name="count" valueType="DICE_RANGE"/>
+			</E>
+			<E category="*" inherit="ItemGenerator:Lookup">
+				<A name="criteria" valueType="LOCATION_CRITERIA"/>
+				<A name="count" valueType="DICE_RANGE"/>
+			</E>
+			<E category="*" inherit="ItemGenerator:LevelTable">
+				<A name="criteria" valueType="LOCATION_CRITERIA"/>
+				<A name="count" valueType="DICE_RANGE"/>
+			</E>
+			<E category="*" inherit="ItemGenerator:LocationCriteria">
+				<A name="criteria" valueType="LOCATION_CRITERIA"/>
+				<A name="count" valueType="DICE_RANGE"/>
+			</E>
+			<E category="*" inherit="ItemGenerator:Null">
+				<A name="criteria" valueType="LOCATION_CRITERIA"/>
+				<A name="count" valueType="DICE_RANGE"/>
+			</E>
+		</E>
+		<E category="*" name="Null">
+		</E>
 	</E>
 	<E category="virtual" id="ImageDesc">
 		<A name="animationColumns" valueType="WHOLE"/>

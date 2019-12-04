@@ -13,7 +13,7 @@ namespace Transgenesis {
         public Dictionary<XElement, XElement> bases = new Dictionary<XElement, XElement>();
         public Dictionary<string, TranscendenceExtension> extensions = new Dictionary<string, TranscendenceExtension>();
         public Dictionary<string, List<string>> customAttributeValues;
-
+        public XElement unknown = new XElement("Unknown");
 
         public Environment() {
 
