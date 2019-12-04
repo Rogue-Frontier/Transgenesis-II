@@ -784,7 +784,7 @@ namespace Transgenesis {
             c.SetCursor(pos);
             if (cursor == s.Length) {
                 c.Write(Text);
-                c.Write(" ");
+                c.WriteInvert(' ');
             } else {
                 string text = Text;
                 for (int i = 0; i < text.Length; i++) {
