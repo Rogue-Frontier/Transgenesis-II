@@ -7,7 +7,7 @@ using Console = Colorful.Console;
 namespace Transgenesis {
     class Theme {
         public Color front = Color.White, back = Color.Black;
-        public Color highlight = Color.Green;
+        public Color highlight = Color.LimeGreen;
         public void Deconstruct(out Color front, out Color back) {
             (front, back) = (this.front, this.back);
         }
@@ -53,6 +53,16 @@ namespace Transgenesis {
             (Console.BackgroundColor, Console.ForegroundColor) = (front ?? theme.front, back ?? theme.back);
             lines.Add((GetCursorPosition(), c.ToString()));
             Console.Write(c);
+        }
+        public void WriteHighlight(string s, Color? front = null, Color? back = null) {
+            (Console.ForegroundColor, Console.BackgroundColor) = (front ?? theme.highlight, back ?? theme.back);
+            lines.Add((GetCursorPosition(), s));
+            Console.Write(s);
+        }
+        public void WriteLineHighlight(string s, Color? front = null, Color? back = null) {
+            (Console.ForegroundColor, Console.BackgroundColor) = (front ?? theme.highlight, back ?? theme.back);
+            lines.Add((GetCursorPosition(), s));
+            Console.WriteLine(s);
         }
         public void WriteLine(string s, Color? front = null, Color? back = null) {
             Write(s, front, back);

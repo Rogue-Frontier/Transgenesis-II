@@ -300,7 +300,7 @@ namespace Transgenesis {
 
         }
         public void Draw() {
-            Console.Clear();
+            c.Clear();
             //Console.WriteLine(extension.structure.ToString());
 
             LinkedList<XElement> ancestors = new LinkedList<XElement>();
@@ -311,35 +311,35 @@ namespace Transgenesis {
             }
             int tabs = 0;
             foreach (XElement ancestor in ancestors) {
-                Global.PrintLine($"{Tab()}<{ancestor.Tag()}{ShowContextAttributes(ancestor)}>", ConsoleColor.White, ConsoleColor.Black);
+                c.WriteLine($"{Tab()}<{ancestor.Tag()}{ShowContextAttributes(ancestor)}>");
                 tabs++;
             }
             if (focused.ElementsBeforeSelf().Count() > 0) {
-                Global.PrintLine($"{Tab()}...", ConsoleColor.White, ConsoleColor.Black);
+                c.WriteLine($"{Tab()}...");
             }
 
 
             //See if we need to print any children
             if (focused.HasElements) {
-                Global.PrintLine($"{Tab()}<{focused.Tag()}{ShowAttributes(focused)}>", ConsoleColor.Green, ConsoleColor.Black);
+                c.WriteLineHighlight($"{Tab()}<{focused.Tag()}{ShowAttributes(focused)}>");
                 tabs++;
                 foreach (XElement child in focused.Elements()) {
-                    Global.PrintLine($"{Tab()}<{child.Tag()}{ShowContextAttributes(child)}/>", ConsoleColor.White, ConsoleColor.Black);
+                    c.WriteLine($"{Tab()}<{child.Tag()}{ShowContextAttributes(child)}/>");
                 }
                 tabs--;
-                Global.PrintLine($"{Tab()}</{focused.Tag()}>", ConsoleColor.Green, ConsoleColor.Black);
+                c.WriteLineHighlight($"{Tab()}</{focused.Tag()}>");
             } else {
-                Global.PrintLine($"{Tab()}<{focused.Tag()}{ShowAttributes(focused)}/>", ConsoleColor.Green, ConsoleColor.Black);
+                c.WriteLineHighlight($"{Tab()}<{focused.Tag()}{ShowAttributes(focused)}/>");
             }
 
 
 
             if (focused.ElementsAfterSelf().Count() > 0) {
-                Global.PrintLine($"{Tab()}...", ConsoleColor.White, ConsoleColor.Black);
+                c.WriteLine($"{Tab()}...");
             }
             tabs--;
             foreach (XElement ancestor in ancestors.Reverse()) {
-                Global.PrintLine($"{Tab()}</{ancestor.Name.LocalName}>", ConsoleColor.White, ConsoleColor.Black);
+                c.WriteLine($"{Tab()}</{ancestor.Name.LocalName}>");
                 tabs--;
             }
 
@@ -580,6 +580,7 @@ namespace Transgenesis {
                                         string attribute = parts[1];
                                         string attributeType = env.bases[focused].Elements("A").FirstOrDefault(e => e.Att("name") == attribute)?.Att("valueType");
                                         if(attributeType == null) {
+                                            s.Clear();
                                             break;
                                         }
                                         var all = env.GetAttributeValues(attributeType);

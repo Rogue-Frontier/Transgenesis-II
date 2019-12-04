@@ -13,9 +13,10 @@ namespace Transgenesis {
         }
 
         public void Run() {
+
+            Console.SetWindowSize(80, 50);
             Stack<IComponent> screens = new Stack<IComponent>();
             screens.Push(new Commander(screens));
-            Console.CursorVisible = false;
             bool draw = true;
             while (true) {
                 while (Console.KeyAvailable) {
@@ -32,6 +33,7 @@ namespace Transgenesis {
                     Console.ForegroundColor = ConsoleColor.White;
 
                     (Console.WindowLeft, Console.WindowTop) = (left, top);
+                    Console.CursorVisible = false;
 
                 }
                 draw = false;
