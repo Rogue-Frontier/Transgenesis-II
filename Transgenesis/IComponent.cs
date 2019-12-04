@@ -68,18 +68,22 @@ namespace Transgenesis {
                                 switch (parts[1]) {
                                     case "blue":
                                         theme.front = Color.FromArgb(0x0069E7);
+                                        theme.back = Color.Black;
                                         theme.highlight = Color.White;
                                         break;
                                     case "green":
                                         theme.front = Color.FromArgb(0xA8B70E);
+                                        theme.back = Color.Black;
                                         theme.highlight = Color.Chocolate;
                                         break;
                                     case "pine":
                                         theme.front = Color.FromArgb(0x00766B);
+                                        theme.back = Color.Black;
                                         theme.highlight = Color.Magenta;
                                         break;
                                     case "orange":
                                         theme.front = Color.FromArgb(0xFF9207);
+                                        theme.back = Color.Black;
                                         theme.highlight = Color.Blue;
                                         break;
                                     default:
@@ -88,6 +92,7 @@ namespace Transgenesis {
                                 }
                                 void Reset() {
                                     theme.front = Color.White;
+                                    theme.back = Color.Black;
                                     theme.highlight = Color.Green;
                                 }
                                 break;
@@ -175,6 +180,12 @@ namespace Transgenesis {
                             }
                         case "open": {
                                 string path = Path.GetFullPath(string.Join(' ', parts.Skip(1)).Trim());
+                                //Don't reload the extension
+                                if (env.extensions.TryGetValue(path, out TranscendenceExtension existing)) {
+                                    //env.Unload(existing);
+                                } else {
+                                    LoadFolder(path);
+                                }
                                 if (env.extensions.TryGetValue(path, out TranscendenceExtension result)) {
                                     screens.Push(new ExtensionEditor(screens, env, result, c));
                                 }
@@ -388,8 +399,12 @@ namespace Transgenesis {
                     string first = attributes.Keys.First();
                     result.AppendLine($@"{first}=""{attributes[first]}""");
                     tabs++;
+
+                    int interval = 8;
+                    //int padding = (1 + attributes.Keys.Select(k => k.Length).Max() / interval) * interval;
                     foreach (string key in attributes.Keys.Skip(1)) {
-                        result.AppendLine($@"{Tab()}{key}=""{attributes[key]}""");
+                        int padding = (1 + key.Length / interval) * interval;
+                        result.AppendLine($@"{Tab()}{$"{key}=".PadRight(padding)}""{attributes[key]}""");
                     }
                     if (more) {
                         result.AppendLine($"{Tab()}...");
@@ -444,6 +459,23 @@ namespace Transgenesis {
                                         focused.Attribute(attribute)?.Remove();
                                     }
                                     i.Clear();
+                                    break;
+                                }
+                            case "reorder": {
+                                    Dictionary<string, string> attributes = new Dictionary<string, string>();
+                                    foreach(var a in focused.Attributes()) {
+                                        attributes[a.Name.LocalName] = a.Value;
+                                    }
+                                    focused.RemoveAttributes();
+                                    foreach(var a in parts.Skip(1)) {
+                                        if(attributes.TryGetValue(a, out string value)) {
+                                            focused.SetAttributeValue(a, value);
+                                            attributes.Remove(a);
+                                        }
+                                    }
+                                    foreach(var a in attributes.Keys) {
+                                        focused.SetAttributeValue(a, attributes[a]);
+                                    }
                                     break;
                                 }
                             case "bind": {
@@ -546,7 +578,10 @@ namespace Transgenesis {
                                 case "set": {
                                         //Suggest values for the attribute
                                         string attribute = parts[1];
-                                        string attributeType = env.bases[focused].Elements("A").FirstOrDefault(e => e.Att("name") == attribute).Att("valueType");
+                                        string attributeType = env.bases[focused].Elements("A").FirstOrDefault(e => e.Att("name") == attribute)?.Att("valueType");
+                                        if(attributeType == null) {
+                                            break;
+                                        }
                                         var all = env.GetAttributeValues(attributeType);
                                         if (focused.Att(attribute, out string value)) {
                                             all.Insert(0, value);
