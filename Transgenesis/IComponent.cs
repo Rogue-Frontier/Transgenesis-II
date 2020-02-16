@@ -17,6 +17,7 @@ namespace Transgenesis {
         Stack<IComponent> screens;
         Input i;
         Suggest s;
+        Tooltip t;
         Environment env;
         ConsoleManager c;
 
@@ -24,6 +25,32 @@ namespace Transgenesis {
             c = new ConsoleManager(new Point(0, 0));
             i = new Input(c);
             s = new Suggest(i, c);
+            t = new Tooltip(i, s, c, new Dictionary<string, string>() {
+                { "types",  "types <extensionFile>\r\n" +
+                            "Opens the Type Editor on the loaded extension with the specified file path" },
+                {"theme",   "theme <blue|green|pine|orange|default>\r\n" +
+                            "Sets the color scheme of the console"},
+                {"create",  "create <extensionType> <file>\r\n" +
+                            "Creates a new Transcendence extension with the specified file path."},
+                {"load",    "load <extensionFile|extensionFolder>\r\n" +
+                            "Loads an extension with the specified file path" },
+                {"unload",  "unload <extensionFile>\r\n" +
+                            "Unloads a loaded extension of the specified file path"},
+                {"edit",    "edit <extensionFile>\r\n" +
+                            "Opens the XML Editor on the loaded extension with the specified file path." },
+                {"open",    "load <extensionFile>\r\n" +
+                            "Loads an extension with the specified file path, and then opens the XML Editor on it."},
+                {"reload",  "reload <extensionFile>\r\n" +
+                            "Unloads and loads an extension at the given path" },
+                {"reloadmodules", "reloadmodules <extensionFile>\r\n" +
+                            "Unloads and loads the loaded extension at the specified file path along with all of its modules" },
+                {"reloadall", "reloadall\r\n" +
+                            "Unloads and loads all currently loaded extensions"},
+                {"reloadallmodules", "reloadallmodules\r\n" +
+                            "Unloads and loads all currently loaded extensions along with all of their modules" },
+                {"loadmodules", "loadmodules <extensionFile|extensionFolder>\r\n" +
+                            "Loads an extension at the specified file path along with all of its modules"}
+            });
             env = new Environment();
             this.screens = screens;
         }
@@ -45,6 +72,7 @@ namespace Transgenesis {
 
             i.Draw();
             s.Draw();
+            t.Draw();
         }
 
         public void Handle(ConsoleKeyInfo k) {
@@ -146,11 +174,11 @@ namespace Transgenesis {
                                 string path = Path.GetFullPath(string.Join(" ", parts.Skip(1)).Trim());
                                 if (env.extensions.TryGetValue(path, out TranscendenceExtension existing)) {
                                     env.Unload(existing);
-                                    foreach (var module in env.extensions.Values.Where(e => e.parent == existing)) {
+                                    var modules = env.extensions.Values.Where(e => e.parent == existing);
+                                    foreach (var module in modules) {
                                         env.Unload(module);
                                     }
                                 }
-                                
                                 LoadFolder(path, true);
                                 break;
                             }
@@ -160,7 +188,7 @@ namespace Transgenesis {
                                 if(env.extensions.TryGetValue(path, out TranscendenceExtension existing)) {
                                     //env.Unload(existing);
                                 } else {
-                                    Global.Break();
+                                    //Global.Break();
                                     LoadFolder(path);
                                 }
                                 
@@ -195,7 +223,7 @@ namespace Transgenesis {
                             }
                         case "edit": {
                                 string path = Path.GetFullPath(string.Join(" ", parts.Skip(1)).Trim());
-                                Global.Break();
+                                //Global.Break();
                                 if (env.extensions.TryGetValue(path, out TranscendenceExtension result)) {
                                     screens.Push(new ExtensionEditor(screens, env, result, c));
                                 }
@@ -215,8 +243,14 @@ namespace Transgenesis {
                 case ConsoleKey.DownArrow:
                     break;
                 default:
+                    //Disable suggest when input is completely empty so that we can navigate aroung the UI with arrow keys
+                    if (input.Length == 0) {
+                        s.SetItems(new List<HighlightEntry>());
+                        break;
+                    }
+
                     Dictionary<string, Func<List<string>>> autocomplete = new Dictionary<string, Func<List<string>>> {
-                        {"", () => new List<string>{ "types", "theme", "create", "load", "unload", "edit", "open", "reload", "reloadmodules", "reloadall", "reloadallmodules", "load", "loadmodules" } },
+                        {"", () => new List<string>{ "types", "theme", "create", "load", "unload", "edit", "open", "reload", "reloadmodules", "reloadall", "reloadallmodules", "loadmodules" } },
                         {"theme", () => new List<string>{ "blue", "green", "pine", "orange", "default"} },
                         {"create", () => new List<string>{ "TranscendenceAdventure", "TranscendenceExtension", "TranscendenceLibrary", "TranscendenceModule" } },
                         {"load", () => Directory.GetFiles(Directory.GetCurrentDirectory(), "*.xml").ToList() },
@@ -232,8 +266,12 @@ namespace Transgenesis {
 
                     var items = Global.GetSuggestions(input.Substring(str.Length).TrimStart(), all);
                     s.SetItems(items);
+
                     break;
             }
+            t.Handle(k);
+
+
 
             void LoadFolder(string path, bool modules = false) {
                 if(Directory.Exists(path)) {
@@ -291,6 +329,7 @@ namespace Transgenesis {
 
         Input i;
         Suggest s;
+        Tooltip t;
 
         public ExtensionEditor(Stack<IComponent> screens, Environment env, TranscendenceExtension extension, ConsoleManager c) {
             this.screens = screens;
@@ -301,10 +340,58 @@ namespace Transgenesis {
             this.c = c;
             i = new Input(c);
             s = new Suggest(i, c);
+            t = new Tooltip(i, s, c, new Dictionary<string, string>() {
+                {"",    "Navigate Mode" + "\r\n" +
+                        "-Up arrow: Previous element" + "\r\n" +
+                        "-Down arrow: Next element" + "\r\n" +
+                        "-Left arrow: Parent element" + "\r\n" +
+                        "-Right arrow: First child element" + "\r\n" +
+                        "-Typing: Enter a command" + "\r\n"},
+                {"add", "add <subelement>\r\n" +
+                        "Adds the named subelement to the current element, if allowed"},
+                {"reorder", "reorder <attribute...>\r\n" +
+                        "Reorders the attributes in the current element in the specified order" },
+                {"set", "set <attribute> [value]\r\n" +
+                        "Sets the named attribute to the specified value on the current element. If [value] is empty, then deletes the attribute from the element" },
 
+                //{"remove", "remove <subelement>\r\n" +
+                //        "Removes the named subelement from the current element"},
+                {"remove", "remove\r\n" +
+                        "Removes the current element from its parent, if allowed"},
+                {"bind", "bind\r\n" +
+                        "Updates type bindings for the current extension"},
+                {"bindall", "bindall\r\n" +
+                        "Updates type bindings for all loaded extensions"},
+                {"save", "save\r\n" +
+                        "Saves the current extension to its file"},
+                {"saveall", "saveall\r\n" +
+                        "Saves all loaded extensions to their files"},
+                {"moveup", "moveup\r\n" +
+                        "Moves the current element up in its parent's order of children"},
+                {"movedown", "movedown\r\n" +
+                        "Moves the current element down in its parent's order of children"},
+                {"root", "root\r\n" +
+                        "Selects the root as the current element"},
+                {"parent", "parent\r\n" +
+                        "Selects the parent of the current element"},
+                {"next", "next\r\n" +
+                        "Selects the next child of the current element's parent"},
+                {"previous", "previous\r\n" +
+                        "Selects the previous child of the current element's parent"},
+                {"types", "types\r\n" +
+                        "Opens the Type Editor on this extension"},
+                {"exit", "exit\r\n" +
+                        "Exits this XML Editor and returns to the main menu"},
+
+
+
+
+            });
+            //{"", () => new List<string>{ "set", "add", "remove", "bind", "bindall", "save", "saveall", "moveup", "movedown", "root", "parent", "next", "prev", "types", "exit" } },
         }
         public void Draw() {
             c.Clear();
+            c.SetCursor(new Point(0, 0));
             //Console.WriteLine(extension.structure.ToString());
 
             LinkedList<XElement> ancestors = new LinkedList<XElement>();
@@ -350,8 +437,9 @@ namespace Transgenesis {
 
             i.Draw();
             s.Draw();
+            t.Draw();
 
-            string Tab() => new string('\t', tabs);
+            string Tab() => new string(' ', tabs * 4);
             string ShowContextAttributes(XElement element) {
                 Dictionary<string, string> attributes = new Dictionary<string, string>();
 
@@ -426,7 +514,7 @@ namespace Transgenesis {
 
             string input = i.Text;
             switch (k.Key) {
-
+                /*
                 case ConsoleKey.LeftArrow when (k.Modifiers & ConsoleModifiers.Control) != 0:
                     focused = focused.Parent ?? focused;
                     break;
@@ -439,7 +527,21 @@ namespace Transgenesis {
                 case ConsoleKey.OemMinus when (k.Modifiers & ConsoleModifiers.Control) != 0:
                     focused = focused.ElementsBeforeSelf().LastOrDefault() ?? focused;
                     break;
+                    */
 
+                //Navigate using arrow keys when command input is empty
+                case ConsoleKey.LeftArrow when i.Text.Length == 0:
+                    focused = focused.Parent ?? focused;
+                    break;
+                case ConsoleKey.RightArrow when i.Text.Length == 0:
+                    focused = focused.Elements().FirstOrDefault() ?? focused;
+                    break;
+                case ConsoleKey.DownArrow when i.Text.Length == 0:
+                    focused = focused.ElementsAfterSelf().FirstOrDefault() ?? focused;
+                    break;
+                case ConsoleKey.UpArrow when i.Text.Length == 0:
+                    focused = focused.ElementsBeforeSelf().LastOrDefault() ?? focused;
+                    break;
                 case ConsoleKey.Enter: {
                         string[] parts = input.Split(' ');
                         switch (parts[0]) {
@@ -598,13 +700,30 @@ namespace Transgenesis {
                                     }
                             }
                         } else {
+                            //Disable suggest when input is completely empty so that we can navigate aroung the UI with arrow keys
+                            if (input.Length == 0) {
+                                s.SetItems(new List<HighlightEntry>());
+                                break;
+                            }
+
                             var empty = new List<string>();
                             Dictionary<string, Func<List<string>>> autocomplete = new Dictionary<string, Func<List<string>>> {
                                 {"", () => new List<string>{ "set", "add", "remove", "bind", "bindall", "save", "saveall", "moveup", "movedown", "root", "parent", "next", "prev", "types", "exit" } },
                                 {"set", () => env.bases[focused].GetValidAttributes() },
                                 {"add", () => env.GetAddableElements(focused, env.bases[focused]) },
                                 {"remove", () => env.GetRemovableElements(focused, env.bases[focused]) },
-
+                                //bind
+                                //bindall
+                                //save
+                                //saveall
+                                //moveup
+                                //movedown
+                                //root
+                                //parent
+                                //next
+                                //prev
+                                //types
+                                //exit
                             };
                             string p = autocomplete.Keys.Last(prefix => input.StartsWith((prefix + " ").TrimStart()));
                             List<string> all = autocomplete[p]();
@@ -615,6 +734,7 @@ namespace Transgenesis {
                         break;
                     }
             }
+            t.Handle(k);
 
             /*
             if(str.Length > 0) {
@@ -842,7 +962,26 @@ namespace Transgenesis {
         }
     }
     class Tooltip : IComponent {
+        Input i;
+        Suggest s;
+        Dictionary<string, string> help;
+        Point pos = new Point(0, 42);
+        ConsoleManager c;
+        public Tooltip(Input i, Suggest s, ConsoleManager c, Dictionary<string, string> help) {
+            this.i = i;
+            this.s = s;
+            this.c = c;
+            this.help = help;
+        }
         public void Draw() {
+            //Note that if the input already has a match, then highlighting another option in the Suggest menu will not do anything
+            if(help.TryGetValue(i.Text.TrimStart().Split()[0], out string helptext)) {
+                c.SetCursor(pos);
+                c.Write(helptext);
+            } else if(s.index > -1 && help.TryGetValue(s.items[s.index].str, out helptext)) {
+                c.SetCursor(pos);
+                c.Write(helptext);
+            }
         }
         public void Handle(ConsoleKeyInfo k) {
         }
@@ -864,7 +1003,7 @@ namespace Transgenesis {
     }
     class Suggest : IComponent {
         Input i;
-        int index = -1;
+        public int index = -1;
         public List<HighlightEntry> items;
         public Point pos = new Point(0, 25);
         ConsoleManager c;
