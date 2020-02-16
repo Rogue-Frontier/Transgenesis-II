@@ -19,11 +19,15 @@ namespace Transgenesis {
                 game.Run();
             }
         }
-        public Program() : base("Content/IBM_ext.font", 80, 50, null) { }
+        public Program() : base("Content/IBM_ext.font", 120, 50, null) { }
         protected override void Initialize() {
             IsMouseVisible = true;
             base.Initialize();
-            var con = new MainConsole(80, 50);
+            var con = new MainConsole(120, 50);
+
+            //This allows trailing spaces to show up in command
+            con.Cursor.DisableWordBreak = true;
+
             SadConsole.Global.CurrentScreen = con;
             con.IsVisible = true;
             con.IsFocused = true;
@@ -43,7 +47,6 @@ namespace Transgenesis {
         }
         public override void Update(TimeSpan delta) {
             base.Update(delta);
-            this.Fill(Color.White, Color.Black, null);
             screens.Peek().Update();
         }
         public override void Draw(TimeSpan delta) {
@@ -59,6 +62,9 @@ namespace Transgenesis {
             bool alt = info.IsKeyDown(Keys.LeftAlt) || info.IsKeyDown(Keys.RightAlt);
             bool ctrl = info.IsKeyDown(Keys.LeftControl) || info.IsKeyDown(Keys.RightControl);
             foreach (var key in info.KeysPressed) {
+                if(key == Keys.Back) {
+                    //Global.Break();
+                }
                 screens.Peek().Handle(new ConsoleKeyInfo(key.Character, (ConsoleKey)key.Key, shift, alt, ctrl));
             }
             return handle;

@@ -66,24 +66,24 @@ namespace Transgenesis {
                                 }
                                 switch (parts[1]) {
                                     case "blue":
-                                        theme.front = new Color(0x0069E7);
+                                        theme.front = new Color(0x00, 0x69, 0xE7);
                                         theme.back = Color.Black;
                                         theme.highlight = Color.White;
                                         break;
                                     case "green":
-                                        theme.front = new Color(0xA8B70E);
+                                        theme.front = new Color(0xA8, 0xB7, 0x0E);
                                         theme.back = Color.Black;
-                                        theme.highlight = Color.Chocolate;
+                                        theme.highlight = Color.LightBlue;
                                         break;
                                     case "pine":
-                                        theme.front = new Color(0x00766B);
+                                        theme.front = new Color(0x00, 0x76, 0x6B);
                                         theme.back = Color.Black;
                                         theme.highlight = Color.Magenta;
                                         break;
                                     case "orange":
-                                        theme.front = new Color(0xFF9207);
+                                        theme.front = new Color(0xFF, 0x92, 0x07);
                                         theme.back = Color.Black;
-                                        theme.highlight = Color.Blue;
+                                        theme.highlight = Color.White;
                                         break;
                                     default:
                                         Reset();
@@ -98,7 +98,8 @@ namespace Transgenesis {
                             }
                         case "create": {
                                 if (Enum.TryParse(parts[1], out ExtensionTypes ex)) {
-                                    env.CreateExtension(ex, parts[2]);
+                                    //Always use full-path so that we can easily find this
+                                    env.CreateExtension(ex, Path.GetFullPath(parts[2]));
                                 }
                                 break;
                             }
@@ -159,6 +160,7 @@ namespace Transgenesis {
                                 if(env.extensions.TryGetValue(path, out TranscendenceExtension existing)) {
                                     //env.Unload(existing);
                                 } else {
+                                    Global.Break();
                                     LoadFolder(path);
                                 }
                                 
@@ -193,6 +195,7 @@ namespace Transgenesis {
                             }
                         case "edit": {
                                 string path = Path.GetFullPath(string.Join(" ", parts.Skip(1)).Trim());
+                                Global.Break();
                                 if (env.extensions.TryGetValue(path, out TranscendenceExtension result)) {
                                     screens.Push(new ExtensionEditor(screens, env, result, c));
                                 }
@@ -762,59 +765,58 @@ namespace Transgenesis {
         public void Update() {
         }
         public void Handle(ConsoleKeyInfo k) {
-            if (k.KeyChar == 0) {
-                switch (k.Key) {
-                    case ConsoleKey.LeftArrow when (k.Modifiers & ConsoleModifiers.Control) == 0:
-                        if (cursor > 0) {
+            //Global.Break();
+            switch (k.Key) {
+                case ConsoleKey.LeftArrow when (k.Modifiers & ConsoleModifiers.Control) == 0:
+                    if (cursor > 0) {
+                        cursor--;
+                    }
+                    break;
+                case ConsoleKey.RightArrow when (k.Modifiers & ConsoleModifiers.Control) == 0:
+                    if (cursor < s.Length) {
+                        cursor++;
+                    }
+                    break;
+                case ConsoleKey.Backspace:
+                    //Global.Break();
+                    if ((k.Modifiers & ConsoleModifiers.Control) != 0) {
+                        //Make sure we have characters to delete
+                        if (cursor == 0) {
+                            break;
+                        }
+                        //If we are at a space, just delete it
+                        if (s[cursor - 1] == ' ') {
                             cursor--;
-                        }
-                        break;
-                    case ConsoleKey.RightArrow when (k.Modifiers & ConsoleModifiers.Control) == 0:
-                        if (cursor < s.Length) {
-                            cursor++;
-                        }
-                        break;
-                }
-            } else {
-                switch (k.Key) {
-                    case ConsoleKey.Backspace:
-                        if ((k.Modifiers & ConsoleModifiers.Control) != 0) {
-                            //Make sure we have characters to delete
-                            if (cursor == 0) {
-                                break;
-                            }
-                            //If we are at a space, just delete it
-                            if (s[cursor - 1] == ' ') {
-                                cursor--;
-                                s.Remove(cursor, 1);
-                            } else {
-                                //Otherwise, delete characters until we reach a space
-                                int length = 0;
-                                while (cursor > 0 && s[cursor - 1] != ' ') {
-                                    cursor--;
-                                    length++;
-                                }
-                                s.Remove(cursor, length);
-                            }
+                            s.Remove(cursor, 1);
                         } else {
-                            if (s.Length > 0) {
+                            //Otherwise, delete characters until we reach a space
+                            int length = 0;
+                            while (cursor > 0 && s[cursor - 1] != ' ') {
                                 cursor--;
-                                s.Remove(cursor, 1);
+                                length++;
                             }
+                            s.Remove(cursor, length);
                         }
-                        break;
-                    case ConsoleKey.Enter:
+                    } else {
+                        if (s.Length > 0 && cursor > 0) {
+                            cursor--;
+                            s.Remove(cursor, 1);
+                        }
+                    }
+                    break;
+                case ConsoleKey.Enter:
 
-                        break;
-                    default:
+                    break;
+                default:
+                    if (k.KeyChar != 0) {
                         if (cursor == s.Length) {
                             s.Append(k.KeyChar);
                         } else {
                             s.Insert(cursor, k.KeyChar);
                         }
                         cursor++;
-                        break;
-                }
+                    }
+                    break;
             }
         }
         public void Draw() {

@@ -56,5 +56,9 @@ namespace Transgenesis {
             result.AddRange(contains);
             return result;
         }
+
+        public static void Break() {
+           return;
+        }
     }
 }
