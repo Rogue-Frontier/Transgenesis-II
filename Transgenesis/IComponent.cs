@@ -1,6 +1,6 @@
-﻿using System;
+﻿using Microsoft.Xna.Framework;
+using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -67,22 +67,22 @@ namespace Transgenesis {
                                 }
                                 switch (parts[1]) {
                                     case "blue":
-                                        theme.front = Color.FromArgb(0x0069E7);
+                                        theme.front = new Color(0x0069E7);
                                         theme.back = Color.Black;
                                         theme.highlight = Color.White;
                                         break;
                                     case "green":
-                                        theme.front = Color.FromArgb(0xA8B70E);
+                                        theme.front = new Color(0xA8B70E);
                                         theme.back = Color.Black;
                                         theme.highlight = Color.Chocolate;
                                         break;
                                     case "pine":
-                                        theme.front = Color.FromArgb(0x00766B);
+                                        theme.front = new Color(0x00766B);
                                         theme.back = Color.Black;
                                         theme.highlight = Color.Magenta;
                                         break;
                                     case "orange":
-                                        theme.front = Color.FromArgb(0xFF9207);
+                                        theme.front = new Color(0xFF9207);
                                         theme.back = Color.Black;
                                         theme.highlight = Color.Blue;
                                         break;
@@ -104,7 +104,7 @@ namespace Transgenesis {
                                 break;
                             }
                         case "unload": {
-                                string path = Path.GetFullPath(string.Join(' ', parts.Skip(1)).Trim());
+                                string path = Path.GetFullPath(string.Join(" ", parts.Skip(1)).Trim());
                                 if (env.extensions.TryGetValue(path, out TranscendenceExtension existing)) {
                                     env.Unload(existing);
                                 }
@@ -135,7 +135,7 @@ namespace Transgenesis {
                                 break;
                             }
                         case "reload": {
-                                string path = Path.GetFullPath(string.Join(' ', parts.Skip(1)).Trim());
+                                string path = Path.GetFullPath(string.Join(" ", parts.Skip(1)).Trim());
                                 if (env.extensions.TryGetValue(path, out TranscendenceExtension existing)) {
                                     env.Unload(existing);
                                 }
@@ -143,7 +143,7 @@ namespace Transgenesis {
                                 break;
                             }
                         case "reloadmodules": {
-                                string path = Path.GetFullPath(string.Join(' ', parts.Skip(1)).Trim());
+                                string path = Path.GetFullPath(string.Join(" ", parts.Skip(1)).Trim());
                                 if (env.extensions.TryGetValue(path, out TranscendenceExtension existing)) {
                                     env.Unload(existing);
                                     foreach (var module in env.extensions.Values.Where(e => e.parent == existing)) {
@@ -155,7 +155,7 @@ namespace Transgenesis {
                                 break;
                             }
                         case "load": {
-                                string path = Path.GetFullPath(string.Join(' ', parts.Skip(1)).Trim());
+                                string path = Path.GetFullPath(string.Join(" ", parts.Skip(1)).Trim());
                                 //Don't reload the extension
                                 if(env.extensions.TryGetValue(path, out TranscendenceExtension existing)) {
                                     //env.Unload(existing);
@@ -166,7 +166,7 @@ namespace Transgenesis {
                                 break;
                             }
                         case "loadmodules": {
-                                string path = Path.GetFullPath(string.Join(' ', parts.Skip(1)).Trim());
+                                string path = Path.GetFullPath(string.Join(" ", parts.Skip(1)).Trim());
                                 //Don't reload the extension
                                 if (env.extensions.TryGetValue(path, out TranscendenceExtension existing)) {
                                     //env.Unload(existing);
@@ -179,7 +179,7 @@ namespace Transgenesis {
                                 break;
                             }
                         case "open": {
-                                string path = Path.GetFullPath(string.Join(' ', parts.Skip(1)).Trim());
+                                string path = Path.GetFullPath(string.Join(" ", parts.Skip(1)).Trim());
                                 //Don't reload the extension
                                 if (env.extensions.TryGetValue(path, out TranscendenceExtension existing)) {
                                     //env.Unload(existing);
@@ -193,14 +193,14 @@ namespace Transgenesis {
                                 break;
                             }
                         case "edit": {
-                                string path = Path.GetFullPath(string.Join(' ', parts.Skip(1)).Trim());
+                                string path = Path.GetFullPath(string.Join(" ", parts.Skip(1)).Trim());
                                 if (env.extensions.TryGetValue(path, out TranscendenceExtension result)) {
                                     screens.Push(new ExtensionEditor(screens, env, result, c));
                                 }
                                 break;
                             }
                         case "types": {
-                                string path = Path.GetFullPath(string.Join(' ', parts.Skip(1)).Trim());
+                                string path = Path.GetFullPath(string.Join(" ", parts.Skip(1)).Trim());
                                 if (env.extensions.TryGetValue(path, out TranscendenceExtension result)) {
                                     screens.Push(new TypeEditor(screens, env, result, c));
                                 }
@@ -450,7 +450,7 @@ namespace Transgenesis {
                                 }
                             case "set": {
                                     string attribute = parts[1];
-                                    string value = string.Join(' ', parts.Skip(2));
+                                    string value = string.Join(" ", parts.Skip(2));
                                     if (value.Length > 0) {
                                         //Set the value
                                         focused.SetAttributeValue(attribute, value);
@@ -587,7 +587,7 @@ namespace Transgenesis {
                                         if (focused.Att(attribute, out string value)) {
                                             all.Insert(0, value);
                                         }
-                                        string rest = string.Join(' ', parts.Skip(2));
+                                        string rest = string.Join(" ", parts.Skip(2));
                                         var items = Global.GetSuggestions(rest, all);
                                         s.SetItems(items);
                                         break;
@@ -929,7 +929,7 @@ namespace Transgenesis {
             }
         }
         public void Draw() {
-            int columns = Console.WindowWidth;
+            int columns = c.width;
             int column = 0;
             c.SetCursor(pos);
             for (int i = 0; i < items.Count; i++) {

@@ -22,7 +22,7 @@ namespace Transgenesis {
             try {
                 doc.Load("Transcendence.xml");
             } catch {
-                doc.Load("../../../Transcendence.xml");
+                doc.Load("../../../../Transcendence.xml");
             }
             hierarchy = XElement.Parse(doc.OuterXml);
             baseStructures["Hierarchy"] = hierarchy;

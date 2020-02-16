@@ -1,8 +1,8 @@
-﻿using System;
+﻿using Microsoft.Xna.Framework;
+using SadConsole;
 using System.Collections.Generic;
 using System.Drawing;
 using static Transgenesis.Global;
-using Console = Colorful.Console;
 
 namespace Transgenesis {
     class Theme {
@@ -13,6 +13,9 @@ namespace Transgenesis {
         }
     }
     class ConsoleManager {
+        SadConsole.Console console => SadConsole.Global.CurrentScreen;
+        SadConsole.Cursor cursor => SadConsole.Global.CurrentScreen.Cursor;
+        public int width => console.Width;
         public ConsoleManager(Point p) {
             this.margin = p;
             theme = new Theme();
@@ -22,11 +25,10 @@ namespace Transgenesis {
         public Theme theme;
 
         List<(Point, string)> lines = new List<(Point, string)>();
-        public Point GetCursorPosition() => new Point(Console.CursorLeft, Console.CursorTop);
         public void ClearLines() => lines.Clear();
         public void Clear() {
             ClearLines();
-            Console.Clear();
+            console.Clear();
             /*
             lines.ForEach(t => {
                 (Point cursor, string s) = t;
@@ -35,44 +37,34 @@ namespace Transgenesis {
             });
             */
         }
-        public void SetCursor(Point p) => Global.SetCursor(p);
+        public void SetCursor(Point p) => cursor.Move(p);
         public void ResetCursor() {
             SetCursor(margin);
         }
         public void Write(string s, Color? front = null, Color? back = null) {
-            (Console.ForegroundColor, Console.BackgroundColor) = (front ?? theme.front, back ?? theme.back);
-            lines.Add((GetCursorPosition(), s));
-            Console.Write(s);
+            cursor.Print(new ColoredString(s, front ?? theme.front, back ?? theme.back));
         }
         public void Write(char c, Color? front = null, Color? back = null) {
-            (Console.ForegroundColor, Console.BackgroundColor) = (front ?? theme.front, back ?? theme.back);
-            lines.Add((GetCursorPosition(), c.ToString()));
-            Console.Write(c);
+            cursor.Print(new ColoredString(c.ToString(), front ?? theme.front, back ?? theme.back));
         }
         public void WriteInvert(char c, Color? front = null, Color? back = null) {
-            (Console.BackgroundColor, Console.ForegroundColor) = (front ?? theme.front, back ?? theme.back);
-            lines.Add((GetCursorPosition(), c.ToString()));
-            Console.Write(c);
+            cursor.Print(new ColoredString(c.ToString(), back ?? theme.back, front ?? theme.front));
         }
         public void WriteHighlight(string s, Color? front = null, Color? back = null) {
-            (Console.ForegroundColor, Console.BackgroundColor) = (front ?? theme.highlight, back ?? theme.back);
-            lines.Add((GetCursorPosition(), s));
-            Console.Write(s);
+            cursor.Print(new ColoredString(s, front ?? theme.highlight, back ?? theme.back));
         }
         public void WriteLineHighlight(string s, Color? front = null, Color? back = null) {
-            (Console.ForegroundColor, Console.BackgroundColor) = (front ?? theme.highlight, back ?? theme.back);
-            lines.Add((GetCursorPosition(), s));
-            Console.WriteLine(s);
+            cursor.Print(new ColoredString(s, front ?? theme.highlight, back ?? theme.back));
         }
         public void WriteLine(string s, Color? front = null, Color? back = null) {
             Write(s, front, back);
             NextLine();
         }
         public void ResetLine() {
-            Console.SetCursorPosition(margin.X, Console.CursorTop);
+            cursor.Column = margin.X;
         }
         public void NextLine() {
-            Console.CursorTop++;
+            cursor.Row++;
             ResetLine();
         }
         public void Draw(HighlightEntry h) {

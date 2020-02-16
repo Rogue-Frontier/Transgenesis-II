@@ -169,7 +169,7 @@ namespace Transgenesis {
                         break;
                     case "TranscendenceAdventure":
                     case "CoreLibrary":
-                        String libraryPath = Path.Combine(Path.GetRelativePath(path, ".."), sub.Att("filename"));
+                        String libraryPath = Path.Combine(Path.Combine(path, ".."), sub.Att("filename"));
 				//out.println(getConsoleMessage("[General] Looking for " + subName + " " + libraryPath));
                         //Make sure that Library Types are defined in our TypeManager so that they always work in-game
                         if(e.extensions.TryGetValue(libraryPath, out TranscendenceExtension library)) {
@@ -217,7 +217,7 @@ namespace Transgenesis {
                 switch (sub.Tag()) {
                     case "Module":
                         String moduleFilename = sub.Att("filename");
-                        String modulePath = Path.Combine(Path.GetRelativePath(path, ".."), moduleFilename);
+                        String modulePath = Path.Combine(Path.Combine(path, ".."), moduleFilename);
 				//Look for our module in the Extensions list
 				//out.println(getConsoleMessage("[General] Looking for Module " + modulePath + "."));
                         if(env.extensions.TryGetValue(modulePath, out TranscendenceExtension e)) {
@@ -436,7 +436,7 @@ namespace Transgenesis {
         public XElement GetXMLOutput() {
             XElement result = new XElement("TypeGroup");
             //result.SetAttributeValue("comment", comment);
-            result.SetAttributeValue("entities", string.Join(' ', entities));
+            result.SetAttributeValue("entities", string.Join(" ", entities));
             return result;
         }
 	}
@@ -462,7 +462,7 @@ namespace Transgenesis {
             //result.SetAttributeValue("comment", comment);
             result.SetAttributeValue("unid_min", unid_min);
             result.SetAttributeValue("unid_max", unid_max);
-            result.SetAttributeValue("entities", string.Join(' ', entities));
+            result.SetAttributeValue("entities", string.Join(" ", entities));
             return result;
         }
         public void BindAll(Dictionary<string, string> unid2entity, Dictionary<string, string> entity2unid) {
