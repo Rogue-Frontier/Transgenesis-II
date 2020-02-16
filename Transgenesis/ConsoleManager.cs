@@ -55,6 +55,7 @@ namespace Transgenesis {
         }
         public void WriteLineHighlight(string s, Color? front = null, Color? back = null) {
             cursor.Print(new ColoredString(s, front ?? theme.highlight, back ?? theme.back));
+            NextLine();
         }
         public void WriteLine(string s, Color? front = null, Color? back = null) {
             Write(s, front, back);
