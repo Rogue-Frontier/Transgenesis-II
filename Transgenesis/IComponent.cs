@@ -50,7 +50,6 @@ namespace Transgenesis {
         public void Handle(ConsoleKeyInfo k) {
             i.Handle(k);
             s.Handle(k);
-
             string input = i.Text;
             switch (k.Key) {
                 case ConsoleKey.Enter:
@@ -285,6 +284,7 @@ namespace Transgenesis {
         ConsoleManager c;
 
         XElement focused;
+        HashSet<XElement> expanded;
 
         Input i;
         Suggest s;
@@ -294,6 +294,7 @@ namespace Transgenesis {
             this.env = env;
             this.extension = extension;
             this.focused = extension.structure;
+            this.expanded = new HashSet<XElement>();
             this.c = c;
             i = new Input(c);
             s = new Suggest(i, c);

@@ -9,7 +9,9 @@ using SadConsole.Input;
 using MonoGame;
 using Microsoft.Xna.Framework;
 using Game = SadConsole.Game;
-
+using System;
+using SadConsole.Themes;
+using Keys = Microsoft.Xna.Framework.Input.Keys;
 namespace Transgenesis {
     class Program : Game {
         public static void Main(string[] args) {
@@ -17,32 +19,49 @@ namespace Transgenesis {
                 game.Run();
             }
         }
-        class KeyboardHandler : KeyboardConsoleComponent {
-            public override void ProcessKeyboard(SadConsole.Console console, Keyboard info, out bool handled) {
-                handled = true;
-            }
-        }
         public Program() : base("Content/IBM_ext.font", 80, 50, null) { }
-        Stack<IComponent> screens = new Stack<IComponent>();
         protected override void Initialize() {
-            screens.Push(new Commander(screens));
-
             IsMouseVisible = true;
             base.Initialize();
-            var con = new Console(80, 50);
+            var con = new MainConsole(80, 50);
             SadConsole.Global.CurrentScreen = con;
             con.IsVisible = true;
             con.IsFocused = true;
-            con.FillWithRandomGarbage();
+            con.Font = con.Font.Master.GetFont(Font.FontSizes.One);
         }
-        protected override void Update(GameTime delta) {
+    }
+    class MainConsole : ControlsConsole {
+        Stack<IComponent> screens = new Stack<IComponent>();
+        public MainConsole(int width, int height) : base(width, height) {
+            screens.Push(new Commander(screens));
+            Theme = new WindowTheme {
+                ModalTint = Color.Black,
+                FillStyle = new Cell(Color.White, Color.Black),
+            };
+            DefaultBackground = Color.Black;
+            DefaultForeground = Color.White;
+        }
+        public override void Update(TimeSpan delta) {
             base.Update(delta);
+            this.Fill(Color.White, Color.Black, null);
             screens.Peek().Update();
         }
-        protected override void Draw(GameTime delta) {
-            GraphicsDevice.Clear(Color.Black);
+        public override void Draw(TimeSpan delta) {
             base.Draw(delta);
             screens.Peek().Draw();
+        }
+        public override bool ProcessKeyboard(Keyboard info) {
+            bool handle = true;
+            
+            //The greatest hack I've ever written
+            //This translates keyboard info from MonoGame to key events from Windows Console
+            bool shift = info.IsKeyDown(Keys.LeftShift) || info.IsKeyDown(Keys.RightShift);
+            bool alt = info.IsKeyDown(Keys.LeftAlt) || info.IsKeyDown(Keys.RightAlt);
+            bool ctrl = info.IsKeyDown(Keys.LeftControl) || info.IsKeyDown(Keys.RightControl);
+            foreach (var key in info.KeysPressed) {
+                screens.Peek().Handle(new ConsoleKeyInfo(key.Character, (ConsoleKey)key.Key, shift, alt, ctrl));
+            }
+            return handle;
         }
     }
 }
