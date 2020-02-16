@@ -658,17 +658,27 @@
             <A name="valueBonusPerCharge" valueType="WHOLE"/>
             <A name="valueCharges" valueType="BOOLEAN"/>
             <A name="virtual" valueType="BOOLEAN"/>
+			
 			<E category="virtual" name="DeviceType">
-                <A name="category" valueType="CATEGORY_DEVICE"/>
-                <A name="deviceSlotCategory" valueType="CATEGORY_DEVICE"/>
+                <A name="canBeDamaged" valueType="BOOLEAN"/>
+				<A name="canBeDisabled" valueType="BOOLEAN"/>
+				<A name="canBeDisrupted" valueType="BOOLEAN"/>
+				<A name="category" valueType="CATEGORY_DEVICE"/>
+				
+				<A name="deviceDamageImmune" valueType="BOOLEAN"/>
+				<A name="deviceDisruptImmune" valueType="BOOLEAN"/>
+				
+				<A name="deviceSlotCategory" valueType="CATEGORY_DEVICE"/>
                 <A name="deviceSlots" valueType="WHOLE"/>
+				
                 <A name="external" valueType="BOOLEAN"/>
 				<A name="maxHPBonus" valueType="WHOLE"/>
                 <A name="overlayType" valueType="TYPE_OVERLAY"/>
-                <E category="*" name="EnhanceAbilities">
-                    <A name="criteria" valueType="STRING"/>
-                    <A name="enhancement" valueType="STRING"/>
-                    <A name="type" valueType="STRING"/>
+                <E category="?" inherit="EnhancementAbilities"/>
+				<E category="?" name="Equipment">
+					<E name="*"	category="*">
+						<A name="equipment" category="EQUIPMENT"/>
+					</E>
                 </E>
 			</E>
             <E category="?" name="Armor">
@@ -739,14 +749,28 @@
             </E>
             <E category="?" name="EnhancerDevice" inherit="DesignTypes:ItemType:DeviceType">
                 <A name="activateAdj" valueType="WHOLE"/>
-                <A name="criteria" valueType="STRING"/>
+                <A name="criteria" valueType="ITEM_CRITERIA"/>
                 <A name="damageAdj" valueType="INTEGER_SEQUENCE"/>
+				<A name="enhancementType" valueType="STRING"/>
                 <A name="hpBonus" valueType="WHOLE"/>
+				<A name="levelCheck" valueType="ITEM_LEVEL_CHECK"/>
                 <A name="maxActivateDelay" valueType="INTEGER"/>
                 <A name="maxHPBonus" valueType="WHOLE"/>
                 <A name="minActivateDelay" valueType="INTEGER"/>
                 <A name="overlayType" valueType="TYPE_OVERLAY"/>
                 <A name="powerUse" valueType="WHOLE"/>
+				<A name="type" valueType="STRING"/>
+				
+				<E category="?"	name="Enhance"	inherit="EnhanceTag">
+					<A name="powerUse"	valueType="WHOLE"/>
+				</E>
+				<E category="?"	name="Scaling">
+					<E category="*"	name="*"	inherit="EnhanceTag">
+						<A name="level"	valueType="WHOLE"/>
+						<A name="powerUse"	valueType="WHOLE"/>
+					</E>
+				</E>
+				
             </E>
             <E category="?" name="Image">
                 <A name="animationColumns" valueType="WHOLE"/>
@@ -805,7 +829,6 @@
             <E category="?" name="Shields" inherit="DesignTypes:ItemType:DeviceType">
                 <A name="absorbAdj" valueType="WHOLE"/>
                 <A name="armorShield" valueType="WHOLE"/>
-                <A name="category" valueType="CATEGORY_DEVICE"/>
                 <A name="damageAdj" valueType="STRING"/>
                 <A name="damageAdjLevel" valueType="STRING"/>
                 <A name="depletionDelay" valueType="WHOLE"/>
@@ -826,19 +849,8 @@
                 <A name="weaponSuppress" valueType="STRING"/>
             </E>
             <E category="?" name="SolarDevice" inherit="DesignTypes:ItemType:DeviceType">
-                <A name="category" valueType="CATEGORY_DEVICE"/>
-                <A name="deviceSlotCategory" valueType="CATEGORY_DEVICE"/>
-                <A name="deviceSlots" valueType="WHOLE"/>
-                <A name="external" valueType="BOOLEAN"/>
-                <A name="maxHPBonus" valueType="WHOLE"/>
-                <A name="overlayType" valueType="TYPE_OVERLAY"/>
                 <A name="powerGen" valueType="WHOLE"/>
                 <A name="refuel" valueType="WHOLE"/>
-                <E category="*" name="EnhanceAbilities">
-                    <A name="criteria" valueType="STRING"/>
-                    <A name="enhancement" valueType="STRING"/>
-                    <A name="type" valueType="STRING"/>
-                </E>
             </E>
             <E category="?" name="Weapon" inherit="DesignTypes:ItemType:DeviceType">
 				<A name="W.I.P." valueType="STRING"/>
@@ -1422,7 +1434,7 @@
 			<A name="W.I.P." valueType="STRING"/>
 		</E>
         <E category="*" name="SystemTable" inherit="DesignTypeBase">
-			<A name="W.I.P." valueType="STRING"/>
+			<E	category="*"	inherit="DesignTypes:SystemType:SystemGroup"	name="*"/>
 		</E>
 		<E category="*" name="SystemType" inherit="DesignTypeBase">
 			<A name="attributes" valueType="STRING"/>
@@ -1436,20 +1448,7 @@
 			<A name="spaceScale" valueType="INTEGER"/>
 			<A name="timeScale" valueType="INTEGER"/>
 			<A name="unid" valueType="UNID"/>
-			<E	name="SystemGroup"	category="1">
-				<E	name="AntiTrojan"	inherit="SystemType:SystemGroup"	category="*">
-					<A	name="debugOnly"	valueType="BOOLEAN"/>
-					<A	name="probability"		valueType="WHOLE"/>
-					<A	name="offset"	valueType="DICE_RANGE"/>
-				</E>
-				<E	name="ArcDistribution"	category="*">
-					<A	name="debugOnly"	valueType="BOOLEAN"/>
-					<A	name="probability"		valueType="WHOLE"/>
-					<A	name="count"	valueType="DICE_RANGE"/>
-					<A	name="radialWidth"	valueType="WHOLE"/>
-					<A	name="radialEdgeWidth"	valueType="WHOLE"/>
-					<A	name="scale"		valueType="SCALE_DISTANCE"/>
-				</E>
+			<E name="SystemGroup"	category="1">
 				<E	name="AddAttribute"	category="*">
 					<A	name="debugOnly"	valueType="BOOLEAN"/>
 					<A	name="probability"		valueType="WHOLE"/>
@@ -1464,6 +1463,23 @@
 					<A	name="criteria"		valueType="STRING"/>
 					<A	name="attributes"	valueType="STRING"/>
 				</E>
+				<E	name="AntiTrojan"	inherit="DesignTypes:SystemType:SystemGroup"	category="*">
+					<A	name="debugOnly"	valueType="BOOLEAN"/>
+					<A	name="probability"		valueType="WHOLE"/>
+					<A	name="offset"	valueType="DICE_RANGE"/>
+				</E>
+				<E	name="ArcDistribution"	category="*">
+					<A	name="debugOnly"	valueType="BOOLEAN"/>
+					<A	name="probability"		valueType="WHOLE"/>
+					<A	name="count"	valueType="DICE_RANGE"/>
+					<A name="arcLength" valueType="WHOLE"/>
+					<A	name="radialWidth"	valueType="WHOLE"/>
+					<A name="zHeight" valueType="WHOLE"/>
+					<A name="inclination" valueType="ANGLE"/>
+					<A	name="gapWidth"	valueType="WHOLE"/>
+					<A	name="radialEdgeWidth"	valueType="WHOLE"/>
+					<A	name="scale"		valueType="SCALE_DISTANCE"/>
+				</E>
 				<E	name="Code"	category="*">
 					<A	name="debugOnly"	valueType="BOOLEAN"/>
 					<A	name="probability"		valueType="WHOLE"/>
@@ -1476,7 +1492,7 @@
 					<A	name="percentEnemies"	valueType="WHOLE"/>
 					<A	name="stationCriteria"	valueType="STRING"/>
 				</E>
-				<E	name="Group"	category="*"	inherit="SystemType:SystemGroup">
+				<E	name="Group"	category="*"	inherit="DesignTypes:SystemType:SystemGroup">
 					<A	name="debugOnly"	valueType="BOOLEAN"/>
 					<A	name="probability"		valueType="WHOLE"/>
 				</E>
@@ -1485,26 +1501,46 @@
 					<A	name="probability"		valueType="WHOLE"/>
 					<A	name="attributes"	valueType="STRING"/>
 				</E>
-				;WIP
 				<E	name="LevelTable"	category="*">
 					<A	name="debugOnly"	valueType="BOOLEAN"/>
 					<A	name="probability"		valueType="WHOLE"/>
 					<E	category="*"	inherit="SystemGroup:AntiTrojan">
 						<A	name="levelFrequency"	valueType="STRING"/>
 					</E>
+					<E	category="*"	inherit="SystemGroup:AddAttribute">
+						<A	name="levelFrequency"	valueType="STRING"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:AddTerritory">
+						<A	name="levelFrequency"	valueType="STRING"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:AntiTrojan">
+						<A	name="levelFrequency"	valueType="STRING"/>
+					</E>
 					<E	category="*"	inherit="SystemGroup:ArcDistribution">
 						<A	name="levelFrequency"	valueType="STRING"/>
 					</E>
 					<E	category="*"	inherit="SystemGroup:Code">
 						<A	name="levelFrequency"	valueType="STRING"/>
 					</E>
+					<E	category="*"	inherit="SystemGroup:FillLocations">
+						<A	name="levelFrequency"	valueType="STRING"/>
+					</E>
 					<E	category="*"	inherit="SystemGroup:Group">
+						<A	name="levelFrequency"	valueType="STRING"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:Label">
 						<A	name="levelFrequency"	valueType="STRING"/>
 					</E>
 					<E	category="*"	inherit="SystemGroup:LevelTable">
 						<A	name="levelFrequency"	valueType="STRING"/>
 					</E>
+					<E	category="*"	inherit="SystemGroup:LocationCriteriaTable">
+						<A	name="levelFrequency"	valueType="STRING"/>
+					</E>
 					<E	category="*"	inherit="SystemGroup:Lookup">
+						<A	name="levelFrequency"	valueType="STRING"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:Marker">
 						<A	name="levelFrequency"	valueType="STRING"/>
 					</E>
 					<E	category="*"	inherit="SystemGroup:Null">
@@ -1519,13 +1555,28 @@
 					<E	category="*"	inherit="SystemGroup:Particles">
 						<A	name="levelFrequency"	valueType="STRING"/>
 					</E>
+					<E	category="*"	inherit="SystemGroup:PlaceRandomStation">
+						<A	name="levelFrequency"	valueType="STRING"/>
+					</E>
 					<E	category="*"	inherit="SystemGroup:Primary">
+						<A	name="levelFrequency"	valueType="STRING"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:RandomLocation">
+						<A	name="levelFrequency"	valueType="STRING"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:RandomStation">
 						<A	name="levelFrequency"	valueType="STRING"/>
 					</E>
 					<E	category="*"	inherit="SystemGroup:Siblings">
 						<A	name="levelFrequency"	valueType="STRING"/>
 					</E>
+					<E	category="*"	inherit="SystemGroup:Ship">
+						<A	name="levelFrequency"	valueType="STRING"/>
+					</E>
 					<E	category="*"	inherit="SystemGroup:SpaceEnvironment">
+						<A	name="levelFrequency"	valueType="STRING"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:Stargate">
 						<A	name="levelFrequency"	valueType="STRING"/>
 					</E>
 					<E	category="*"	inherit="SystemGroup:Station">
@@ -1537,14 +1588,29 @@
 					<E	category="*"	inherit="SystemGroup:Trojan">
 						<A	name="levelFrequency"	valueType="STRING"/>
 					</E>
+					<E	category="*"	inherit="SystemGroup:Variant">
+						<A	name="levelFrequency"	valueType="STRING"/>
+					</E>
 					<E	category="*"	inherit="SystemGroup:Variants">
 						<A	name="levelFrequency"	valueType="STRING"/>
 					</E>
+					<E	category="*"	inherit="SystemGroup:VariantTable">
+						<A	name="levelFrequency"	valueType="STRING"/>
+					</E>
 				</E>
-				;WIP
 				<E	name="LocationCriteriaTable"	category="*">
 					<A	name="debugOnly"	valueType="BOOLEAN"/>
 					<A	name="probability"		valueType="WHOLE"/>
+					
+					<E	category="*"	inherit="SystemGroup:AntiTrojan">
+						<A	name="criteria"	valueType="STRING"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:AddAttribute">
+						<A	name="criteria"	valueType="STRING"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:AddTerritory">
+						<A	name="criteria"	valueType="STRING"/>
+					</E>
 					<E	category="*"	inherit="SystemGroup:AntiTrojan">
 						<A	name="criteria"	valueType="STRING"/>
 					</E>
@@ -1554,13 +1620,25 @@
 					<E	category="*"	inherit="SystemGroup:Code">
 						<A	name="criteria"	valueType="STRING"/>
 					</E>
+					<E	category="*"	inherit="SystemGroup:FillLocations">
+						<A	name="criteria"	valueType="STRING"/>
+					</E>
 					<E	category="*"	inherit="SystemGroup:Group">
+						<A	name="criteria"	valueType="STRING"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:Label">
 						<A	name="criteria"	valueType="STRING"/>
 					</E>
 					<E	category="*"	inherit="SystemGroup:LevelTable">
 						<A	name="criteria"	valueType="STRING"/>
 					</E>
+					<E	category="*"	inherit="SystemGroup:LocationCriteriaTable">
+						<A	name="criteria"	valueType="STRING"/>
+					</E>
 					<E	category="*"	inherit="SystemGroup:Lookup">
+						<A	name="criteria"	valueType="STRING"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:Marker">
 						<A	name="criteria"	valueType="STRING"/>
 					</E>
 					<E	category="*"	inherit="SystemGroup:Null">
@@ -1575,13 +1653,28 @@
 					<E	category="*"	inherit="SystemGroup:Particles">
 						<A	name="criteria"	valueType="STRING"/>
 					</E>
+					<E	category="*"	inherit="SystemGroup:PlaceRandomStation">
+						<A	name="criteria"	valueType="STRING"/>
+					</E>
 					<E	category="*"	inherit="SystemGroup:Primary">
+						<A	name="criteria"	valueType="STRING"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:RandomLocation">
+						<A	name="criteria"	valueType="STRING"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:RandomStation">
 						<A	name="criteria"	valueType="STRING"/>
 					</E>
 					<E	category="*"	inherit="SystemGroup:Siblings">
 						<A	name="criteria"	valueType="STRING"/>
 					</E>
+					<E	category="*"	inherit="SystemGroup:Ship">
+						<A	name="criteria"	valueType="STRING"/>
+					</E>
 					<E	category="*"	inherit="SystemGroup:SpaceEnvironment">
+						<A	name="criteria"	valueType="STRING"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:Stargate">
 						<A	name="criteria"	valueType="STRING"/>
 					</E>
 					<E	category="*"	inherit="SystemGroup:Station">
@@ -1593,12 +1686,25 @@
 					<E	category="*"	inherit="SystemGroup:Trojan">
 						<A	name="criteria"	valueType="STRING"/>
 					</E>
+					<E	category="*"	inherit="SystemGroup:Variant">
+						<A	name="criteria"	valueType="STRING"/>
+					</E>
 					<E	category="*"	inherit="SystemGroup:Variants">
 						<A	name="criteria"	valueType="STRING"/>
 					</E>
+					<E	category="*"	inherit="SystemGroup:VariantTable">
+						<A	name="criteria"	valueType="STRING"/>
+					</E>
+					
 				</E>
 				<E	name="Lookup"	category="*">
 					<A	name="table"	valueType="STRING"/>
+					<A	name="xOffset"	valueType="INTEGER"/>
+					<A	name="yOffset"	valueType="INTEGER"/>
+					
+					<A	name="showOrbit"	valueType="BOOLEAN"/>
+					<A	name="showMapLabel"	valueType="BOOLEAN"/>
+					<A	name="noMapLabel"	valueType="BOOLEAN"/>
 				</E>
 				<E	name="Marker"	category="*">
 					<A	name="debugOnly"	valueType="BOOLEAN"/>
@@ -1607,7 +1713,7 @@
 					<A	name="showOrbit"	valueType="BOOLEAN"/>
 				</E>
 				<E	name="Null"	category="*"/>
-				<E	name="Offset"	inherit="SystemType:SystemGroup"	category="*">
+				<E	name="Offset"	inherit="DesignTypes:SystemType:SystemGroup"	category="*">
 					<A	name="debugOnly"	valueType="BOOLEAN"/>
 					<A	name="probability"		valueType="WHOLE"/>
 					<A	name="count"		valueType="DICE_RANGE"/>
@@ -1617,7 +1723,7 @@
 					<A	name="x"			valueType="DICE_RANGE"/>
 					<A	name="y"			valueType="DICE_RANGE"/>
 				</E>
-				<E	name="Orbitals"	inherit="SystemType:SystemGroup"	category="*">
+				<E	name="Orbitals"	inherit="DesignTypes:SystemType:SystemGroup"	category="*">
 					<A	name="debugOnly"	valueType="BOOLEAN"/>
 					<A	name="probability"		valueType="WHOLE"/>
 					<A	name="count"		valueType="DICE_RANGE"/>
@@ -1651,11 +1757,11 @@
 					<A	name="separateEnemies"	valueType="BOOLEAN"/>
 					<A	name="separateEnemies"	valueType="BOOLEAN"/>
 				</E>
-				<E	name="Primary"	inherit="SystemType:SystemGroup"	category="*">
+				<E	name="Primary"	inherit="DesignTypes:SystemType:SystemGroup"	category="*">
 					<A	name="debugOnly"	valueType="BOOLEAN"/>
 					<A	name="probability"		valueType="WHOLE"/>
 				</E>
-				<E	category="*"	inherit="SystemType:SystemGroup"	name="RandomLocation">
+				<E	name="RandomLocation"	inherit="DesignTypes:SystemType:SystemGroup" category="*">
 					<A	name="debugOnly"	valueType="BOOLEAN"/>
 					<A	name="probability"		valueType="WHOLE"/>
 					<A	name="locationCriteria" valueType="STRING"/>
@@ -1679,12 +1785,12 @@
 					
 					<A	name="noConstruction"	valueType="BOOLEAN"/>
 					<A	name="noReinforcements"	valueType="BOOLEAN"/>
-					<E	category="?"	inherit="StaticData_Data"/>
-					<E	category="?"	inherit="StationType_Satellites"/>
-					<E	category="?"	inherit="StationType_Ships"/>
-					<E	category="?"	inherit="Events_OnCreate"/>
+					<E	category="?"	inherit="StaticData:Data"/>
+					<E	category="?"	inherit="StationType:Satellites"/>
+					<E	category="?"	inherit="StationType:Ships"/>
+					<E	category="?"	inherit="Events:OnCreate"/>
 				</E>
-				<E	name="Siblings"	inherit="SystemType:SystemGroup"	category="*">
+				<E	name="Siblings"	inherit="DesignTypes:SystemType:SystemGroup"	category="*">
 					<A	name="debugOnly"	valueType="BOOLEAN"/>
 					<A	name="probability"		valueType="WHOLE"/>
 					<A	name="distribution"	valueType="DICE_RANGE"/>
@@ -1701,7 +1807,6 @@
 					<A	name="probability"		valueType="WHOLE"/>
 					<A	name="count"	valueType="DICE_RANGE"/>
 				</E>
-				;WIP
 				<E	name="SpaceEnvironment"	category="*">
 					<A	name="debugOnly"	valueType="BOOLEAN"/>
 					<A	name="probability"		valueType="WHOLE"/>
@@ -1710,17 +1815,24 @@
 					<A	name="patches"	valueType="WHOLE"/>
 					<A	name="patchFrequency"	valueType="WHOLE"/>
 					<A	name="encountersCount"		valueType="DICE_RANGE"/>
-					;One SystemGroup element
+					<E 	name="*"	category="?"	inherit="SystemGroup"/>
 				</E>
 				<E	name="Stargate"	inherit="SystemType:Station"	category="*">
 					<A	name="debugOnly"	valueType="BOOLEAN"/>
 					<A	name="probability"		valueType="WHOLE"/>
 					<A	name="objName"	valueType="STRING"/>
+					<A	name="xOffset"	valueType="INTEGER"/>
+					<A	name="yOffset"	valueType="INTEGER"/>
 				</E>
-				
 				<E	name="Table"	category="*">
 					<A	name="debugOnly"	valueType="BOOLEAN"/>
 					<A	name="probability"		valueType="WHOLE"/>
+					<E	category="*"	inherit="SystemGroup:AddAttribute">
+						<A	name="chance"	valueType="STRING"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:AddTerritory">
+						<A	name="chance"	valueType="STRING"/>
+					</E>
 					<E	category="*"	inherit="SystemGroup:AntiTrojan">
 						<A	name="chance"	valueType="STRING"/>
 					</E>
@@ -1730,13 +1842,25 @@
 					<E	category="*"	inherit="SystemGroup:Code">
 						<A	name="chance"	valueType="STRING"/>
 					</E>
+					<E	category="*"	inherit="SystemGroup:FillLocations">
+						<A	name="chance"	valueType="STRING"/>
+					</E>
 					<E	category="*"	inherit="SystemGroup:Group">
+						<A	name="chance"	valueType="STRING"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:Label">
 						<A	name="chance"	valueType="STRING"/>
 					</E>
 					<E	category="*"	inherit="SystemGroup:LevelTable">
 						<A	name="chance"	valueType="STRING"/>
 					</E>
+					<E	category="*"	inherit="SystemGroup:LocationCriteriaTable">
+						<A	name="chance"	valueType="STRING"/>
+					</E>
 					<E	category="*"	inherit="SystemGroup:Lookup">
+						<A	name="chance"	valueType="STRING"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:Marker">
 						<A	name="chance"	valueType="STRING"/>
 					</E>
 					<E	category="*"	inherit="SystemGroup:Null">
@@ -1751,13 +1875,28 @@
 					<E	category="*"	inherit="SystemGroup:Particles">
 						<A	name="chance"	valueType="STRING"/>
 					</E>
+					<E	category="*"	inherit="SystemGroup:PlaceRandomStation">
+						<A	name="chance"	valueType="STRING"/>
+					</E>
 					<E	category="*"	inherit="SystemGroup:Primary">
+						<A	name="chance"	valueType="STRING"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:RandomLocation">
+						<A	name="chance"	valueType="STRING"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:RandomStation">
 						<A	name="chance"	valueType="STRING"/>
 					</E>
 					<E	category="*"	inherit="SystemGroup:Siblings">
 						<A	name="chance"	valueType="STRING"/>
 					</E>
+					<E	category="*"	inherit="SystemGroup:Ship">
+						<A	name="chance"	valueType="STRING"/>
+					</E>
 					<E	category="*"	inherit="SystemGroup:SpaceEnvironment">
+						<A	name="chance"	valueType="STRING"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:Stargate">
 						<A	name="chance"	valueType="STRING"/>
 					</E>
 					<E	category="*"	inherit="SystemGroup:Station">
@@ -1769,40 +1908,218 @@
 					<E	category="*"	inherit="SystemGroup:Trojan">
 						<A	name="chance"	valueType="STRING"/>
 					</E>
+					<E	category="*"	inherit="SystemGroup:Variant">
+						<A	name="chance"	valueType="STRING"/>
+					</E>
 					<E	category="*"	inherit="SystemGroup:Variants">
 						<A	name="chance"	valueType="STRING"/>
 					</E>
+					<E	category="*"	inherit="SystemGroup:VariantTable">
+						<A	name="chance"	valueType="STRING"/>
+					</E>
+					
 				</E>
-				
-				<E	name="Variant"	category="*">
+				<E	name="Trojan"	category="*"	inherit="SystemGroup">
+					<A	name="offset"	valueType="DICE_RANGE"/>
+				</E>
+				<E	name="Variant"	category="*"	inherit="SystemGroup">
 					<A	name="debugOnly"	valueType="BOOLEAN"/>
 					<A	name="probability"		valueType="WHOLE"/>
 					<A	name="variant"	valueType="STRING"/>
 				</E>
-				<E	name="Variants"	inherit="SystemGroup:VariantTable"	category="*">
+				<E	name="Variants"	inherit="SystemGroup:VariantTable"	category="*"/>
+				<E	name="VariantTable"	category="*"	inherit="SystemGroup">
 					<A	name="debugOnly"	valueType="BOOLEAN"/>
 					<A	name="probability"		valueType="WHOLE"/>
-				</E>
-				<E	name="VariantTable"	category="*">
-					<A	name="debugOnly"	valueType="BOOLEAN"/>
-					<A	name="probability"		valueType="WHOLE"/>
+					
+					<E	category="*"	inherit="SystemGroup:AntiTrojan">
+						<A	name="string"	valueType="STRING"/>
+						<A	name="maxRadius"	valueType="INTEGER"/>
+						<A	name="variantLocationCriteria"	valueType="AFFINITY_CRITERIA"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:AddAttribute">
+						<A	name="string"	valueType="STRING"/>
+						<A	name="maxRadius"	valueType="INTEGER"/>
+						<A	name="variantLocationCriteria"	valueType="AFFINITY_CRITERIA"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:AddTerritory">
+						<A	name="string"	valueType="STRING"/>
+						<A	name="maxRadius"	valueType="INTEGER"/>
+						<A	name="variantLocationCriteria"	valueType="AFFINITY_CRITERIA"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:AntiTrojan">
+						<A	name="string"	valueType="STRING"/>
+						<A	name="maxRadius"	valueType="INTEGER"/>
+						<A	name="variantLocationCriteria"	valueType="AFFINITY_CRITERIA"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:ArcDistribution">
+						<A	name="string"	valueType="STRING"/>
+						<A	name="maxRadius"	valueType="INTEGER"/>
+						<A	name="variantLocationCriteria"	valueType="AFFINITY_CRITERIA"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:Code">
+						<A	name="string"	valueType="STRING"/>
+						<A	name="maxRadius"	valueType="INTEGER"/>
+						<A	name="variantLocationCriteria"	valueType="AFFINITY_CRITERIA"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:FillLocations">
+						<A	name="string"	valueType="STRING"/>
+						<A	name="maxRadius"	valueType="INTEGER"/>
+						<A	name="variantLocationCriteria"	valueType="AFFINITY_CRITERIA"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:Group">
+						<A	name="string"	valueType="STRING"/>
+						<A	name="maxRadius"	valueType="INTEGER"/>
+						<A	name="variantLocationCriteria"	valueType="AFFINITY_CRITERIA"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:Label">
+						<A	name="string"	valueType="STRING"/>
+						<A	name="maxRadius"	valueType="INTEGER"/>
+						<A	name="variantLocationCriteria"	valueType="AFFINITY_CRITERIA"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:LevelTable">
+						<A	name="string"	valueType="STRING"/>
+						<A	name="maxRadius"	valueType="INTEGER"/>
+						<A	name="variantLocationCriteria"	valueType="AFFINITY_CRITERIA"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:LocationCriteriaTable">
+						<A	name="string"	valueType="STRING"/>
+						<A	name="maxRadius"	valueType="INTEGER"/>
+						<A	name="variantLocationCriteria"	valueType="AFFINITY_CRITERIA"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:Lookup">
+						<A	name="string"	valueType="STRING"/>
+						<A	name="maxRadius"	valueType="INTEGER"/>
+						<A	name="variantLocationCriteria"	valueType="AFFINITY_CRITERIA"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:Marker">
+						<A	name="string"	valueType="STRING"/>
+						<A	name="maxRadius"	valueType="INTEGER"/>
+						<A	name="variantLocationCriteria"	valueType="AFFINITY_CRITERIA"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:Null">
+						<A	name="string"	valueType="STRING"/>
+						<A	name="maxRadius"	valueType="INTEGER"/>
+						<A	name="variantLocationCriteria"	valueType="AFFINITY_CRITERIA"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:Offset">
+						<A	name="string"	valueType="STRING"/>
+						<A	name="maxRadius"	valueType="INTEGER"/>
+						<A	name="variantLocationCriteria"	valueType="AFFINITY_CRITERIA"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:Orbitals">
+						<A	name="string"	valueType="STRING"/>
+						<A	name="maxRadius"	valueType="INTEGER"/>
+						<A	name="variantLocationCriteria"	valueType="AFFINITY_CRITERIA"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:Particles">
+						<A	name="string"	valueType="STRING"/>
+						<A	name="maxRadius"	valueType="INTEGER"/>
+						<A	name="variantLocationCriteria"	valueType="AFFINITY_CRITERIA"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:PlaceRandomStation">
+						<A	name="string"	valueType="STRING"/>
+						<A	name="maxRadius"	valueType="INTEGER"/>
+						<A	name="variantLocationCriteria"	valueType="AFFINITY_CRITERIA"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:Primary">
+						<A	name="string"	valueType="STRING"/>
+						<A	name="maxRadius"	valueType="INTEGER"/>
+						<A	name="variantLocationCriteria"	valueType="AFFINITY_CRITERIA"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:RandomLocation">
+						<A	name="string"	valueType="STRING"/>
+						<A	name="maxRadius"	valueType="INTEGER"/>
+						<A	name="variantLocationCriteria"	valueType="AFFINITY_CRITERIA"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:RandomStation">
+						<A	name="string"	valueType="STRING"/>
+						<A	name="maxRadius"	valueType="INTEGER"/>
+						<A	name="variantLocationCriteria"	valueType="AFFINITY_CRITERIA"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:Siblings">
+						<A	name="string"	valueType="STRING"/>
+						<A	name="maxRadius"	valueType="INTEGER"/>
+						<A	name="variantLocationCriteria"	valueType="AFFINITY_CRITERIA"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:Ship">
+						<A	name="string"	valueType="STRING"/>
+						<A	name="maxRadius"	valueType="INTEGER"/>
+						<A	name="variantLocationCriteria"	valueType="AFFINITY_CRITERIA"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:SpaceEnvironment">
+						<A	name="string"	valueType="STRING"/>
+						<A	name="maxRadius"	valueType="INTEGER"/>
+						<A	name="variantLocationCriteria"	valueType="AFFINITY_CRITERIA"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:Stargate">
+						<A	name="string"	valueType="STRING"/>
+						<A	name="maxRadius"	valueType="INTEGER"/>
+						<A	name="variantLocationCriteria"	valueType="AFFINITY_CRITERIA"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:Station">
+						<A	name="string"	valueType="STRING"/>
+						<A	name="maxRadius"	valueType="INTEGER"/>
+						<A	name="variantLocationCriteria"	valueType="AFFINITY_CRITERIA"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:Table">
+						<A	name="string"	valueType="STRING"/>
+						<A	name="maxRadius"	valueType="INTEGER"/>
+						<A	name="variantLocationCriteria"	valueType="AFFINITY_CRITERIA"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:Trojan">
+						<A	name="string"	valueType="STRING"/>
+						<A	name="maxRadius"	valueType="INTEGER"/>
+						<A	name="variantLocationCriteria"	valueType="AFFINITY_CRITERIA"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:Variant">
+						<A	name="string"	valueType="STRING"/>
+						<A	name="maxRadius"	valueType="INTEGER"/>
+						<A	name="variantLocationCriteria"	valueType="AFFINITY_CRITERIA"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:Variants">
+						<A	name="string"	valueType="STRING"/>
+						<A	name="maxRadius"	valueType="INTEGER"/>
+						<A	name="variantLocationCriteria"	valueType="AFFINITY_CRITERIA"/>
+					</E>
+					<E	category="*"	inherit="SystemGroup:VariantTable">
+						<A	name="string"	valueType="STRING"/>
+						<A	name="maxRadius"	valueType="INTEGER"/>
+						<A	name="variantLocationCriteria"	valueType="AFFINITY_CRITERIA"/>
+					</E>
+					
 				</E>
 				
 			</E>
 			<E	name="Tables"	category="?">
-				<E	category="*"	inherit="SystemType:SystemGroup"	name="*"/>
+				<E	category="*"	inherit="DesignTypes:SystemType:SystemGroup"	name="*"/>
 			</E>
-			<E category="?" inherit="DesignTypeBase:Communications"/>
-			<E category="?" inherit="DesignTypeBase:StaticData"/>
-			<E category="?" inherit="DesignTypeBase:GlobalData"/>
-			<E category="?" inherit="DesignTypeBase:Language"/>
+			<E name="ImageFilters"	category="?">
+				<A name="criteria"	category="SPACE_OBJECT_CRITERIA"/>
+				<E name="Bloom"	category="*">
+					<A name="bloomPoint"	valueType="WHOLE_255"/>
+				</E>
+				<E name="Colorize"	category="*">
+					<A name="hue"	valueType="WHOLE_360"/>
+					<A name="saturation"	valueType="WHOLE_100"/>
+					<A name="brightness"	valueType="INTEGER"/>
+				</E>
+				<E name="HueSaturation"	category="*">
+					<A name="hue"	valueType="WHOLE_360"/>
+					<A name="saturation"	valueType="WHOLE_100"/>
+					<A name="brightness"	valueType="INTEGER"/>
+				</E>
+				<E name="Levels"	category="*">
+					<A name="blackPoint"	valueType="WHOLE"/>
+					<A name="whitePoint"	valueType="WHOLE"/>
+					<A name="gamma"	valueType="WHOLE"/>
+				</E>
+			</E>
+			<E name="EnhancementAbilities"	category="?"	inherit="EnhancementAbilities"/>
 			<E category="?" name="Events" inherit="DesignTypeBase:Events">
 				<E category="?" name="OnCreate"/>
 				<E category="?" name="OnObjJumpPosAdj"/>
 			</E>
-			<E category="?" inherit="DesignTypeBase:DockScreens"/>
-			<E category="?" inherit="DesignTypeBase:DisplayAttributes"/>
-			<E category="?" inherit="DesignTypeBase:AttributeDesc"/>
 		</E>
         <E category="*" name="TemplateType" inherit="DesignTypeBase">
             <E category="?" inherit="DesignTypeBase:Events">
@@ -1814,6 +2131,15 @@
 	;W.I.P. Clean up
 	<E category="virtual" id="DeviceGenerator">
 	
+	</E>
+	<E category="virtual"	id="EnhanceTag">
+		<A name="criteria" valueType="ITEM_CRITERIA"/>
+		<A name="enhancement" valueType="ENHANCEMENT"/>
+		<A name="levelCheck" valueType="ITEM_LEVEL_CHECK"/>
+		<A name="type" valueType="ENHANCEMENT_TYPE"/>
+	</E>
+	<E category="virtual" id="EnhancementAbilities">
+		<E	name="*"	category="*"	inherit="EnhanceTag"/>
 	</E>
 	<E category="virtual" id="EnhancementGenerator">
 		<A name="enhanced" valueType="WHOLE_100"/>

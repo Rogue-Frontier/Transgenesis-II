@@ -929,6 +929,8 @@ namespace Transgenesis {
             }
         }
         public void Draw() {
+            int columns = Console.WindowWidth;
+            int column = 0;
             c.SetCursor(pos);
             for (int i = 0; i < items.Count; i++) {
                 var o = items[i];
@@ -940,7 +942,12 @@ namespace Transgenesis {
                 c.NextLine();
 
                 //Begin a new column of items
-                if (i % 16 == 15) {
+                if (i % 16 == Math.Max(15, 1 + items.Count / columns)) {
+                    //if(c.margin.X + 32 >= Console.WindowWidth) {
+                    if (column >= columns) {
+                        continue;
+                    }
+                    column++;
                     c.margin.X += 32;
                     c.ResetCursor();
                 }

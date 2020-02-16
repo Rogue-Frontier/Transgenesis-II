@@ -14,6 +14,7 @@ namespace Transgenesis {
         public Dictionary<string, TranscendenceExtension> extensions = new Dictionary<string, TranscendenceExtension>();
         public Dictionary<string, List<string>> customAttributeValues;
         public XElement unknown = new XElement("Unknown");
+        public bool allowUnknown = true;
 
         public Environment() {
 
@@ -189,14 +190,23 @@ namespace Transgenesis {
                 }
                 */
                 //Start with the root and navigate to the base element
-                XElement inherited = baseStructures[source];
+                XElement inherited = unknown;
+                if(baseStructures.TryGetValue(source, out XElement templateBase)) {
+                    inherited = templateBase;
+                } else {
+                    if(allowUnknown) {
+                        goto SkipInherit;
+                    } else {
+                        inherited = baseStructures[source];
+                    }
+                }
 
                 //Handle the inheritance chain
                 inherited = InitializeTemplate(inherited);
 
                 foreach (string part in parts.Skip(1)) {
                     //template = template.Element(part);
-                    inherited = inherited.Elements("E").First(e => e.Att("name") == part);
+                    inherited = inherited.Elements("E").FirstOrDefault(e => e.Att("name") == part);
 
                     //Handle the inheritance chain
                     inherited = InitializeTemplate(inherited);
@@ -210,6 +220,7 @@ namespace Transgenesis {
                     result.Add(new XElement(e));
                 }
             }
+            SkipInherit:
             //Handle additional/overriding attributes
             foreach (var a in template.Attributes()) {
                 result.SetAttributeValue(a.Name, a.Value);
