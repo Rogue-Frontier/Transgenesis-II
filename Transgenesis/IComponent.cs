@@ -180,6 +180,7 @@ namespace Transgenesis {
             int columns = c.width;
             int column = 0;
             c.SetCursor(pos);
+            c.margin = pos;
             for (int i = 0; i < items.Count; i++) {
                 var o = items[i];
                 if (index == i) {
