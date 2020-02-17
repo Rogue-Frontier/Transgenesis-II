@@ -8,6 +8,7 @@ using static Transgenesis.Global;
 using ColoredString = SadConsole.ColoredString;
 namespace Transgenesis {
     class ElementEditor : IComponent {
+        ProgramState state;
         Stack<IComponent> screens;
         Environment env;
         TranscendenceExtension extension;
@@ -22,7 +23,8 @@ namespace Transgenesis {
 
         int scrolling = 0;
 
-        public ElementEditor(Stack<IComponent> screens, Environment env, TranscendenceExtension extension, ConsoleManager c) {
+        public ElementEditor(ProgramState state, Stack<IComponent> screens, Environment env, TranscendenceExtension extension, ConsoleManager c) {
+            this.state = state;
             this.screens = screens;
             this.env = env;
             this.extension = extension;
@@ -94,10 +96,13 @@ namespace Transgenesis {
 
             //Add this element and its ancestors to the semiexpanded list
             foreach(var expandedElement in expanded) {
-                MarkSemiExpanded(expandedElement);
+                MarkAncestorsSemiExpanded(expandedElement);
             }
-            MarkSemiExpanded(focused);
-            void MarkSemiExpanded(XElement element) {
+            MarkAncestorsSemiExpanded(focused);
+
+            //We auto-expand children of the focused element if we press Ctrl-F
+            //MarkDescendantsSemiExpanded(focused);
+            void MarkAncestorsSemiExpanded(XElement element) {
                 while (element != null) {
                     if (!semiexpanded.Contains(element)) {
                         semiexpanded.Add(element);
@@ -105,6 +110,16 @@ namespace Transgenesis {
                     } else {
                         //If we've already marked this element, then we have also marked its ancestors
                         break;
+                    }
+                }
+            }
+            void MarkDescendantsSemiExpanded(XElement parent) {
+                Queue<XElement> elements = new Queue<XElement>(parent.Elements());
+                while(elements.Count > 0) {
+                    var e = elements.Dequeue();
+                    semiexpanded.Add(e);
+                    foreach(var child in e.Elements()) {
+                        elements.Enqueue(child);
                     }
                 }
             }
@@ -400,6 +415,39 @@ namespace Transgenesis {
                     break;
                     */
 
+                case ConsoleKey.R when (k.Modifiers & ConsoleModifiers.Control) != 0:
+                    //Removes the current element
+                    RemoveFocused();
+                    break;
+                case ConsoleKey.D when (k.Modifiers & ConsoleModifiers.Control) != 0:
+                    //Make a duplicate of the element
+                    var duplicate = new XElement(focused);
+                    //Remember to copy the base template so that we know how to treat this element
+                    env.bases[duplicate] = env.bases[focused];
+                    focused.AddAfterSelf(duplicate);
+                    break;
+                case ConsoleKey.C when (k.Modifiers & ConsoleModifiers.Control) != 0:
+                    //Remember this element
+                    state.copied = focused;
+                    break;
+                case ConsoleKey.V when (k.Modifiers & ConsoleModifiers.Control) != 0:
+                    //Later, we should attempt to manually reconstruct the element as allowed by the parent's template
+
+                    //Paste a deep copy of the element
+                    if (state.copied != null) {
+                        var copy = new XElement(state.copied);
+                        //Remember to copy the base template so that we know how to treat this element
+                        env.bases[copy] = env.bases[state.copied];
+                        focused.Add(copy);
+                    }
+                    break;
+                case ConsoleKey.DownArrow when (k.Modifiers & ConsoleModifiers.Control) != 0:
+                    MoveDown();
+                    break;
+                case ConsoleKey.UpArrow when (k.Modifiers & ConsoleModifiers.Control) != 0:
+                    MoveUp();
+                    break;
+
                 //Navigate using arrow keys when command input is empty
                 case ConsoleKey.LeftArrow when i.Text.Length == 0:
                     focused = focused.Parent ?? focused;
@@ -489,11 +537,7 @@ namespace Transgenesis {
                                     //TO DO
 
                                     //For now, this just removes the current element if it's not the root
-                                    var parent = focused.Parent;
-                                    if (parent != null && Environment.CanRemoveElement(parent, env.bases[focused])) {
-                                        focused.Remove();
-                                        focused = parent;
-                                    }
+                                    RemoveFocused();
                                     break;
                                 }
                             case "expand": {
@@ -505,19 +549,11 @@ namespace Transgenesis {
                                     break;
                                 }
                             case "moveup": {
-                                    var before = focused.ElementsBeforeSelf().LastOrDefault();
-                                    if (before != null) {
-                                        focused.Remove();
-                                        before.AddBeforeSelf(focused);
-                                    }
+                                    MoveUp();
                                     break;
                                 }
                             case "movedown": {
-                                    var after = focused.ElementsBeforeSelf().LastOrDefault();
-                                    if (after != null) {
-                                        focused.Remove();
-                                        after.AddAfterSelf(focused);
-                                    }
+                                    MoveDown();
                                     break;
                                 }
                             case "goto": {
@@ -646,6 +682,29 @@ namespace Transgenesis {
                 s.SetItems(items);
             }
             */
+            void RemoveFocused() {
+                var parent = focused.Parent;
+                if (parent != null && Environment.CanRemoveElement(parent, env.bases[focused])) {
+                    var before = focused.ElementsBeforeSelf().LastOrDefault();
+                    focused.Remove();
+                    //focused = parent;
+                    focused = before ?? parent;
+                }
+            }
+            void MoveUp() {
+                var before = focused.ElementsBeforeSelf().LastOrDefault();
+                if (before != null) {
+                    focused.Remove();
+                    before.AddBeforeSelf(focused);
+                }
+            }
+            void MoveDown() {
+                var after = focused.ElementsAfterSelf().FirstOrDefault();
+                if (after != null) {
+                    focused.Remove();
+                    after.AddAfterSelf(focused);
+                }
+            }
         }
 
         public void Update() {

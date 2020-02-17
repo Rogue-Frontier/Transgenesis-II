@@ -3,15 +3,19 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Xml;
 namespace Transgenesis {
     class MainMenu : IComponent {
+        ProgramState state;
         Stack<IComponent> screens;
         Input i;
         Suggest s;
         Tooltip t;
         Environment env;
         ConsoleManager c;
+
+
 
         public MainMenu(Stack<IComponent> screens) {
             c = new ConsoleManager(new Point(0, 0));
@@ -43,8 +47,9 @@ namespace Transgenesis {
                 {"loadmodules", "loadmodules <extensionFile|extensionFolder>\r\n" +
                             "Loads an extension at the specified file path along with all of its modules"}
             });
-            env = new Environment();
+            this.env = new Environment();
             this.screens = screens;
+            this.state = new ProgramState();
         }
         public void Draw() {
             c.Clear();
@@ -181,7 +186,10 @@ namespace Transgenesis {
                                     //env.Unload(existing);
                                 } else {
                                     //Global.Break();
-                                    LoadFolder(path);
+
+                                    //Note: This starts a new thread. We should indicate some way that this is running
+                                    Task.Run(() => LoadFolder(path));
+
                                 }
                                 
                                 break;
@@ -208,7 +216,7 @@ namespace Transgenesis {
                                     LoadFolder(path);
                                 }
                                 if (env.extensions.TryGetValue(path, out TranscendenceExtension result)) {
-                                    screens.Push(new ElementEditor(screens, env, result, c));
+                                    screens.Push(state.sessions.Initialize(result, new ElementEditor(state, screens, env, result, c)));
                                 }
 
                                 break;
@@ -217,7 +225,7 @@ namespace Transgenesis {
                                 string path = Path.GetFullPath(string.Join(" ", parts.Skip(1)).Trim());
                                 //Global.Break();
                                 if (env.extensions.TryGetValue(path, out TranscendenceExtension result)) {
-                                    screens.Push(new ElementEditor(screens, env, result, c));
+                                    screens.Push(state.sessions.Initialize(result, new ElementEditor(state, screens, env, result, c)));
                                 }
                                 break;
                             }

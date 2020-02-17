@@ -74,6 +74,11 @@ namespace Transgenesis {
 
                     break;
                 default:
+                    //Don't type of we are doing a keyboard shortcut
+                    if((k.Modifiers & ConsoleModifiers.Control) != 0) {
+                        break;
+                    }
+
                     if (k.KeyChar != 0) {
                         if (cursor == s.Length) {
                             s.Append(k.KeyChar);

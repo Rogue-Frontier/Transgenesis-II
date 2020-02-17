@@ -56,7 +56,14 @@ namespace Transgenesis {
             result.AddRange(contains);
             return result;
         }
-
+        public static T Initialize<S, T>(this Dictionary<S, T> dict, S key, T value) {
+            if(dict.ContainsKey(key)) {
+                return dict[key];
+            } else {
+                dict[key] = value;
+                return value;
+            }
+        }
         public static void Break() {
            return;
         }
