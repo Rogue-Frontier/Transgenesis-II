@@ -346,6 +346,7 @@ namespace Transgenesis {
                         "-Down arrow: Next element" + "\r\n" +
                         "-Left arrow: Parent element" + "\r\n" +
                         "-Right arrow: First child element" + "\r\n" +
+                        "-Return: Expand/collapse element" + "\r\n" +
                         "-Typing: Enter a command" + "\r\n"},
                 {"add", "add <subelement>\r\n" +
                         "Adds the named subelement to the current element, if allowed"},
@@ -430,19 +431,21 @@ namespace Transgenesis {
 
             void ShowElementTree(XElement element) {
                 if(element.Elements().Count() > 0) {
+                    Action<string> writeTag;
                     if (focused == element) {
+                        writeTag = s => c.WriteLineHighlight(s);
+                    } else {
+                        writeTag = s => c.WriteLine(s);
+                    }
+
+                    if (expanded.Contains(element) || focused == element) {
                         //show all attributes and children
-                        c.WriteLineHighlight($"{Tab()}<{element.Tag()}{ShowAllAttributes(element)}>");
+                        writeTag($"{Tab()}<{element.Tag()}{ShowAllAttributes(element)}>");
                         ShowChildren();
-                        c.WriteLineHighlight($"{Tab()}</{element.Tag()}>");
-                    } else if (expanded.Contains(element)) {
-                        //show all attributes and children
-                        c.WriteLine($"{Tab()}<{element.Tag()}{ShowAllAttributes(element)}>");
-                        ShowChildren();
-                        c.WriteLine($"{Tab()}</{element.Tag()}>");
+                        writeTag($"{Tab()}</{element.Tag()}>");
                     } else {
                         //show only the important attributes and (semi)expanded children
-                        c.WriteLine($"{Tab()}<{element.Tag()}{ShowContextAttributes(element)}>");
+                        writeTag($"{Tab()}<{element.Tag()}{ShowContextAttributes(element)}>");
                         tabs++;
                         int skipped = 0;
                         foreach (var child in element.Elements()) {
@@ -460,7 +463,7 @@ namespace Transgenesis {
                             c.WriteLine($"{Tab()}...");
                         }
                         tabs--;
-                        c.WriteLine($"{Tab()}</{element.Tag()}>");
+                        writeTag($"{Tab()}</{element.Tag()}>");
                     }
                     return;
 
@@ -472,14 +475,19 @@ namespace Transgenesis {
                         tabs--;
                     }
                 } else {
+
+                    Action<string> writeTag;
                     if (focused == element) {
-                        c.WriteLineHighlight($"{Tab()}<{element.Tag()}{ShowAllAttributes(element)}/>");
-                    } else if (expanded.Contains(element)) {
+                        writeTag = s => c.WriteLineHighlight(s);
+                    } else {
+                        writeTag = s => c.WriteLine(s);
+                    }
+                    if (expanded.Contains(element) || focused == element) {
                         //show all attributes
-                        c.WriteLine($"{Tab()}<{element.Tag()}{ShowAllAttributes(element)}/>");
+                        writeTag($"{Tab()}<{element.Tag()}{ShowAllAttributes(element)}/>");
                     } else {
                         //show only the important attributes
-                        c.WriteLine($"{Tab()}<{element.Tag()}{ShowContextAttributes(element)}/>");
+                        writeTag($"{Tab()}<{element.Tag()}{ShowContextAttributes(element)}/>");
                     }
                     return;
                 }
@@ -590,6 +598,16 @@ namespace Transgenesis {
                     focused = focused.ElementsBeforeSelf().LastOrDefault() ?? focused;
                     break;
                 case ConsoleKey.Enter: {
+                        if(input.Length == 0) {
+                            if(expanded.Contains(focused)) {
+                                expanded.Remove(focused);
+                            } else {
+                                expanded.Add(focused);
+                            }
+
+                            break;
+                        }
+
                         string[] parts = input.Split(' ');
                         switch (parts[0]) {
                             case "add": {
