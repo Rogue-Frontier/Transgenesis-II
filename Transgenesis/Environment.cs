@@ -40,7 +40,7 @@ namespace Transgenesis {
             }
         }
         public bool CanAddElement(XElement element, XElement template, string subelement, out XElement subtemplate) {
-            subtemplate = template.TryNameElement(subelement);
+            subtemplate = template.TryNameElement(subelement) ?? template.TryNameElement("*");
             if(subtemplate == null) {
                 return false;
             }
