@@ -366,6 +366,10 @@ namespace Transgenesis {
                         "Saves the current extension to its file"},
                 {"saveall", "saveall\r\n" +
                         "Saves all loaded extensions to their files"},
+                {"expand", "expand\r\n" +
+                        "Expands the current element to display all of its attributes and children"},
+                {"collapse", "collapse\r\n" +
+                        "Collapses the current element to hide most of its attributes and children"},
                 {"moveup", "moveup\r\n" +
                         "Moves the current element up in its parent's order of children"},
                 {"movedown", "movedown\r\n" +
@@ -394,50 +398,93 @@ namespace Transgenesis {
             c.SetCursor(new Point(0, 0));
             //Console.WriteLine(extension.structure.ToString());
 
-            LinkedList<XElement> ancestors = new LinkedList<XElement>();
-            XElement e = focused.Parent;
-            while (e != null) {
-                ancestors.AddFirst(e);
-                e = e.Parent;
+            HashSet<XElement> semiexpanded = new HashSet<XElement>();
+
+            //Add this element and its ancestors to the semiexpanded list
+            foreach(var expandedElement in expanded) {
+                MarkSemiExpanded(expandedElement);
+            }
+            MarkSemiExpanded(focused);
+            void MarkSemiExpanded(XElement element) {
+                while (element != null) {
+                    if (!semiexpanded.Contains(element)) {
+                        semiexpanded.Add(element);
+                        element = element.Parent;
+                    } else {
+                        //If we've already marked this element, then we have also marked its ancestors
+                        break;
+                    }
+                }
+            }
+
+            var root = focused;
+            while(root.Parent != null) {
+                root = root.Parent;
             }
             int tabs = 0;
-            foreach (XElement ancestor in ancestors) {
-                c.WriteLine($"{Tab()}<{ancestor.Tag()}{ShowContextAttributes(ancestor)}>");
-                tabs++;
-            }
-            if (focused.ElementsBeforeSelf().Count() > 0) {
-                c.WriteLine($"{Tab()}...");
-            }
-
-
-            //See if we need to print any children
-            if (focused.HasElements) {
-                c.WriteLineHighlight($"{Tab()}<{focused.Tag()}{ShowAttributes(focused)}>");
-                tabs++;
-                foreach (XElement child in focused.Elements()) {
-                    c.WriteLine($"{Tab()}<{child.Tag()}{ShowContextAttributes(child)}/>");
-                }
-                tabs--;
-                c.WriteLineHighlight($"{Tab()}</{focused.Tag()}>");
-            } else {
-                c.WriteLineHighlight($"{Tab()}<{focused.Tag()}{ShowAttributes(focused)}/>");
-            }
-
-
-
-            if (focused.ElementsAfterSelf().Count() > 0) {
-                c.WriteLine($"{Tab()}...");
-            }
-            tabs--;
-            foreach (XElement ancestor in ancestors.Reverse()) {
-                c.WriteLine($"{Tab()}</{ancestor.Name.LocalName}>");
-                tabs--;
-            }
-
+            ShowElementTree(root);
 
             i.Draw();
             s.Draw();
             t.Draw();
+
+            void ShowElementTree(XElement element) {
+                if(element.Elements().Count() > 0) {
+                    if (focused == element) {
+                        //show all attributes and children
+                        c.WriteLineHighlight($"{Tab()}<{element.Tag()}{ShowAllAttributes(element)}>");
+                        ShowChildren();
+                        c.WriteLineHighlight($"{Tab()}</{element.Tag()}>");
+                    } else if (expanded.Contains(element)) {
+                        //show all attributes and children
+                        c.WriteLine($"{Tab()}<{element.Tag()}{ShowAllAttributes(element)}>");
+                        ShowChildren();
+                        c.WriteLine($"{Tab()}</{element.Tag()}>");
+                    } else {
+                        //show only the important attributes and (semi)expanded children
+                        c.WriteLine($"{Tab()}<{element.Tag()}{ShowContextAttributes(element)}>");
+                        tabs++;
+                        int skipped = 0;
+                        foreach (var child in element.Elements()) {
+                            if (semiexpanded.Contains(child)) {
+                                if(skipped > 0) {
+                                    skipped = 0;
+                                    c.WriteLine($"{Tab()}...");
+                                }
+                                ShowElementTree(child);
+                            } else {
+                                skipped++;
+                            }
+                        }
+                        if (skipped > 0) {
+                            c.WriteLine($"{Tab()}...");
+                        }
+                        tabs--;
+                        c.WriteLine($"{Tab()}</{element.Tag()}>");
+                    }
+                    return;
+
+                    void ShowChildren() {
+                        tabs++;
+                        foreach (var child in element.Elements()) {
+                            ShowElementTree(child);
+                        }
+                        tabs--;
+                    }
+                } else {
+                    if (focused == element) {
+                        c.WriteLineHighlight($"{Tab()}<{element.Tag()}{ShowAllAttributes(element)}/>");
+                    } else if (expanded.Contains(element)) {
+                        //show all attributes
+                        c.WriteLine($"{Tab()}<{element.Tag()}{ShowAllAttributes(element)}/>");
+                    } else {
+                        //show only the important attributes
+                        c.WriteLine($"{Tab()}<{element.Tag()}{ShowContextAttributes(element)}/>");
+                    }
+                    return;
+                }
+                
+            }
 
             string Tab() => new string(' ', tabs * 4);
             string ShowContextAttributes(XElement element) {
@@ -462,7 +509,7 @@ namespace Transgenesis {
                 bool more = attributes.Count < element.Attributes().Count();
                 return AttributesToString(attributes, inline, more);
             }
-            string ShowAttributes(XElement element) {
+            string ShowAllAttributes(XElement element) {
                 Dictionary<string, string> attributes = new Dictionary<string, string>();
                 foreach (var attribute in element.Attributes()) {
                     attributes[attribute.Name.LocalName] = attribute.Value;
@@ -615,6 +662,14 @@ namespace Transgenesis {
                                     }
                                     break;
                                 }
+                            case "expand": {
+                                    expanded.Add(focused);
+                                    break;
+                                }
+                            case "collapse": {
+                                    expanded.Remove(focused);
+                                    break;
+                                }
                             case "moveup": {
                                     var before = focused.ElementsBeforeSelf().LastOrDefault();
                                     if (before != null) {
@@ -708,7 +763,7 @@ namespace Transgenesis {
 
                             var empty = new List<string>();
                             Dictionary<string, Func<List<string>>> autocomplete = new Dictionary<string, Func<List<string>>> {
-                                {"", () => new List<string>{ "set", "add", "remove", "bind", "bindall", "save", "saveall", "moveup", "movedown", "root", "parent", "next", "prev", "types", "exit" } },
+                                {"", () => new List<string>{ "set", "add", "remove", "bind", "bindall", "save", "saveall", "expand", "collapse", "moveup", "movedown", "root", "parent", "next", "prev", "types", "exit" } },
                                 {"set", () => env.bases[focused].GetValidAttributes() },
                                 {"add", () => env.GetAddableElements(focused, env.bases[focused]) },
                                 {"remove", () => env.GetRemovableElements(focused, env.bases[focused]) },
