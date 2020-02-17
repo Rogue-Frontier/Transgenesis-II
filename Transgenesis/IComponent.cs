@@ -423,6 +423,9 @@ namespace Transgenesis {
                 root = root.Parent;
             }
             int tabs = 0;
+            string expandedBox = "[-] ";
+            string collapsedBox = "[+] ";
+            string noBox = "    ";
             ShowElementTree(root);
 
             i.Draw();
@@ -430,29 +433,35 @@ namespace Transgenesis {
             t.Draw();
 
             void ShowElementTree(XElement element) {
-                if(element.Elements().Count() > 0) {
+                bool expandedCheck = expanded.Contains(element);
+                string box;
+                if(expandedCheck) {
+                    box = expandedBox;
+                } else {
+                    box = collapsedBox;
+                }
+                if (element.Elements().Count() > 0) {
                     Action<string> writeTag;
                     if (focused == element) {
                         writeTag = s => c.WriteLineHighlight(s);
                     } else {
                         writeTag = s => c.WriteLine(s);
                     }
-
-                    if (expanded.Contains(element) || focused == element) {
+                    if (expandedCheck || focused == element) {
                         //show all attributes and children
-                        writeTag($"{Tab()}<{element.Tag()}{ShowAllAttributes(element)}>");
+                        writeTag($"{box}{Tab()}<{element.Tag()}{ShowAllAttributes(element)}>");
                         ShowChildren();
-                        writeTag($"{Tab()}</{element.Tag()}>");
+                        writeTag($"{box}{Tab()}</{element.Tag()}>");
                     } else {
                         //show only the important attributes and (semi)expanded children
-                        writeTag($"{Tab()}<{element.Tag()}{ShowContextAttributes(element)}>");
+                        writeTag($"{box}{Tab()}<{element.Tag()}{ShowContextAttributes(element)}>");
                         tabs++;
                         int skipped = 0;
                         foreach (var child in element.Elements()) {
                             if (semiexpanded.Contains(child)) {
                                 if(skipped > 0) {
                                     skipped = 0;
-                                    c.WriteLine($"{Tab()}...");
+                                    c.WriteLine($"{noBox}{Tab()}...");
                                 }
                                 ShowElementTree(child);
                             } else {
@@ -460,10 +469,10 @@ namespace Transgenesis {
                             }
                         }
                         if (skipped > 0) {
-                            c.WriteLine($"{Tab()}...");
+                            c.WriteLine($"{noBox}{Tab()}...");
                         }
                         tabs--;
-                        writeTag($"{Tab()}</{element.Tag()}>");
+                        writeTag($"{box}{Tab()}</{element.Tag()}>");
                     }
                     return;
 
@@ -484,10 +493,10 @@ namespace Transgenesis {
                     }
                     if (expanded.Contains(element) || focused == element) {
                         //show all attributes
-                        writeTag($"{Tab()}<{element.Tag()}{ShowAllAttributes(element)}/>");
+                        writeTag($"{box}{Tab()}<{element.Tag()}{ShowAllAttributes(element)}/>");
                     } else {
                         //show only the important attributes
-                        writeTag($"{Tab()}<{element.Tag()}{ShowContextAttributes(element)}/>");
+                        writeTag($"{box}{Tab()}<{element.Tag()}{ShowContextAttributes(element)}/>");
                     }
                     return;
                 }
@@ -508,6 +517,15 @@ namespace Transgenesis {
                     foreach (var key in new string[] { "unid", "name" }) {
                         if (element.Att(key, out string value)) {
                             attributes[key] = value;
+                        }
+                    }
+
+                    //Or the first three ones
+                    foreach (var attribute in element.Attributes()) {
+                        if(attributes.Count < 3) {
+                            attributes[attribute.Name.LocalName] = attribute.Value;
+                        } else {
+                            break;
                         }
                     }
                 }
@@ -551,12 +569,12 @@ namespace Transgenesis {
                     //int padding = (1 + attributes.Keys.Select(k => k.Length).Max() / interval) * interval;
                     foreach (string key in attributes.Keys.Skip(1)) {
                         int padding = (1 + key.Length / interval) * interval;
-                        result.AppendLine($@"{Tab()}{$"{key}=".PadRight(padding)}""{attributes[key]}""");
+                        result.AppendLine($@"{noBox}{Tab()}{$"{key}=".PadRight(padding)}""{attributes[key]}""");
                     }
                     if (more) {
-                        result.AppendLine($"{Tab()}...");
+                        result.AppendLine($"{noBox}{Tab()}...");
                     }
-                    result.Append(Tab());
+                    result.Append($"{noBox}{Tab()}");
                     tabs--;
                     return result.ToString();
                 }
