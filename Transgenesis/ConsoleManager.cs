@@ -41,6 +41,13 @@ namespace Transgenesis {
         public void ResetCursor() {
             SetCursor(margin);
         }
+        public void WriteLine(ColoredString s) {
+            cursor.Print(s);
+            NextLine();
+        }
+        public void Write(ColoredString s) {
+            cursor.Print(s);
+        }
         public void Write(string s, Color? front = null, Color? back = null) {
             cursor.Print(new ColoredString(s, front ?? theme.front, back ?? theme.back));
         }

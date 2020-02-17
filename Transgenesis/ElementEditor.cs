@@ -20,6 +20,8 @@ namespace Transgenesis {
         Suggest s;
         Tooltip t;
 
+        int scrolling = 0;
+
         public ElementEditor(Stack<IComponent> screens, Environment env, TranscendenceExtension extension, ConsoleManager c) {
             this.screens = screens;
             this.env = env;
@@ -118,8 +120,43 @@ namespace Transgenesis {
 
             List<ColoredString> buffer = new List<ColoredString>();
             ShowElementTree(root);
+            /*
+            {
+                List<ColoredString> buffer2 = new List<ColoredString>();
+                ColoredString splitline = new ColoredString(150);
+                int index = 0;
+                foreach (var line in buffer) {
+                    foreach (var c in line) {
+                        if (c.Glyph == '\n') {
+                            buffer2.Add(splitline);
+                            splitline = new ColoredString(150);
+                            index = 0;
+                        } else {
+                            splitline[index] = c;
+                            index++;
+                            if (index == 150) {
+                                buffer2.Add(splitline);
+                                splitline = new ColoredString(150);
+                                index = 0;
+                            }
+                        }
+                    }
+                    if(index > 0) {
+                        buffer2.Add(splitline);
+                        splitline = new ColoredString(150);
+                        index = 0;
+                    }
+                }
+                buffer = buffer2;
+            }
+            */
 
+            int screenRows = 45;
+            scrolling = Math.Max(0, Math.Min(scrolling, buffer.Count - screenRows));
             //Print only a portion of the buffer
+            foreach(var line in buffer.GetRange(scrolling, Math.Min(screenRows, buffer.Count))) {
+                c.WriteLine(line);
+            }
 
             i.Draw();
             s.Draw();
@@ -127,10 +164,48 @@ namespace Transgenesis {
 
 
             void AddLine(string line) {
-                buffer.Add(new ColoredString(line, c.theme.front, c.theme.back));
+                int index = 0;
+                ColoredString s = new ColoredString(150);
+                foreach(var ch in line) {
+                    if(ch == '\n') {
+                        buffer.Add(s.SubString(0, index));
+                        s = new ColoredString(150);
+                        index = 0;
+                        continue;
+                    }
+                    s[index] = new SadConsole.ColoredGlyph(ch, c.theme.front, c.theme.back);
+                    index++;
+                    if(index == 150) {
+                        buffer.Add(s);
+                        s = new ColoredString(150);
+                        index = 0;
+                    }
+                }
+                if (index > 0) {
+                    buffer.Add(s.SubString(0, index));
+                }
             }
             void AddLineHighlight(string line) {
-                buffer.Add(new ColoredString(line, c.theme.back, c.theme.front));
+                int index = 0;
+                ColoredString s = new ColoredString(150);
+                foreach (var ch in line) {
+                    if (ch == '\n') {
+                        buffer.Add(s.SubString(0, index));
+                        s = new ColoredString(150);
+                        index = 0;
+                        continue;
+                    }
+                    s[index] = new SadConsole.ColoredGlyph(ch, c.theme.highlight, c.theme.back);
+                    index++;
+                    if (index == 150) {
+                        buffer.Add(s);
+                        s = new ColoredString(150);
+                        index = 0;
+                    }
+                }
+                if (index > 0) {
+                    buffer.Add(s.SubString(0, index));
+                }
             }
             void ShowElementTree(XElement element) {
                 bool expandedCheck = expanded.Contains(element);
@@ -154,25 +229,35 @@ namespace Transgenesis {
                         writeTag($"{box}{Tab()}</{element.Tag()}>");
                     } else {
                         //show only the important attributes and (semi)expanded children
-                        writeTag($"{box}{Tab()}<{element.Tag()}{ShowContextAttributes(element)}>");
-                        tabs++;
-                        int skipped = 0;
-                        foreach (var child in element.Elements()) {
-                            if (semiexpanded.Contains(child)) {
-                                if(skipped > 0) {
-                                    skipped = 0;
-                                    AddLine($"{noBox}{Tab()}...");
+
+                        if (!element.Elements().Any(c => semiexpanded.Contains(c))) {
+                            //We have no important children to show, so just put our whole tag on one line
+                            writeTag($"{box}{Tab()}<{element.Tag()}{ShowContextAttributes(element)}>...</{element.Tag()}>");
+                        } else {
+                            //Show any important children and attributes
+                            writeTag($"{box}{Tab()}<{element.Tag()}{ShowContextAttributes(element)}>");
+                            tabs++;
+                            int skipped = 0;
+
+                            foreach (var child in element.Elements()) {
+                                if (semiexpanded.Contains(child)) {
+                                    //Show that we have previous children not shown
+                                    if (skipped > 0) {
+                                        skipped = 0;
+                                        AddLine($"{noBox}{Tab()}...");
+                                    }
+                                    ShowElementTree(child);
+                                } else {
+                                    skipped++;
                                 }
-                                ShowElementTree(child);
-                            } else {
-                                skipped++;
                             }
+                            //Show that we have more children not shown
+                            if (skipped > 0) {
+                                AddLine($"{noBox}{Tab()}...");
+                            }
+                            tabs--;
+                            writeTag($"{box}{Tab()}</{element.Tag()}>");
                         }
-                        if (skipped > 0) {
-                            AddLine($"{noBox}{Tab()}...");
-                        }
-                        tabs--;
-                        writeTag($"{box}{Tab()}</{element.Tag()}>");
                     }
                     return;
 

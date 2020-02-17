@@ -23,7 +23,7 @@ namespace Transgenesis {
         public Input(ConsoleManager c) {
             this.c = c;
         }
-        public Point pos = new Point(0, 24);
+        public Point pos = new Point(0, 47);
         public void Clear() {
             s.Clear();
             cursor = 0;
@@ -111,7 +111,7 @@ namespace Transgenesis {
         Input i;
         public int index = -1;
         public List<HighlightEntry> items;
-        public Point pos = new Point(0, 25);
+        public Point pos = new Point(0, 48);
         ConsoleManager c;
         public Suggest(Input i, ConsoleManager c) {
             this.i = i;
@@ -190,7 +190,8 @@ namespace Transgenesis {
                 c.NextLine();
 
                 //Begin a new column of items
-                if (i % 16 == Math.Max(15, 1 + items.Count / columns)) {
+                int columnHeight = Math.Max(8, 1 + items.Count / columns);
+                if (i % columnHeight == columnHeight - 1) {
                     //if(c.margin.X + 32 >= Console.WindowWidth) {
                     if (column >= columns) {
                         continue;
@@ -213,7 +214,7 @@ namespace Transgenesis {
         Input i;
         Suggest s;
         Dictionary<string, string> help;
-        Point pos = new Point(0, 42);
+        Point pos = new Point(0, 56);
         ConsoleManager c;
         public Tooltip(Input i, Suggest s, ConsoleManager c, Dictionary<string, string> help) {
             this.i = i;
