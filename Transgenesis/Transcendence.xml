@@ -674,7 +674,7 @@
                 <A name="external" valueType="BOOLEAN"/>
 				<A name="maxHPBonus" valueType="WHOLE"/>
                 <A name="overlayType" valueType="TYPE_OVERLAY"/>
-                <E category="?" inherit="EnhancementAbilities"/>
+                <E category="?" name="EnhancementAbilities" inherit="EnhancementAbilities"/>
 				<E category="?" name="Equipment">
 					<E name="*"	category="*">
 						<A name="equipment" category="EQUIPMENT"/>
