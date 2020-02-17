@@ -151,13 +151,22 @@ namespace Transgenesis {
             }
             */
 
+            //IMPLEMENT SCROLLING
+
             int screenRows = 45;
             scrolling = Math.Max(0, Math.Min(scrolling, buffer.Count - screenRows));
             //Print only a portion of the buffer
             //c.margin = new Point(30, 0);
             c.margin = new Point(0, 0);
             c.SetCursor(c.margin);
-            foreach(var line in buffer.GetRange(scrolling, Math.Min(screenRows, buffer.Count))) {
+            var count = Math.Min(screenRows, buffer.Count);
+            var lines = buffer.GetRange(scrolling, count);
+
+            //Let user know that there's more text
+            if(scrolling + count + 1 < buffer.Count) {
+                lines[lines.Count - 1] = new ColoredString("...", Color.White, Color.Black);
+            }
+            foreach (var line in lines) {
                 c.Write(line);
                 c.NextLine();
             }
