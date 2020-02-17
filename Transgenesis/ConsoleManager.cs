@@ -45,7 +45,7 @@ namespace Transgenesis {
             cursor.Print(new ColoredString(s, front ?? theme.front, back ?? theme.back));
         }
         public void Write(char c, Color? front = null, Color? back = null) {
-            cursor.Print(new ColoredString(c.ToString(), front ?? theme.front, back ?? theme.back));
+            Write(c.ToString(), front, back);
         }
         public void WriteInvert(char c, Color? front = null, Color? back = null) {
             cursor.Print(new ColoredString(c.ToString(), back ?? theme.back, front ?? theme.front));

@@ -7,6 +7,7 @@ using System.Text;
 using System.Xml;
 using System.Xml.Linq;
 using static Transgenesis.Global;
+using ColoredString = SadConsole.ColoredString;
 namespace Transgenesis {
     interface IComponent {
         void Update();
@@ -423,15 +424,26 @@ namespace Transgenesis {
                 root = root.Parent;
             }
             int tabs = 0;
-            string expandedBox = "[-] ";
-            string collapsedBox = "[+] ";
-            string noBox = "    ";
+            string expandedBox =    "-   ";
+            string collapsedBox =   "+   ";
+            string noBox =          "    ";
+
+            List<ColoredString> buffer = new List<ColoredString>();
             ShowElementTree(root);
+
+            //Print only a portion of the buffer
 
             i.Draw();
             s.Draw();
             t.Draw();
 
+
+            void AddLine(string line) {
+                buffer.Add(new ColoredString(line, c.theme.front, c.theme.back));
+            }
+            void AddLineHighlight(string line) {
+                buffer.Add(new ColoredString(line, c.theme.back, c.theme.front));
+            }
             void ShowElementTree(XElement element) {
                 bool expandedCheck = expanded.Contains(element);
                 string box;
@@ -443,9 +455,9 @@ namespace Transgenesis {
                 if (element.Elements().Count() > 0) {
                     Action<string> writeTag;
                     if (focused == element) {
-                        writeTag = s => c.WriteLineHighlight(s);
+                        writeTag = s => AddLineHighlight(s);
                     } else {
-                        writeTag = s => c.WriteLine(s);
+                        writeTag = s => AddLine(s);
                     }
                     if (expandedCheck || focused == element) {
                         //show all attributes and children
@@ -461,7 +473,7 @@ namespace Transgenesis {
                             if (semiexpanded.Contains(child)) {
                                 if(skipped > 0) {
                                     skipped = 0;
-                                    c.WriteLine($"{noBox}{Tab()}...");
+                                    AddLine($"{noBox}{Tab()}...");
                                 }
                                 ShowElementTree(child);
                             } else {
@@ -469,7 +481,7 @@ namespace Transgenesis {
                             }
                         }
                         if (skipped > 0) {
-                            c.WriteLine($"{noBox}{Tab()}...");
+                            AddLine($"{noBox}{Tab()}...");
                         }
                         tabs--;
                         writeTag($"{box}{Tab()}</{element.Tag()}>");
@@ -487,9 +499,9 @@ namespace Transgenesis {
 
                     Action<string> writeTag;
                     if (focused == element) {
-                        writeTag = s => c.WriteLineHighlight(s);
+                        writeTag = s => AddLineHighlight(s);
                     } else {
-                        writeTag = s => c.WriteLine(s);
+                        writeTag = s => AddLine(s);
                     }
                     if (expanded.Contains(element) || focused == element) {
                         //show all attributes
