@@ -29,7 +29,7 @@ namespace Transgenesis {
         public void Save() {
             StringBuilder s = new StringBuilder();
             s.AppendLine(@"<?xml version=""1.0"" encoding=""us-ascii""?>");
-            s.AppendLine($"!DOCTYPE {structure.Tag()}");
+            s.AppendLine($"<!DOCTYPE {structure.Tag()}");
             s.AppendLine("    [");
 
             /*
