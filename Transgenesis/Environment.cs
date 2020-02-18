@@ -155,8 +155,8 @@ namespace Transgenesis {
                 }
             }
         }
-        public XElement FromTemplate(XElement template) {
-            XElement result = new XElement(template.Att("name"));
+        public XElement FromTemplate(XElement template, string name = null) {
+            XElement result = new XElement(name ?? template.Att("name"));
             foreach(XElement subtemplate in template.Elements("E").Where(e => e.Att("category") == "1" || e.Att("category") == "+")) {
                 var initialized = InitializeTemplate(subtemplate);
                 var subelement = FromTemplate(initialized);
