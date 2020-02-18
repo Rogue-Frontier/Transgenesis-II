@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using System.Xml;
 namespace Transgenesis {
     class MainMenu : IComponent {
@@ -180,9 +181,29 @@ namespace Transgenesis {
                                 break;
                             }
                         case "load": {
-                                string path = Path.GetFullPath(string.Join(" ", parts.Skip(1)).Trim());
+                                string path;
+                                /*
+                                if(parts.Count() == 1) {
+                                    using (OpenFileDialog openFileDialog = new OpenFileDialog()) {
+                                        openFileDialog.InitialDirectory = "c:\\";
+                                        openFileDialog.Filter = "XML files (*.xml)|*.xml|All files (*.*)|*.*";
+                                        openFileDialog.FilterIndex = 2;
+                                        openFileDialog.RestoreDirectory = true;
+
+                                        if (openFileDialog.ShowDialog() == DialogResult.OK) {
+                                            //Get the path of specified file
+                                            path = openFileDialog.FileName;
+                                        } else {
+                                            break;
+                                        }
+                                    }
+                                } else {
+                                    path = Path.GetFullPath(string.Join(" ", parts.Skip(1)).Trim());
+                                }
+                                */
+                                path = Path.GetFullPath(string.Join(" ", parts.Skip(1)).Trim());
                                 //Don't reload the extension
-                                if(env.extensions.TryGetValue(path, out TranscendenceExtension existing)) {
+                                if (env.extensions.TryGetValue(path, out TranscendenceExtension existing)) {
                                     //env.Unload(existing);
                                 } else {
                                     //Global.Break();

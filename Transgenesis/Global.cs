@@ -30,6 +30,10 @@ namespace Transgenesis {
             return (result = e.Attribute(attrib)?.Value) != null;
         }
 
+        public static string PadRightTab(this string s, int tabSize = 4) {
+            return s.PadRight(((s.Length + tabSize - 1) / tabSize) * tabSize);
+        }
+
         public static List<HighlightEntry> GetSuggestions(string input, IEnumerable<string> items) {
             var startsWith = new List<HighlightEntry>();
             var contains = new List<HighlightEntry>();
