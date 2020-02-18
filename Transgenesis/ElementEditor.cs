@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using SadConsole;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -135,6 +136,7 @@ namespace Transgenesis {
 
             List<ColoredString> buffer = new List<ColoredString>();
             ShowElementTree(root);
+            SyntaxHighlight();
             /*
             {
                 List<ColoredString> buffer2 = new List<ColoredString>();
@@ -170,6 +172,8 @@ namespace Transgenesis {
 
             int screenRows = 45;
             scrolling = Math.Max(0, Math.Min(scrolling, buffer.Count - screenRows));
+
+            
             //Print only a portion of the buffer
             //c.margin = new Point(30, 0);
             c.margin = new Point(0, 0);
@@ -183,7 +187,10 @@ namespace Transgenesis {
             }
             foreach (var line in lines) {
                 c.Write(line);
-                c.NextLine();
+                //Printing to the edge of the view already moves the cursor to the next line
+                if(line.Count < 150) {
+                    c.NextLine();
+                }
             }
 
             i.Draw();
@@ -243,14 +250,16 @@ namespace Transgenesis {
                 } else {
                     box = collapsedBox;
                 }
+                const bool expandFocused = false;
+                var isFocused = focused == element;
                 if (element.Elements().Count() > 0) {
                     Action<string> writeTag;
-                    if (focused == element) {
+                    if (isFocused) {
                         writeTag = s => AddLineHighlight(s);
                     } else {
                         writeTag = s => AddLine(s);
                     }
-                    if (expandedCheck || focused == element) {
+                    if (expandedCheck || (expandFocused && isFocused)) {
                         //show all attributes and children
                         writeTag($"{box}{Tab()}<{element.Tag()}{ShowAllAttributes(element)}>");
                         ShowChildren();
@@ -299,12 +308,12 @@ namespace Transgenesis {
                 } else {
 
                     Action<string> writeTag;
-                    if (focused == element) {
+                    if (isFocused) {
                         writeTag = s => AddLineHighlight(s);
                     } else {
                         writeTag = s => AddLine(s);
                     }
-                    if (expanded.Contains(element) || focused == element) {
+                    if (expanded.Contains(element) || (expandFocused && isFocused)) {
                         //show all attributes
                         writeTag($"{box}{Tab()}<{element.Tag()}{ShowAllAttributes(element)}/>");
                     } else {
@@ -364,6 +373,17 @@ namespace Transgenesis {
                     StringBuilder result = new StringBuilder();
                     foreach (string key in attributes.Keys) {
                         result.Append(" ");
+                        //Pad space between each attribute so that keys are aligned by tab
+                        //We can't align perfectly since we don't know the global position of the string
+                        while (result.Length % 4 > 0) {
+                            result.Append(' ');
+                        }
+                        /*
+                        if (result.Length%4 > 0) {
+                            int aligned = (result.Length - result.Length%4) + 4;
+                            result.Append(new string(' ', aligned - result.Length));
+                        }
+                        */
                         result.Append($@"{key}=""{attributes[key]}""");
                     }
                     if (more) {
@@ -390,6 +410,88 @@ namespace Transgenesis {
                     result.Append($"{noBox}{Tab()}");
                     tabs--;
                     return result.ToString();
+                }
+            }
+            void SyntaxHighlight() {
+                Stack<Syntax> type = new Stack<Syntax>();
+                foreach(var line in buffer) {
+                    foreach(var glyph in line) {
+                        if(type.Count == 0 || type.Peek() == Syntax.Space) {
+                            if(char.IsWhiteSpace(glyph.GlyphCharacter)) {
+                                continue;
+                            } else if(type.Count > 0 && type.Peek() == Syntax.Space) {
+                                type.Pop();
+                            }
+                            switch(glyph.GlyphCharacter) {
+                                case var c when char.IsLetterOrDigit(c):
+                                    type.Push(Syntax.Attribute);
+                                    break;
+                                case '"':
+                                    //Since we pop upon seeing the opening quote
+                                    type.Push(Syntax.Quotes);
+                                    type.Push(Syntax.Quotes);
+                                    break;
+                                case '<':
+                                    if(glyph.Foreground == c.theme.highlight) {
+                                        type.Push(Syntax.FocusedTag);
+                                    } else {
+                                        type.Push(Syntax.Tag);
+                                    }
+                                    
+                                    break;
+                                case '&':
+                                    type.Push(Syntax.Entity);
+                                    break;
+                                default:
+                                    continue;
+                            }
+                        }
+
+                        CheckType:
+                        switch(type.Peek()) {
+                            case Syntax.Attribute:
+                                glyph.Foreground = Color.Salmon;
+                                if(glyph.GlyphCharacter == '=') {
+                                    //If we've found the end of the attribute name, add a space so that we can catch if the value is immediately in front of it.
+                                    type.Pop();
+                                    type.Push(Syntax.Space);
+                                }
+                                break;
+                            case Syntax.Entity:
+                                glyph.Foreground = Color.White;
+                                if(glyph.GlyphCharacter == ';') {
+                                    type.Pop();
+                                }
+                                break;
+                            case Syntax.Quotes:
+                                //If we encounter a space within quotes, we treat it as part of the quotes
+                                glyph.Foreground = Color.SlateBlue;
+
+                                if(glyph.GlyphCharacter == '&') {
+                                    type.Push(Syntax.Entity);
+                                    goto CheckType;
+                                } else if (glyph.GlyphCharacter == '"') {
+                                    type.Pop();
+                                }
+                                break;
+                            case Syntax.Tag:
+                                glyph.Foreground = Color.SkyBlue;
+                                if(glyph.GlyphCharacter == '>') {
+                                    type.Pop();
+                                } else if (char.IsWhiteSpace(glyph.GlyphCharacter)) {
+                                    type.Push(Syntax.Space);
+                                }
+                                break;
+                            case Syntax.FocusedTag:
+                                //Keep the highlight color
+                                if (glyph.GlyphCharacter == '>') {
+                                    type.Pop();
+                                } else if (char.IsWhiteSpace(glyph.GlyphCharacter)) {
+                                    type.Push(Syntax.Space);
+                                }
+                                break;
+                        }
+                    }
                 }
             }
         }
@@ -477,7 +579,7 @@ namespace Transgenesis {
                             case "add": {
                                     string elementName = parts[1];
                                     if (env.CanAddElement(focused, env.bases[focused], elementName, out XElement subtemplate)) {
-                                        var subelement = env.FromTemplate(subtemplate);
+                                        var subelement = env.FromTemplate(subtemplate, elementName);
                                         focused.Add(subelement);
                                         i.Clear();
                                     }
