@@ -261,7 +261,7 @@ namespace Transgenesis {
                     }
                     if (expandedCheck || (expandFocused && isFocused)) {
                         //show all attributes and children
-                        writeTag($"{box}{Tab()}<{element.Tag().PadRightTab()}{ShowAllAttributes(element)}>");
+                        writeTag($"{box}{Tab()}{$"<{element.Tag()}".PadRightTab()}{ShowAllAttributes(element)}>");
                         ShowChildren();
                         writeTag($"{box}{Tab()}</{element.Tag()}>");
                     } else {
@@ -269,10 +269,10 @@ namespace Transgenesis {
 
                         if (!element.Elements().Any(c => semiexpanded.Contains(c))) {
                             //We have no important children to show, so just put our whole tag on one line
-                            writeTag($"{box}{Tab()}<{element.Tag().PadRightTab()}{ShowContextAttributes(element)}>...</{element.Tag()}>");
+                            writeTag($"{box}{Tab()}{$"<{element.Tag()}".PadRightTab()}{ShowContextAttributes(element)}>...</{element.Tag()}>");
                         } else {
                             //Show any important children and attributes
-                            writeTag($"{box}{Tab()}<{element.Tag().PadRightTab()}{ShowContextAttributes(element)}>");
+                            writeTag($"{box}{Tab()}{$"<{element.Tag()}".PadRightTab()}{ShowContextAttributes(element)}>");
                             tabs++;
                             int skipped = 0;
 
@@ -315,10 +315,10 @@ namespace Transgenesis {
                     }
                     if (expanded.Contains(element) || (expandFocused && isFocused)) {
                         //show all attributes
-                        writeTag($"{box}{Tab()}<{element.Tag().PadRightTab()}{ShowAllAttributes(element)}/>");
+                        writeTag($"{box}{Tab()}{$"<{element.Tag()}".PadRightTab()}{ShowAllAttributes(element)}/>");
                     } else {
                         //show only the important attributes
-                        writeTag($"{box}{Tab()}<{element.Tag().PadRightTab()}{ShowContextAttributes(element)}/>");
+                        writeTag($"{box}{Tab()}{$"<{element.Tag()}".PadRightTab()}{ShowContextAttributes(element)}/>");
                     }
                     return;
                 }
@@ -370,6 +370,7 @@ namespace Transgenesis {
                     return more ? " ..." : "";
                 } else if (inline) {
                     StringBuilder result = new StringBuilder();
+                    //Remove since we have tag padding?
                     result.Append(" ");
                     var first = attributes.Keys.First();
                     result.Append($@"{first}=""{attributes[first]}""");
@@ -395,6 +396,7 @@ namespace Transgenesis {
                     return result.ToString();
                 } else {
                     StringBuilder result = new StringBuilder();
+                    //Remove since we have tag padding?
                     result.Append(" ");
                     string first = attributes.Keys.First();
                     result.AppendLine($@"{first}=""{attributes[first]}""");
