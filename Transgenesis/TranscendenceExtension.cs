@@ -49,7 +49,8 @@ namespace Transgenesis {
             //TO DO: Display bound types
 
             s.AppendLine("    ]>");
-            s.Append(structure.ToString());
+            //Unreplace all ampersands
+            s.Append(structure.ToString().Replace("&amp;", "&"));
             File.WriteAllText(path, s.ToString());
         }
 
