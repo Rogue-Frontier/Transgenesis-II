@@ -278,6 +278,7 @@ namespace Transgenesis {
                         {"loadmodules", () => Directory.GetFiles(Directory.GetCurrentDirectory(), "*.xml").ToList() },
                         {"unload", () => env.extensions.Keys.ToList() },
                         {"edit", () => env.extensions.Keys.ToList() },
+                        {"types", () => env.extensions.Keys.ToList() },
                         {"open", () => Directory.GetFiles(Directory.GetCurrentDirectory(), "*.xml").ToList() },
                         {"reload", () => env.extensions.Keys.ToList() },
                         {"reloadmodules", () => env.extensions.Keys.ToList() },
