@@ -10,18 +10,14 @@ namespace Transgenesis {
     class TranscendenceExtension {
         public TranscendenceExtension parent;
         public string path;
-        public TypeManager types;
-        public Dictionary<string, uint> unidmap;
-        public Dictionary<string, XElement> typemap;    //Binds entities to designs
+        public TypeInfo types;
         HashSet<TranscendenceExtension> dependencies;
         HashSet<TranscendenceExtension> modules;
         public XElement structure;
         public TranscendenceExtension(string path, XElement structure) {
             parent = null;
             this.path = path;
-            types = new TypeManager();
-            unidmap = new Dictionary<string, uint>();
-            typemap = new Dictionary<string, XElement>();
+            types = new TypeInfo();
             
             dependencies = new HashSet<TranscendenceExtension>();
             modules = new HashSet<TranscendenceExtension>();
@@ -40,8 +36,8 @@ namespace Transgenesis {
                 s.AppendLine($@"    {entity, -32}""{entity2unid[entity]}""");
             }
             */
-            foreach(var unid in unidmap.Keys) {
-                s.AppendLine($@"    <!ENTITY {unidmap[unid],-32}""{unid}"">");
+            foreach(var unid in types.unidmap.Keys) {
+                s.AppendLine($@"    <!ENTITY {types.unidmap[unid],-32}""{unid}"">");
             }
 
             //TO DO: Display bound types
@@ -67,16 +63,16 @@ namespace Transgenesis {
         public void updateTypeBindingsWithModules(Environment e) {
             updateTypeBindings(e);
             foreach (TranscendenceExtension module in modules) {
-                module.updateTypeBindingsWithModules(typemap, e);
+                module.updateTypeBindingsWithModules(types.typemap, e);
             }
             //codes.setLastBindCode(getBindCode());
         }
 
         public void updateTypeBindingsWithModules(Dictionary<string, XElement> parentMap, Environment e) {
-            typemap = new Dictionary<string, XElement>(parentMap);
-            bindAccessibleTypes(typemap, e);
+            types.typemap = new Dictionary<string, XElement>(parentMap);
+            bindAccessibleTypes(e);
             foreach (TranscendenceExtension module in modules) {
-                module.updateTypeBindingsWithModules(typemap, e);
+                module.updateTypeBindingsWithModules(types.typemap, e);
             }
             //codes.setLastBindCode(getBindCode());
         }
@@ -88,7 +84,7 @@ namespace Transgenesis {
                 return;
             }
             //String consoleName = getName() + path.getPath();
-            typemap.Clear();
+            types.typemap.Clear();
             if (structure.Name.LocalName.Equals("TranscendenceModule")) {
                 //We should have our parent extension handle this
                 if (parent == null) {
@@ -108,35 +104,35 @@ namespace Transgenesis {
 			    //out.println(getConsoleMessage("[Success] Parent Type Binding complete; copying Types"));
                 //Inherit types from our Parent Extension; we will not automatically receive them when the Parent Extension is updated
                 //We make a copy of the type map from the Parent Extension since we don't want it to inherit Types/Dependencies that are exclusive to us
-                typemap = new Dictionary<string, XElement>(parent.typemap);
+                types.typemap = new Dictionary<string, XElement>(parent.types.typemap);
             }
 
-            bindAccessibleTypes(typemap, e);
+            bindAccessibleTypes(e);
             //codes.setLastBindCode(getBindCode());
 		    //out.println(getConsoleMessage("[Success] Type Binding complete"));
         }
 
-        public void bindAccessibleTypes(Dictionary<string, XElement> typemap, Environment e) {
+        public void bindAccessibleTypes(Environment e) {
             //Insert all of our own Types. This will allow dependencies to override them
             var bound = types.BindAll();
-            unidmap = new Dictionary<string, uint>();
+            types.unidmap = new Dictionary<string, uint>();
             foreach (string s in bound.Keys) {
-                if (typemap.ContainsKey(s)) {
+                if (types.typemap.ContainsKey(s)) {
                     //System.out.println(getConsoleMessage("[Failure] Duplicate UNID: " + s));
                 } else {
-                    unidmap[s] = bound[s];
-                    typemap[s] = null;
+                    types.unidmap[s] = bound[s];
+                    types.typemap[s] = null;
                 }
             }
             //If we have a UNID of our own, bind it
             if (structure.Att("unid", out string unid)) {
-                typemap[unid] = structure;
+                types.typemap[unid] = structure;
             }
             updateDependencies(e);
-            bindDependencyTypes(typemap);
+            bindDependencyTypes(types);
             updateModules(e);
-            bindInternalTypes(typemap);
-            bindModuleTypes(typemap, e);
+            bindInternalTypes(types.typemap);
+            bindModuleTypes(types.typemap, e);
         }
 
         //Allow modules to take external entities
@@ -181,14 +177,15 @@ namespace Transgenesis {
                 }
             }
         }
-        public void bindDependencyTypes(Dictionary<string, XElement> typemap) {
+        public void bindDependencyTypes(TypeInfo userTypes) {
             //Avoid going into a circular dependency binding loop by binding only the internal types from each dependency
             //Note: Circular dependencies are not supported
+
             foreach (TranscendenceExtension dependency in dependencies) {
-                dependency.bindAsDependency(typemap);
+                dependency.bindAsDependency(userTypes);
             }
         }
-        public void bindAsDependency(Dictionary<string, XElement> typemap) {
+        public void bindAsDependency(TypeInfo userTypes) {
             /*
             if(typeMap.get(getAttributeByName("unid")) == this) {
                 return;
@@ -196,19 +193,29 @@ namespace Transgenesis {
             */
             //Initialize the entry for each type we define
 
-            unidmap = new Dictionary<string, uint>();
+            Dictionary<string, XElement> ourTypes = new Dictionary<string, XElement>();
+            types.unidmap = new Dictionary<string, uint>();
             var bound = types.BindAll();
             foreach (var s in bound.Keys) {
-                unidmap[s] = bound[s];
-                typemap[s] = null;
+                types.unidmap[s] = bound[s];
+                ourTypes[s] = null;
             }
             //Bind our own types now
-            bindInternalTypes(typemap);
+            bindInternalTypes(ourTypes);
             //Bind types in our modules
             foreach (TranscendenceExtension module in modules) {
-                module.bindAsDependency(typemap);
+                module.bindAsDependency(userTypes);
             }
 
+            foreach(var type in ourTypes.Keys) {
+                //Let the user know which types are ours
+                userTypes.dependencyTypes[type] = this;
+                if(userTypes.typemap.TryGetValue(type, out XElement existing) && existing != null) {
+                    //It must be a duplicate UNID
+                } else {
+                    userTypes.typemap[type] = ourTypes[type];
+                }
+            }
             /*
             updateDependencies();
             for(TranscendenceMod dependency : dependencies) {
@@ -337,8 +344,11 @@ namespace Transgenesis {
         public HashSet<uint> generatedUNIDs = new HashSet<uint>();
         public uint lastAssigned = 0;
     }
-    class TypeManager {
+    class TypeInfo {
         public List<TypeElement> elements = new List<TypeElement>();  //TO DO: Make sure that entries and ranges are correctly sorted at extension loading time if no working metadata file is available
+        public Dictionary<string, uint> unidmap = new Dictionary<string, uint>();
+        public Dictionary<string, XElement> typemap = new Dictionary<string, XElement>();    //Binds entities to designs
+        public Dictionary<string, TranscendenceExtension> dependencyTypes;
 
         public Dictionary<string, uint> BindAll() {
             BindContext context = new BindContext();
