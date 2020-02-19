@@ -167,7 +167,6 @@ namespace Transgenesis {
                 buffer = buffer2;
             }
             */
-
             //IMPLEMENT SCROLLING
 
             int screenRows = 45;
@@ -191,6 +190,8 @@ namespace Transgenesis {
                 if(line.Count < 150) {
                     c.NextLine();
                 }
+                //Add black background
+                //c.Write(new ColoredString(new string(' ', 150 - line.Count), Color.White, Color.Black));
             }
 
             i.Draw();
@@ -252,6 +253,13 @@ namespace Transgenesis {
                 }
                 const bool expandFocused = false;
                 var isFocused = focused == element;
+
+                string tagStart = $"<{element.Tag()}";
+                //If we have no attributes, then do not pad any space for attributes
+                if (element.Attributes().Count() > 0) {
+                    tagStart = tagStart.PadRightTab();
+                }
+
                 if (element.Elements().Count() > 0) {
                     Action<string> writeTag;
                     if (isFocused) {
@@ -261,7 +269,7 @@ namespace Transgenesis {
                     }
                     if (expandedCheck || (expandFocused && isFocused)) {
                         //show all attributes and children
-                        writeTag($"{box}{Tab()}{$"<{element.Tag()}".PadRightTab()}{ShowAllAttributes(element)}>");
+                        writeTag($"{box}{Tab()}{tagStart}{ShowAllAttributes(element)}>");
                         ShowChildren();
                         writeTag($"{box}{Tab()}</{element.Tag()}>");
                     } else {
@@ -269,10 +277,10 @@ namespace Transgenesis {
 
                         if (!element.Elements().Any(c => semiexpanded.Contains(c))) {
                             //We have no important children to show, so just put our whole tag on one line
-                            writeTag($"{box}{Tab()}{$"<{element.Tag()}".PadRightTab()}{ShowContextAttributes(element)}>...</{element.Tag()}>");
+                            writeTag($"{box}{Tab()}{tagStart}{ShowContextAttributes(element)}>...</{element.Tag()}>");
                         } else {
                             //Show any important children and attributes
-                            writeTag($"{box}{Tab()}{$"<{element.Tag()}".PadRightTab()}{ShowContextAttributes(element)}>");
+                            writeTag($"{box}{Tab()}{tagStart}{ShowContextAttributes(element)}>");
                             tabs++;
                             int skipped = 0;
 
@@ -315,10 +323,12 @@ namespace Transgenesis {
                     }
                     if (expanded.Contains(element) || (expandFocused && isFocused)) {
                         //show all attributes
-                        writeTag($"{box}{Tab()}{$"<{element.Tag()}".PadRightTab()}{ShowAllAttributes(element)}/>");
+
+                        writeTag($"{box}{Tab()}{tagStart}{ShowAllAttributes(element)}/>");
+
                     } else {
                         //show only the important attributes
-                        writeTag($"{box}{Tab()}{$"<{element.Tag()}".PadRightTab()}{ShowContextAttributes(element)}/>");
+                        writeTag($"{box}{Tab()}{tagStart}{ShowContextAttributes(element)}/>");
                     }
                     return;
                 }
@@ -370,8 +380,6 @@ namespace Transgenesis {
                     return more ? " ..." : "";
                 } else if (inline) {
                     StringBuilder result = new StringBuilder();
-                    //Remove since we have tag padding?
-                    result.Append(" ");
                     var first = attributes.Keys.First();
                     result.Append($@"{first}=""{attributes[first]}""");
                     foreach (string key in attributes.Keys.Skip(1)) {
@@ -396,8 +404,6 @@ namespace Transgenesis {
                     return result.ToString();
                 } else {
                     StringBuilder result = new StringBuilder();
-                    //Remove since we have tag padding?
-                    result.Append(" ");
                     string first = attributes.Keys.First();
                     result.AppendLine($@"{first}=""{attributes[first]}""");
                     tabs++;
@@ -464,14 +470,14 @@ namespace Transgenesis {
                                 }
                                 break;
                             case Syntax.Entity:
-                                glyph.Foreground = Color.White;
+                                glyph.Foreground = Color.SkyBlue;
                                 if(glyph.GlyphCharacter == ';') {
                                     type.Pop();
                                 }
                                 break;
                             case Syntax.Quotes:
                                 //If we encounter a space within quotes, we treat it as part of the quotes
-                                glyph.Foreground = Color.SlateBlue;
+                                glyph.Foreground = Color.MediumSlateBlue;
 
                                 if(glyph.GlyphCharacter == '&') {
                                     type.Push(Syntax.Entity);
@@ -481,7 +487,7 @@ namespace Transgenesis {
                                 }
                                 break;
                             case Syntax.Tag:
-                                glyph.Foreground = Color.SkyBlue;
+                                glyph.Foreground = Color.LightGoldenrodYellow;
                                 if(glyph.GlyphCharacter == '>') {
                                     type.Pop();
                                 } else if (char.IsWhiteSpace(glyph.GlyphCharacter)) {

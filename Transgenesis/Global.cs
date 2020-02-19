@@ -31,7 +31,7 @@ namespace Transgenesis {
         }
 
         public static string PadRightTab(this string s, int tabSize = 4) {
-            return s.PadRight(((s.Length + tabSize - 1) / tabSize) * tabSize);
+            return s.PadRight(((s.Length + 1) / tabSize) * tabSize + tabSize);
         }
 
         public static List<HighlightEntry> GetSuggestions(string input, IEnumerable<string> items) {
@@ -70,6 +70,9 @@ namespace Transgenesis {
         }
         public static void Break() {
            return;
+        }
+        public static string ToUNID(this uint i) {
+            return $"0x{i.ToString("X")}";
         }
     }
 }

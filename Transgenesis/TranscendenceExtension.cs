@@ -11,7 +11,8 @@ namespace Transgenesis {
         public TranscendenceExtension parent;
         public string path;
         public TypeManager types;
-        public Dictionary<string, XElement> typemap;
+        public Dictionary<string, uint> unidmap;
+        public Dictionary<string, XElement> typemap;    //Binds entities to designs
         HashSet<TranscendenceExtension> dependencies;
         HashSet<TranscendenceExtension> modules;
         public XElement structure;
@@ -19,6 +20,7 @@ namespace Transgenesis {
             parent = null;
             this.path = path;
             types = new TypeManager();
+            unidmap = new Dictionary<string, uint>();
             typemap = new Dictionary<string, XElement>();
             
             dependencies = new HashSet<TranscendenceExtension>();
@@ -38,12 +40,8 @@ namespace Transgenesis {
                 s.AppendLine($@"    {entity, -32}""{entity2unid[entity]}""");
             }
             */
-            //TO DO: Display type elements
-            foreach(TypeElement e in types.elements) {
-                if(e is TypeEntry entry) {
-                    s.AppendLine($@"    {entry.entity,-32}""{entry.unid}""");
-                }
-                //TO DO: Handle other element types
+            foreach(var unid in unidmap.Keys) {
+                s.AppendLine($@"    <!ENTITY {unidmap[unid],-32}""{unid}"">");
             }
 
             //TO DO: Display bound types
@@ -120,10 +118,13 @@ namespace Transgenesis {
 
         public void bindAccessibleTypes(Dictionary<string, XElement> typemap, Environment e) {
             //Insert all of our own Types. This will allow dependencies to override them
-            foreach (string s in types.BindAll().Item1.Values) {
+            var bound = types.BindAll();
+            unidmap = new Dictionary<string, uint>();
+            foreach (string s in bound.Keys) {
                 if (typemap.ContainsKey(s)) {
                     //System.out.println(getConsoleMessage("[Failure] Duplicate UNID: " + s));
                 } else {
+                    unidmap[s] = bound[s];
                     typemap[s] = null;
                 }
             }
@@ -193,10 +194,17 @@ namespace Transgenesis {
                 return;
             }
             */
-            foreach (String s in types.BindAll().Item1.Values) {
+            //Initialize the entry for each type we define
+
+            unidmap = new Dictionary<string, uint>();
+            var bound = types.BindAll();
+            foreach (var s in bound.Keys) {
+                unidmap[s] = bound[s];
                 typemap[s] = null;
             }
+            //Bind our own types now
             bindInternalTypes(typemap);
+            //Bind types in our modules
             foreach (TranscendenceExtension module in modules) {
                 module.bindAsDependency(typemap);
             }
@@ -243,11 +251,13 @@ namespace Transgenesis {
                 typeMap.put(getAttributeByName("unid").getValue(), this);
             }
             */
+
+            //Now, we bind our DesignTypes to the TypeMap
             foreach (XElement sub in structure.Elements()) {
                 //We already handled Library types as dependencies
                 if (!sub.Tag().Equals("Library") && sub.Att("unid", out string sub_type)) {
                     //Check if the element has been assigned a UNID
-                    if (!(sub_type == null || sub_type.Length > 0)) {
+                    if (sub_type != null && sub_type.Length > 0) {
                         //Check if the UNID has been defined by the extension
                         //WARNING: THE TYPE SPECIFIED IN THE ATTRIBUTE WILL NOT MATCH BECAUSE IT IS AN XML ENTITY. REMOVE THE AMPERSAND AND SEMICOLON.
                         sub_type = sub_type.Replace("&", "").Replace(";", "");
@@ -264,7 +274,8 @@ namespace Transgenesis {
                                 //Override for now
                                 typemap[sub_type] = sub;
                             } else {
-							    //out.println(getConsoleMessage2(sub.getName(), String.format("%-15s %s", "[Warning] Duplicate Type:", sub_type)));
+                                //out.println(getConsoleMessage2(sub.getName(), String.format("%-15s %s", "[Warning] Duplicate Type:", sub_type)));
+                                throw new Exception($"Duplicate Type: {sub_type}");
                             }
                         } else {
                             //Depending on the context, we will not be able to identify whether this is defining a completely nonexistent Type or overriding an external type
@@ -277,8 +288,8 @@ namespace Transgenesis {
                             }
                         }
                     } else {
-					    //out.println(getConsoleMessage2(sub.getName(), "[Failure] Missing unid= attribute"));
-
+                        //out.println(getConsoleMessage2(sub.getName(), "[Failure] Missing unid= attribute"));
+                        throw new Exception($"Missing unid= attribute: {sub.Name.LocalName}");
                     }
                 }
             }
@@ -318,94 +329,67 @@ namespace Transgenesis {
         */
     }
 
+    class BindContext {
+        public Dictionary<uint, string> unid2entity = new Dictionary<uint, string>();
+        public Dictionary<string, uint> entity2unid = new Dictionary<string, uint>();
+        public HashSet<uint> definedUNIDs = new HashSet<uint>();
+        public HashSet<uint> generatedUNIDs = new HashSet<uint>();
+        public uint lastAssigned = 0;
+    }
     class TypeManager {
         public List<TypeElement> elements = new List<TypeElement>();  //TO DO: Make sure that entries and ranges are correctly sorted at extension loading time if no working metadata file is available
 
-        public (Dictionary<string, string>, Dictionary<string,string>) BindAll() {
-            Dictionary<string, string> unid2entity = new Dictionary<string, string>();
-            Dictionary<string, string> entity2unid = new Dictionary<string, string>();
-            List<TypeElement> definedUNIDs = new List<TypeElement>();
-            List<TypeElement> generatedUNIDs = new List<TypeElement>();
+        public Dictionary<string, uint> BindAll() {
+            BindContext context = new BindContext();
             foreach (TypeElement e in elements) {
-                if (e is TypeEntry || e is TypeRange) {
-                    definedUNIDs.Add(e);
-                } else {
-                    generatedUNIDs.Add(e);
-                }
+                e.BindAll(context);
             }
-            definedUNIDs.ForEach(e => e.BindAll(unid2entity, entity2unid));
-            //TO DO: Type and TypeGroup need to auto-generate UNIDs
-            generatedUNIDs.ForEach(e => e.BindAll(unid2entity, entity2unid));
-            return (unid2entity, entity2unid);
+            return context.entity2unid;
         }
     }
 
     static class Types {
-        public static void BindEntry(Dictionary<string, string> unid2entity, Dictionary<string, string> entity2unid, string unid, string entity) {
-            //Attempt to make the unid into a hex string, if it is not already one.
-            try {
-                //8-digit hex is too cool for Integer
-                //unid = fixHex(Long.toHexString(Long.decode(unid.toLowerCase())));
-                unid = $"0x{long.Parse(unid.ToLower().Replace("0x", ""), System.Globalization.NumberStyles.HexNumber).ToString("X8")}";
-            } catch (Exception e) {
-                //JOptionPane.showMessageDialog(null, "Invalid UNID: " + unid + "[" + type + "]");
-                return;
-            }
+        public static void BindEntry(BindContext context, uint? unid, string entity) {
+
             if (!entity.All(c => char.IsLetterOrDigit(c)) || entity.Contains("-") || entity.Contains("_")) {
                 //JOptionPane.showMessageDialog(null, "Invalid Type: " + type + "[" + unid + "]");
-            } else if (unid2entity.ContainsValue(entity)) {
+            } else if (context.entity2unid.ContainsKey(entity)) {
                 //JOptionPane.showMessageDialog(null, "Type Conflict: " + type + " [" + unid + " " + entryMap.getKey(type) + "]");
             } else {
-                unid2entity[unid] = entity;
-                entity2unid[entity] = unid;
+                if(unid == null) {
+                    unid = context.lastAssigned;
+
+                    if(unid == 0) {
+                        //Return an error
+                        return;
+                    } else {
+                        while(context.unid2entity.ContainsKey((uint) unid)) {
+                            unid++;
+                        }
+                    }
+                }
+                context.unid2entity[(uint)unid] = entity;
+                context.entity2unid[entity] = (uint)unid;
+                context.lastAssigned = (uint)unid;
             }
-            /*
-            if(entryMap.containsKey(unid)) {
-                JOptionPane.showMessageDialog(null, "UNID Conflict: " + unid + " [" + type + " " + entryMap.get(unid) + "]");
-            }
-            */
         }
-        public static String COMMENT_DEFAULT = "[Comment]";
-        public static String UNID_DEFAULT = "[UNID]";
-        public static String ENTITY_DEFAULT = "[Entity]";
     }
 
     interface TypeElement {
         XElement GetXMLOutput();
-        void BindAll(Dictionary<string,string> unid2entity, Dictionary<string,string> entity2unid);
-	}
-	//Specifies a single type that will get an automatically-generated UNID
-	class Type : TypeElement {
-
-        //public string comment;
-        public string entity;
-        /*
-        public Type(String comment, String type) {
-            this.comment = comment;
-            this.entity = type;
-        }
-        */
-        public Type(string type) {
-            this.entity = type;
-        }
-        public void BindAll(Dictionary<string, string> unid2entity, Dictionary<string, string> entity2unid) {}
-        public XElement GetXMLOutput() {
-            XElement result = new XElement("Type");
-            //result.SetAttributeValue("comment", comment);
-            result.SetAttributeValue("entity", entity);
-            return result;
-        }
+        void BindAll(BindContext context);
 	}
 
     //Specifies a single type bound to a UNID
     class TypeEntry : TypeElement {
-        public string unid, entity;
-        public TypeEntry(string unid, string entity) {
-            this.unid = unid;
+        public string entity;
+        public uint? unid;
+        public TypeEntry(string entity, uint? unid = null) {
             this.entity = entity;
+            this.unid = unid;
         }
-        public void BindAll(Dictionary<string, string> unid2entity, Dictionary<string, string> entity2unid) {
-            Types.BindEntry(unid2entity, entity2unid, unid, entity);
+        public void BindAll(BindContext context) {
+            Types.BindEntry(context, unid, entity);
         }
         public XElement GetXMLOutput() {
             XElement result = new XElement("TypeEntry");
@@ -415,76 +399,51 @@ namespace Transgenesis {
             return result;
         }
     }
-	//Specifies a group of types that will get automatically-generated UNIDs
-	class TypeGroup : TypeElement {
-
-        //public string comment;
-        public List<string> entities;
-        /*
-        public TypeGroup() : this(Types.COMMENT_DEFAULT, new List<string>()) {
-        }
-        public TypeGroup(String comment, List<string> entities) {
-            this.comment = comment;
-            this.entities = new List<string>();
-            this.entities.AddRange(entities);
-        }
-        */
-        public TypeGroup(List<string> entities) {
-            //this.comment = comment;
-            this.entities = new List<string>(entities);
-        }
-        public void BindAll(Dictionary<string, string> unid2entity, Dictionary<string, string> entity2unid) { }
-        public XElement GetXMLOutput() {
-            XElement result = new XElement("TypeGroup");
-            //result.SetAttributeValue("comment", comment);
-            result.SetAttributeValue("entities", string.Join(" ", entities));
-            return result;
-        }
-	}
-	        //Specifies a group of types bound to a range of UNIDs on an interval
+	//Specifies a group of types bound to a range of UNIDs on an interval
 	class TypeRange : TypeElement {
 
-        public string unid_min, unid_max;
-        List<string> entities;
-        public TypeRange() :
-            this("[Min UNID]", "[Max UNID]") {
-        }
-        public TypeRange(string unid_min, string unid_max) : base() {
+        public uint? unid_min, unid_max;
+        public List<string> entities;
+        public TypeRange(uint? unid_min = null, uint? unid_max = null, params string[] entities) : base() {
             this.unid_min = unid_min;
             this.unid_max = unid_max;
-            entities = new List<string>();
-        }
-        public TypeRange(string comment, string unid_min, string unid_max, List<string> entities) {
-            this.unid_min = unid_min;
-            this.unid_max = unid_max;
+            this.entities = new List<string>(entities);
         }
         public XElement GetXMLOutput() {
             XElement result = new XElement("TypeRange");
-            //result.SetAttributeValue("comment", comment);
             result.SetAttributeValue("unid_min", unid_min);
             result.SetAttributeValue("unid_max", unid_max);
             result.SetAttributeValue("entities", string.Join(" ", entities));
             return result;
         }
-        public void BindAll(Dictionary<string, string> unid2entity, Dictionary<string, string> entity2unid) {
-            int? min = null, max = null;
-            try {
-                min = int.Parse(unid_min);
-            } catch (Exception e) {
-                //JOptionPane.showMessageDialog(null, "Invalid Minimum UNID: " + unid_min);
-            }
-            try {
-                max = int.Parse(unid_max);
-            } catch (Exception e) {
-                //JOptionPane.showMessageDialog(null, "Invalid Maximum UNID: " + unid_max);
-            }
-            if (min != null || max != null) {
-                int maxCount = ((int)max - (int)min) + 1;
+        public void BindAll(BindContext context) {
+            var min = unid_min;
+            var max = unid_max;
+            if (min != null && max != null) {
+                uint maxCount = ((uint)max - (uint)min);
                 if (entities.Count > maxCount) {
                     //JOptionPane.showMessageDialog(null, "Not enough UNIDs within range");
                 }
-                for (int i = 0; i < entities.Count && i < maxCount; i++) {
-                    Types.BindEntry(unid2entity, entity2unid, ((int)(min + i)).ToString("X"), entities[i]);
+                int i = 0;
+                foreach(var entity in entities) {
+                    Types.BindEntry(context, ((uint)(min + i)), entity);
+                    i++;
+                }
+            } else if(min != null) {
+                int i = 0;
+                foreach(var entity in entities) {
+                    Types.BindEntry(context, ((uint)(min + i)), entity);
+                    i++;
+                }
+            } else if(max != null) {
+                int i = 1;
+                foreach (var entity in entities) {
+                    Types.BindEntry(context, ((uint)(max - i)), entity);
+                    i++;
+                }
+            } else {
+                foreach (var entity in entities) {
+                    Types.BindEntry(context, null, entity);
                 }
             }
         }

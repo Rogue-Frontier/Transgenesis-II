@@ -24,7 +24,6 @@ namespace Transgenesis {
             IsMouseVisible = true;
             base.Initialize();
             var con = new MainConsole(150, 65);
-
             //This allows trailing spaces to show up in command
             con.Cursor.DisableWordBreak = true;
 
@@ -32,6 +31,7 @@ namespace Transgenesis {
             con.IsVisible = true;
             con.IsFocused = true;
             con.Font = con.Font.Master.GetFont(Font.FontSizes.One);
+            GraphicsDeviceManager.IsFullScreen = true;
         }
     }
     class MainConsole : ControlsConsole {
@@ -44,6 +44,7 @@ namespace Transgenesis {
             };
             DefaultBackground = Color.Black;
             DefaultForeground = Color.White;
+
         }
         public override void Update(TimeSpan delta) {
             base.Update(delta);

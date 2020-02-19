@@ -128,7 +128,7 @@ namespace Transgenesis {
                 //Load entities
                 if(doc?.DocumentType?.Entities != null) {
                     foreach (XmlEntity entity in doc.DocumentType.Entities) {
-                        extension.types.elements.Add(new TypeEntry(entity.InnerText, entity.Name));
+                        extension.types.elements.Add(new TypeEntry(entity.InnerText, uint.Parse(entity.Name, System.Globalization.NumberStyles.HexNumber)));
                     }
                 }
                 e = extension;
