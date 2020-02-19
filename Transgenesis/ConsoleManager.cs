@@ -29,6 +29,7 @@ namespace Transgenesis {
         public void Clear() {
             ClearLines();
             console.Clear();
+            console.Fill(theme.front, theme.back, ' ');
             /*
             lines.ForEach(t => {
                 (Point cursor, string s) = t;
