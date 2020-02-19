@@ -25,6 +25,10 @@ namespace Transgenesis {
             i = new Input(c);
             s = new Suggest(i, c);
             t = new Tooltip(i, s, c, new Dictionary<string, string>() {
+                { "add",        "add <entity>\r\n" +
+                                "Adds an entity to a type range, if selected." },
+                { "add",        "remove [entity...]\r\n" +
+                                "Removes the specified entities from their entries. If no entity is specified, removes the currently selected entry." },
                 { "type",       "type <entity> [unid]\r\n" +
                                 "Creates a type with the given entity and unid. If the unid is omitted, then it is automatically assigned following the last assigned unid." },
                 { "range",      "range [unidMin] [unidMax]\r\n" +
@@ -90,13 +94,51 @@ namespace Transgenesis {
                                         var entity = parts[1];
                                         EntityCheck(entity);
 
-                                        if(extension.types.elements[elementIndex] is TypeRange range) {
-                                            range.entities.Add(parts[1]);
+                                        if(extension.types.elements.Count == 0) {
+                                            //Must have type elements
+                                        } else if(extension.types.elements[elementIndex] is TypeRange range) {
+
+                                            if(range.size != null && range.entities.Count < range.size) {
+                                                range.entities.Add(parts[1]);
+                                            } else {
+                                                //Range has reached entity limit
+                                            }
                                         } else {
                                             //Must be selecting a type range
                                         }
                                     } else {
                                         //Expected entity
+                                    }
+                                    i.Clear();
+                                    break;
+                                }
+                            case "remove": {
+                                    //Remove the entire entry
+                                    if(parts.Length == 1) {
+                                        if(elementIndex < extension.types.elements.Count) {
+                                            extension.types.elements.RemoveAt(elementIndex);
+                                        }
+                                    } else {
+                                        foreach(var entity in parts.Skip(1)) {
+                                            for (int i = 0; i < extension.types.elements.Count; i++) {
+                                                var element = extension.types.elements[i];
+                                                if (element is TypeEntry entry && entry.entity == entity) {
+                                                    extension.types.elements.RemoveAt(i);
+                                                    goto Found;
+                                                } else if (element is TypeRange range && range.entities.Contains(entity)) {
+                                                    range.entities.Remove(entity);
+                                                    goto Found;
+                                                }
+                                            }
+
+                                            //Error: did not find entity
+
+                                            break;
+                                        Found:
+                                            //Success
+                                            break;
+                                        }
+
                                     }
                                     break;
                                 }
@@ -109,7 +151,7 @@ namespace Transgenesis {
                                             if(element is TypeEntry entry && entry.entity == entity) {
                                                 //Error: Conflict with type
                                                 break;
-                                            } else if(element is TypeRange range && range.entities.Contains(entity) {
+                                            } else if(element is TypeRange range && range.entities.Contains(entity)) {
                                                 //Error: Conflict with range
                                                 break;
                                             }
@@ -134,7 +176,7 @@ namespace Transgenesis {
                                     } else {
                                         extension.types.elements.Insert(elementIndex + 1, result);
                                     }
-                                    
+                                    i.Clear();
                                     break;
                                 }
                             case "range": {
@@ -169,13 +211,16 @@ namespace Transgenesis {
                                     } else {
                                         extension.types.elements.Insert(elementIndex + 1, result);
                                     }
+                                    i.Clear();
                                     break;
                                 }
                             case "bind":
                                 extension.updateTypeBindings(env);
+                                i.Clear();
                                 break;
                             case "exit":
                                 screens.Pop();
+                                i.Clear();
                                 break;
                         }
                         break;
@@ -219,7 +264,7 @@ namespace Transgenesis {
                     if (element is TypeEntry entry && entry.entity == entity) {
                         //Error: Conflict with type
                         break;
-                    } else if (element is TypeRange range && range.entities.Contains(entity) {
+                    } else if (element is TypeRange range && range.entities.Contains(entity)) {
                         //Error: Conflict with range
                         break;
                     }

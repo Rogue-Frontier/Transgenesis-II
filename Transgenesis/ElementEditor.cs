@@ -598,6 +598,8 @@ namespace Transgenesis {
                                     break;
                                 }
                             case "set": {
+                                    if (parts.Length == 1)
+                                        break;
                                     string attribute = parts[1];
                                     string value = string.Join(" ", parts.Skip(2));
                                     if (value.Length > 0) {
@@ -625,26 +627,31 @@ namespace Transgenesis {
                                     foreach(var a in attributes.Keys) {
                                         focused.SetAttributeValue(a, attributes[a]);
                                     }
+                                    i.Clear();
                                     break;
                                 }
                             case "bind": {
                                     extension.updateTypeBindings(env);
+                                    i.Clear();
                                     break;
                                 }
                             case "bindall": {
                                     foreach (var ext in env.extensions.Values) {
                                         ext.updateTypeBindings(env);
                                     }
+                                    i.Clear();
                                     break;
                                 }
                             case "save": {
                                     extension.Save();
+                                    i.Clear();
                                     break;
                                 }
                             case "saveall": {
                                     foreach (var extension in env.extensions.Values) {
                                         extension.Save();
                                     }
+                                    i.Clear();
                                     break;
                                 }
                             case "remove": {
@@ -652,22 +659,27 @@ namespace Transgenesis {
 
                                     //For now, this just removes the current element if it's not the root
                                     RemoveFocused();
+                                    i.Clear();
                                     break;
                                 }
                             case "expand": {
                                     expanded.Add(focused);
+                                    i.Clear();
                                     break;
                                 }
                             case "collapse": {
                                     expanded.Remove(focused);
+                                    i.Clear();
                                     break;
                                 }
                             case "moveup": {
                                     MoveUp();
+                                    i.Clear();
                                     break;
                                 }
                             case "movedown": {
                                     MoveDown();
+                                    i.Clear();
                                     break;
                                 }
                             case "goto": {
@@ -678,34 +690,43 @@ namespace Transgenesis {
                                     while (focused.Parent != null) {
                                         focused = focused.Parent;
                                     }
+                                    i.Clear();
                                     break;
                                 }
                             case "parent": {
                                     focused = focused.Parent ?? focused;
+                                    i.Clear();
                                     break;
                                 }
-                            /*
+                                /*
                             case "child":
                                 focused = focused.Elements().FirstOrDefault() ?? focused;
                                 break;
                             */
+                            /*
                             case "find":
                                 //Start from the focused element and find elements matching this criteria
                                 break;
+                            */
                             case "next": {
                                     focused = focused.ElementsAfterSelf().FirstOrDefault() ?? focused;
+                                    i.Clear();
+
                                     break;
                                 }
                             case "prev": {
                                     focused = focused.ElementsBeforeSelf().LastOrDefault() ?? focused;
+                                    i.Clear();
                                     break;
                                 }
                             case "types": {
                                     screens.Push(new TypeEditor(screens, env, extension, c));
+                                    i.Clear();
                                     break;
                                 }
                             case "exit": {
                                     screens.Pop();
+                                    i.Clear();
                                     break;
                                 }
                         }

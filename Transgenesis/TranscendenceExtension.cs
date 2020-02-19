@@ -286,6 +286,7 @@ namespace Transgenesis {
                             if(bindUnknown) {
                                 typemap[sub_type] = sub;
                             }
+
                         }
                     } else {
                         //out.println(getConsoleMessage2(sub.getName(), "[Failure] Missing unid= attribute"));
@@ -402,6 +403,7 @@ namespace Transgenesis {
 	//Specifies a group of types bound to a range of UNIDs on an interval
 	class TypeRange : TypeElement {
 
+        public uint? size => unid_min != null && unid_max != null ? (unid_max - unid_min) : null;
         public uint? unid_min, unid_max;
         public List<string> entities;
         public TypeRange(uint? unid_min = null, uint? unid_max = null, params string[] entities) : base() {

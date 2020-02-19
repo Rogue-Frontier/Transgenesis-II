@@ -123,6 +123,9 @@ namespace Transgenesis {
                                 break;
                             }
                         case "create": {
+                                if (parts.Length < 3) {
+                                    break;
+                                }
                                 if (Enum.TryParse(parts[1], out ExtensionTypes ex)) {
                                     //Always use full-path so that we can easily find this
                                     env.CreateExtension(ex, Path.GetFullPath(parts[2]));
@@ -130,6 +133,9 @@ namespace Transgenesis {
                                 break;
                             }
                         case "unload": {
+                                if (parts.Length == 1) {
+                                    break;
+                                }
                                 string path = Path.GetFullPath(string.Join(" ", parts.Skip(1)).Trim());
                                 if (env.extensions.TryGetValue(path, out TranscendenceExtension existing)) {
                                     env.Unload(existing);
@@ -161,6 +167,9 @@ namespace Transgenesis {
                                 break;
                             }
                         case "reload": {
+                                if (parts.Length == 1) {
+                                    break;
+                                }
                                 string path = Path.GetFullPath(string.Join(" ", parts.Skip(1)).Trim());
                                 if (env.extensions.TryGetValue(path, out TranscendenceExtension existing)) {
                                     env.Unload(existing);
@@ -169,6 +178,9 @@ namespace Transgenesis {
                                 break;
                             }
                         case "reloadmodules": {
+                                if (parts.Length == 1) {
+                                    break;
+                                }
                                 string path = Path.GetFullPath(string.Join(" ", parts.Skip(1)).Trim());
                                 if (env.extensions.TryGetValue(path, out TranscendenceExtension existing)) {
                                     env.Unload(existing);
@@ -181,6 +193,9 @@ namespace Transgenesis {
                                 break;
                             }
                         case "load": {
+                                if (parts.Length == 1) {
+                                    break;
+                                }
                                 string path;
                                 /*
                                 if(parts.Count() == 1) {
@@ -216,6 +231,9 @@ namespace Transgenesis {
                                 break;
                             }
                         case "loadmodules": {
+                                if (parts.Length == 1) {
+                                    break;
+                                }
                                 string path = Path.GetFullPath(string.Join(" ", parts.Skip(1)).Trim());
                                 //Don't reload the extension
                                 if (env.extensions.TryGetValue(path, out TranscendenceExtension existing)) {
@@ -229,6 +247,10 @@ namespace Transgenesis {
                                 break;
                             }
                         case "open": {
+                                if(parts.Length == 1) {
+                                    break;
+                                }
+
                                 string path = Path.GetFullPath(string.Join(" ", parts.Skip(1)).Trim());
                                 //Don't reload the extension
                                 if (env.extensions.TryGetValue(path, out TranscendenceExtension existing)) {
@@ -243,6 +265,9 @@ namespace Transgenesis {
                                 break;
                             }
                         case "edit": {
+                                if (parts.Length == 1) {
+                                    break;
+                                }
                                 string path = Path.GetFullPath(string.Join(" ", parts.Skip(1)).Trim());
                                 //Global.Break();
                                 if (env.extensions.TryGetValue(path, out TranscendenceExtension result)) {
@@ -251,6 +276,9 @@ namespace Transgenesis {
                                 break;
                             }
                         case "types": {
+                                if (parts.Length == 1) {
+                                    break;
+                                }
                                 string path = Path.GetFullPath(string.Join(" ", parts.Skip(1)).Trim());
                                 if (env.extensions.TryGetValue(path, out TranscendenceExtension result)) {
                                     screens.Push(new TypeEditor(screens, env, result, c));
