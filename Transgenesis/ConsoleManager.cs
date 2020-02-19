@@ -6,7 +6,9 @@ using static Transgenesis.Global;
 
 namespace Transgenesis {
     class Theme {
-        public Color front = Color.White, back = Color.Black;
+        public Color front = Color.White;
+        //public Color back = Color.Multiply(Color.Turquoise, 0.25f).FillAlpha();
+        public Color back = new Color(0, (int) (51 * 0.75), (int) (102 * 0.75), 255);
         public Color highlight = Color.LimeGreen;
         public void Deconstruct(out Color front, out Color back) {
             (front, back) = (this.front, this.back);
