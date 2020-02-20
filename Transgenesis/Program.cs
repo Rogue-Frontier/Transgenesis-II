@@ -15,8 +15,13 @@ using Keys = Microsoft.Xna.Framework.Input.Keys;
 namespace Transgenesis {
     class Program : Game {
         public static void Main(string[] args) {
-            using(var game = new Program()) {
-                game.Run();
+            try {
+                using (var game = new Program()) {
+                    game.Run();
+                }
+            } catch(Exception e) {
+                File.WriteAllText("log.txt", e.StackTrace);
+                throw e;
             }
         }
         public Program() : base("Content/IBM_ext.font", 150, 65, null) { }
