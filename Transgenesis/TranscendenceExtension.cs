@@ -36,8 +36,8 @@ namespace Transgenesis {
                 s.AppendLine($@"    {entity, -32}""{entity2unid[entity]}""");
             }
             */
-            foreach(var unid in types.unidmap.Keys) {
-                s.AppendLine($@"    <!ENTITY {types.unidmap[unid],-32}""{unid}"">");
+            foreach(var entity in types.unidmap.Keys) {
+                s.AppendLine($@"    <!ENTITY {entity,-32}""{types.unidmap[entity].ToUNID()}"">");
             }
 
             //TO DO: Display bound types
@@ -225,15 +225,16 @@ namespace Transgenesis {
             foreach (XElement sub in structure.Elements()) {
                 switch (sub.Tag()) {
                     case "Module":
-                        String moduleFilename = sub.Att("filename");
-                        String modulePath = Path.Combine(Path.Combine(path, ".."), moduleFilename);
+                        var moduleFilename = sub.Att("filename");
+                        var modulePath = Path.GetFullPath(Path.Combine(path, "..", moduleFilename));
+
 				//Look for our module in the Extensions list
 				//out.println(getConsoleMessage("[General] Looking for Module " + modulePath + "."));
                         if(env.extensions.TryGetValue(modulePath, out TranscendenceExtension e)) {
                             e.parent = this;
                             modules.Add(e);
                         } else {
-
+                            continue;
                         }
                         //Maybe we should automatically load the module if it is not loaded already
                         break;
@@ -343,7 +344,10 @@ namespace Transgenesis {
         public Dictionary<string, XElement> typemap = new Dictionary<string, XElement>();    //Binds entities to designs
         public HashSet<string> ownedTypes = new HashSet<string>();         //Types that we have defined
         public Dictionary<string, TranscendenceExtension> dependencyTypes = new Dictionary<string, TranscendenceExtension>();
-
+        public List<string> entities => elements.SelectMany(element =>
+        element is TypeEntry e ? new List<string>() { e.entity } :
+        (element is TypeRange range ? range.entities :
+        null)).ToList();
         public Dictionary<string, uint> BindAll() {
             BindContext context = new BindContext();
             foreach (TypeElement e in elements) {
