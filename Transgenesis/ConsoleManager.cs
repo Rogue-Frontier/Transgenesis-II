@@ -2,6 +2,7 @@
 using SadConsole;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using static Transgenesis.Global;
 
 namespace Transgenesis {
@@ -67,11 +68,14 @@ namespace Transgenesis {
             cursor.Print(CreateHighlightString(s));
             NextLine();
         }
+        public ColoredString ColorString(string s, Color front, Color back) {
+            return new ColoredString(s.Select(c => new ColoredGlyph(c, front, back)).ToArray());
+        }
         public ColoredString CreateString(string s, Color? front = null, Color? back = null) {
-            return new ColoredString(s, front ?? theme.front, back ?? theme.back);
+            return ColorString(s, front ?? theme.front, back ?? theme.back);
         }
         public ColoredString CreateHighlightString(string s, Color? front = null, Color? back = null) {
-            return new ColoredString(s, front ?? theme.highlight, back ?? theme.back);
+            return ColorString(s, front ?? theme.highlight, back ?? theme.back);
         }
         public void WriteLine(string s, Color? front = null, Color? back = null) {
             Write(s, front, back);
