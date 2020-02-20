@@ -15,20 +15,15 @@ using Keys = Microsoft.Xna.Framework.Input.Keys;
 namespace Transgenesis {
     class Program : Game {
         public static void Main(string[] args) {
-            try {
-                using (var game = new Program()) {
-                    game.Run();
-                }
-            } catch(Exception e) {
-                File.WriteAllText("log.txt", e.StackTrace);
-                throw e;
+            using (var game = new Program()) {
+                game.Run();
             }
         }
-        public Program() : base("Content/IBM_ext.font", 150, 65, null) { }
+        public Program() : base("Content/IBM_ext.font", 200, 65, null) { }
         protected override void Initialize() {
             IsMouseVisible = true;
             base.Initialize();
-            var con = new MainConsole(150, 65);
+            var con = new MainConsole(200, 65);
             //This allows trailing spaces to show up in command
             con.Cursor.DisableWordBreak = true;
 
