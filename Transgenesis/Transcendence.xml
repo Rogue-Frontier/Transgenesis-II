@@ -1006,7 +1006,7 @@
                 <E category="*" name="Device">
                     <A name="chance" valueType="WHOLE"/>
                     <A name="count" valueType="WHOLE"/>
-                    <A name="deviceID" valueType="TYPE_DEVICE"/>
+                    <A name="deviceID" valueType="TYPE_ITEM_DEVICE"/>
                     <A name="external" valueType="BOOLEAN"/>
                     <A name="hpBonus" valueType="INTEGER"/>
                     <A name="level" valueType="WHOLE"/>
