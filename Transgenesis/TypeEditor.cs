@@ -58,14 +58,14 @@ namespace Transgenesis {
                 }
 
                 if (e is TypeEntry entry) {
-                    addLine($"    {entry.entity,-32}{entry.unid?.ToUNID() ?? "Auto",-32}{(extension.types.typemap.TryGetValue(entry.entity, out XElement design) ? design?.Tag() ?? "None" : "None"),-32}{extensionName,-32}"); //{entry.comment}
+                    addLine($"    {entry.entity,-32}{entry.unid?.ToUNID() ?? "Auto",-16}{(extension.types.typemap.TryGetValue(entry.entity, out XElement design) ? design?.Tag() ?? "None" : "None"),-32}{extensionName,-32}"); //{entry.comment}
                 } else if (e is TypeRange group) {
                     string range = $"{group.unid_min?.ToUNID() ?? "Auto"} -- {group.unid_max?.ToUNID() ?? "Auto"}";
                     addLine($"    <!-- {range} -->");
 
                     int rangeIndex = 0;
                     foreach (var entity in group.entities) {
-                        addLine($"    {entity, -32}{(group.unid_min != null ? ((uint)(group.unid_min+rangeIndex)).ToUNID() : "Auto"), -32}{(extension.types.typemap.TryGetValue(entity, out XElement design) ? design?.Tag() ?? "None" : "None"),-32}{extensionName, -32}");
+                        addLine($"    {entity, -32}{(group.unid_min != null ? ((uint)(group.unid_min+rangeIndex)).ToUNID() : "Auto"), -16}{(extension.types.typemap.TryGetValue(entity, out XElement design) ? design?.Tag() ?? "None" : "None"),-32}{extensionName, -32}");
                         rangeIndex++;
                     }
                 }
@@ -74,13 +74,13 @@ namespace Transgenesis {
 
             AddLine("<!-- Types overridden by this extension -->");
             foreach(var owned in extension.types.overriddenTypes) {
-                AddLine($"    {owned,-32}{extension.types.unidmap[owned].ToUNID(),-32}{(extension.types.typemap.TryGetValue(owned, out XElement design) ? design?.Tag() ?? "None" : "None"),-32}{extensionName, -32}"); //{entry.comment}
+                AddLine($"    {owned,-32}{extension.types.unidmap[owned].ToUNID(),-16}{(extension.types.typemap.TryGetValue(owned, out XElement design) ? design?.Tag() ?? "None" : "None"),-32}{extensionName, -32}"); //{entry.comment}
             }
             AddLine("<!-- Types defined by dependencies -->");
             foreach (var dependency in extension.types.typesByDependency.Keys) {
                 string dependencyName = dependency.name ?? dependency.entity ?? dependency.path ?? dependency.structure.Tag();
                 foreach (var entity in extension.types.typesByDependency[dependency]) {
-                    AddLine($"    {entity,-32}{extension.types.unidmap[entity].ToUNID(),-32}{(extension.types.typemap.TryGetValue(entity, out XElement design) ? design?.Tag() ?? "None" : "None"),-32}{dependencyName, -32}"); //{entry.comment}
+                    AddLine($"    {entity,-32}{extension.types.unidmap[entity].ToUNID(),-16}{(extension.types.typemap.TryGetValue(entity, out XElement design) ? design?.Tag() ?? "None" : "None"),-32}{dependencyName, -32}"); //{entry.comment}
                 }
             }
 
