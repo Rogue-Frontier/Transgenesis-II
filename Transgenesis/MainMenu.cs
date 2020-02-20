@@ -59,13 +59,42 @@ namespace Transgenesis {
             c.NextLine();
 
             c.WriteLine($"Extensions Loaded: {env.extensions.Count}");
-            foreach (var e in env.extensions.Values) {
-                if(e.structure.Att("name", out string name) || (e.parent != null && e.parent.structure.Att("name", out name))) {
-                    name = $@"""{name}""";
-                } else {
-                    name = "";
+            var ext = new List<TranscendenceExtension>(env.extensions.Values);
+            ext.Sort((TranscendenceExtension t1, TranscendenceExtension t2) => {
+                var p1 = t1;
+                while(p1.parent != null) {
+                    p1 = p1.parent;
                 }
-                c.WriteLine($"{e.structure.Name.LocalName,-24}{name,-32}{e.path}");
+                var p2 = t2;
+                while (p2.parent != null) {
+                    p2 = p2.parent;
+                }
+                var module = "TranscendenceModule";
+                if(p1 == p2) {
+                    if (t1.structure.Tag() != module && t2.structure.Tag() == module) {
+                        return -1;
+                    } else if (t1.structure.Tag() == module && t2.structure.Tag() != module) {
+                        return 1;
+                    } else {
+                        return 0;
+                    }
+                } else {
+                    return (p1.structure.Att("name", out string n1) ? n1 : "").CompareTo(p2.structure.Att("name", out string n2) ? n2 : "");
+                }
+            });
+            foreach (var e in ext) {
+                var nameSource = e;
+
+                string name = "";
+                while(nameSource != null) {
+                    if(nameSource.structure.Att("name", out name)) {
+                        break;
+                    } else {
+                        nameSource = nameSource.parent;
+                    }
+                }
+                string tag = $"{e.structure.Tag(),-24}";
+                c.WriteLine($"{tag}{name,-32}{e.path}");
             }
 
             i.Draw();
