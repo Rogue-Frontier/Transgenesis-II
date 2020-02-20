@@ -128,7 +128,7 @@ namespace Transgenesis {
                 //Load entities
                 if(doc?.DocumentType?.Entities != null) {
                     foreach (XmlEntity entity in doc.DocumentType.Entities) {
-                        extension.types.elements.Add(new TypeEntry(entity.InnerText, uint.Parse(entity.Name, System.Globalization.NumberStyles.HexNumber)));
+                        extension.types.elements.Add(new TypeEntry(entity.Name, uint.Parse(entity.InnerText, System.Globalization.NumberStyles.HexNumber)));
                     }
                 }
                 e = extension;
@@ -240,17 +240,79 @@ namespace Transgenesis {
             */
             return result;
         }
-        public List<string> GetAttributeValues(string attributeType) {
+        public List<string> GetAttributeValues(TranscendenceExtension extension, string attributeType) {
             if(customAttributeValues.TryGetValue(attributeType, out List<string> values)) {
                 return values;
             } else if(Enum.TryParse<AttributeTypes>(attributeType, out AttributeTypes attributeTypeEnum)) {
+                IEnumerable<string> result;
                 switch(attributeTypeEnum) {
+                    case AttributeTypes.UNID:
+                        //return extension.types.entities;
+
+                        //Return UNIDs that have not been bound yet
+                        result = from entity in extension.types.entities
+                               where !extension.types.typemap.TryGetValue(entity, out XElement design) || design == null
+                               select entity;
+                        break;
+                    case AttributeTypes.TYPE_ANY:
+                    case AttributeTypes.TYPE_INHERITED:
+                        result = FindTypes();
+                        break;
+                    case AttributeTypes.TYPE_ITEM:
+                        result = FindItems();
+                        break;
+                    case AttributeTypes.TYPE_ITEM_ARMOR:
+                        result = FindItems("Armor");
+                        break;
+                    case AttributeTypes.TYPE_ITEM_DEVICE:
+                        var deviceTags = new List<string> {
+                                        "AutoDefenseDevice",
+                                        "CargoHoldDevice",
+                                        "DriveDevice",
+                                        "EnhancerDevice",
+                                        "MiscellaneousDevice",
+                                        "ReactorDevice",
+                                        "RepairerDevice",
+                                        "Shields",
+                                        "SolarDevice",
+                                        "Weapon"
+                                    };
+                        result = FindTypes(design =>
+                            design.Tag() == "ItemType" &&
+                            design.Elements().Any(
+                                element => deviceTags.Contains(element.Tag())));
+                        break;
+                    case AttributeTypes.TYPE_ITEM_WEAPON:
+                        result = FindItems("Weapon");
+                        break;
                     //TO DO
                     default:
-                        return new List<string>();
+                        result = new List<string>();
+                        break;
                 }
+                return result.Select(entity => $"&{entity};").ToList();
             } else {
+                //Error: Unknown attribute type
+
                 return new List<string>();
+            }
+            IEnumerable<string> FindItems(string category = null) {
+                if(category != null) {
+                    return FindTypes(design => design.Tag() == "ItemType" && design.Elements(category).Count() > 0);
+                } else {
+                    return FindTypes(design => design.Tag() == "ItemType");
+                }
+            }
+            IEnumerable<string> FindTypes(Func<XElement, bool> predicate = null) {
+                if(predicate == null) {
+                    return from entity in extension.types.entities
+                            where extension.types.typemap.TryGetValue(entity, out XElement design) && design != null
+                            select entity;
+                } else {
+                    return from entity in extension.types.entities
+                            where extension.types.typemap.TryGetValue(entity, out XElement design) && design != null && predicate(design)
+                            select entity;
+                }
             }
         }
         public void CreateExtension(ExtensionTypes e, string path) {

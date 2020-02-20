@@ -749,8 +749,11 @@ namespace Transgenesis {
                                             s.Clear();
                                             break;
                                         }
-                                        var all = env.GetAttributeValues(attributeType);
+                                        var all = env.GetAttributeValues(extension, attributeType);
                                         if (focused.Att(attribute, out string value)) {
+                                            //Remove duplicate
+                                            all.Remove(value);
+                                            //Insert at the front
                                             all.Insert(0, value);
                                         }
                                         string rest = string.Join(" ", parts.Skip(2));
