@@ -61,11 +61,17 @@ namespace Transgenesis {
             cursor.Print(new ColoredString(c.ToString(), back ?? theme.back, front ?? theme.front));
         }
         public void WriteHighlight(string s, Color? front = null, Color? back = null) {
-            cursor.Print(new ColoredString(s, front ?? theme.highlight, back ?? theme.back));
+            cursor.Print(CreateString(s, front, back));
         }
         public void WriteLineHighlight(string s, Color? front = null, Color? back = null) {
-            cursor.Print(new ColoredString(s, front ?? theme.highlight, back ?? theme.back));
+            cursor.Print(CreateHighlightString(s));
             NextLine();
+        }
+        public ColoredString CreateString(string s, Color? front = null, Color? back = null) {
+            return new ColoredString(s, front ?? theme.front, back ?? theme.back);
+        }
+        public ColoredString CreateHighlightString(string s, Color? front = null, Color? back = null) {
+            return new ColoredString(s, front ?? theme.highlight, back ?? theme.back);
         }
         public void WriteLine(string s, Color? front = null, Color? back = null) {
             Write(s, front, back);
