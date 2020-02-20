@@ -23,7 +23,40 @@ namespace Transgenesis {
             modules = new HashSet<TranscendenceExtension>();
             this.structure = structure;
         }
-
+        public string name { get {
+                var element = structure;
+                while(element != null) {
+                    if(element.Att("name", out string result)) {
+                        return result;
+                    }
+                    element = element.Parent;
+                }
+                return null;
+            }
+        }
+        public string entity {
+            get {
+                var element = structure;
+                while (element != null) {
+                    if (element.Att("unid", out string result) || structure.Att("UNID", out result)) {
+                        return result.Replace("&", "").Replace(";", "");
+                    }
+                    element = element.Parent;
+                }
+                return null;
+            }
+        }
+        public uint? unid {
+            get {
+                if (structure.Att("unid", out string result) || structure.Att("UNID", out result)) {
+                    result = result.Replace("&", "").Replace(";", "");
+                    if(types.unidmap.ContainsKey(result)) {
+                        return types.unidmap[result];
+                    }
+                }
+                return null;
+            }
+        }
         public void Save() {
             StringBuilder s = new StringBuilder();
             s.AppendLine(@"<?xml version=""1.0"" encoding=""us-ascii""?>");
@@ -86,7 +119,8 @@ namespace Transgenesis {
             types.typemap.Clear();
             types.unidmap.Clear();
             types.ownedTypes.Clear();
-            types.dependencyTypes.Clear();
+            types.overriddenTypes.Clear();
+            types.ClearDependencyTypes();
             if (structure.Name.LocalName.Equals("TranscendenceModule")) {
                 //We should have our parent extension handle this
                 if (parent == null) {
@@ -126,15 +160,17 @@ namespace Transgenesis {
                 }
             }
             //If we have a UNID of our own, bind it
-            if (structure.Att("unid", out string unid)) {
+            if (structure.Att("unid", out string unid) || structure.Att("UNID", out unid)) {
+                unid = unid.Replace("&", "").Replace(";", "");
                 types.typemap[unid] = structure;
+                types.ownedTypes.Add(unid);
             }
             updateDependencies(e);
             bindDependencyTypes();
             updateModules(e);
             
-            types.ownedTypes.UnionWith(bindInternalTypes(types.typemap));
-            types.ownedTypes.UnionWith(bindModuleTypes(types.typemap, e));
+            types.ownedTypes.UnionWith(bindInternalTypes(types));
+            types.ownedTypes.UnionWith(bindModuleTypes(types, e));
         }
 
         //Allow modules to take external entities
@@ -147,7 +183,13 @@ namespace Transgenesis {
                 String subName = sub.Name.LocalName;
                 switch (subName) {
                     case "Library":
-                        String library_unid = sub.Att("unid");
+                        var library_entity = sub.Att("unid").Replace("&", "").Replace(";", "");
+                        if(!types.unidmap.ContainsKey(library_entity)) {
+                            //Error: Unknown library UNID
+                            break;
+                        }
+
+                        var library_unid = types.unidmap[library_entity];
 				        //out.println(getConsoleMessage("[General] Looking for " + subName + " " + library_unid));
                         //Make sure that Library Types are defined in our TypeManager so that they always work in-game
                         bool found = false;
@@ -155,7 +197,8 @@ namespace Transgenesis {
                             if (
                                     (m.structure.Name.LocalName.Equals("TranscendenceLibrary") ||
                                     m.structure.Name.LocalName.Equals("CoreLibrary")) &&
-                                    m.structure.Att("unid").Equals(library_unid)) {
+                                    m.unid == library_unid) {
+                                types.typemap[library_entity] = m.structure;
                                 dependencies.Add(m);
                                 found = true;
                                 break;
@@ -196,19 +239,28 @@ namespace Transgenesis {
 
             types.unidmap.Clear();
             var bound = types.BindAll();
-            foreach (var s in bound.Keys) {
-                types.unidmap[s] = bound[s];
-                userTypes.typemap[s] = null;
+            foreach (var entity in bound.Keys) {
+                //Use this opportunity to update our own bindings in case we never had our own bindAccessibleTypes called
+                types.unidmap[entity] = bound[entity];
+                //Give the unid-entity bindings to the user also
+                userTypes.unidmap[entity] = bound[entity];
+                userTypes.typemap[entity] = null;
+
+                //Add this to dependency types whether it is bound to a design or not
+                userTypes.AddDependencyType(this, entity);
             }
             //Bind our own types now
-            var boundTypes = bindInternalTypes(userTypes.typemap);
+            //var boundTypes = bindInternalTypes(userTypes);
+            bindInternalTypes(userTypes);
             //Bind types in our modules
             foreach (TranscendenceExtension module in modules) {
                 module.bindAsDependency(userTypes);
             }
+            /*
             foreach(var type in boundTypes) {
-                userTypes.dependencyTypes[type] = this;
+                userTypes.AddDependencyType(this, type);
             }
+            */
             /*
             updateDependencies();
             for(TranscendenceMod dependency : dependencies) {
@@ -244,7 +296,7 @@ namespace Transgenesis {
 
         //Bindings between Types and Designs are stored in the map
         //This only binds Types with Designs that are defined within THIS file; Module bindings happen later
-        public HashSet<string> bindInternalTypes(Dictionary<string,XElement> typemap) {
+        public HashSet<string> bindInternalTypes(TypeInfo userTypes) {
             //out.println(getConsoleMessage("[General] Binding Internal Designs"));
             //Include ourself
             /*
@@ -256,26 +308,30 @@ namespace Transgenesis {
             //Now, we bind our DesignTypes to the TypeMap
             foreach (XElement sub in structure.Elements()) {
                 //We already handled Library types as dependencies
-                if (!sub.Tag().Equals("Library") && sub.Att("unid", out string sub_type)) {
+                //Check for the capitalized version of UNID
+                //Standard is uppercase
+                if (!sub.Tag().Equals("Library") && (sub.Att("unid", out string sub_type) || sub.Att("UNID", out sub_type))) {
                     //Check if the element has been assigned a UNID
                     if (sub_type != null && sub_type.Length > 0) {
                         //Check if the UNID has been defined by the extension
                         //WARNING: THE TYPE SPECIFIED IN THE ATTRIBUTE WILL NOT MATCH BECAUSE IT IS AN XML ENTITY. REMOVE THE AMPERSAND AND SEMICOLON.
                         sub_type = sub_type.Replace("&", "").Replace(";", "");
-                        if (typemap.ContainsKey(sub_type)) {
+                        if (userTypes.typemap.ContainsKey(sub_type)) {
                             //Check if the UNID has not already been bound to a Design
-                            if (typemap[sub_type] == null) {
+                            if (userTypes.typemap[sub_type] == null) {
                                 //Bind it
-                                typemap[sub_type] = sub;
+                                userTypes.typemap[sub_type] = sub;
                                 bound.Add(sub_type);
-                            } else if (typemap[sub_type] == sub) {
+                            } else if (userTypes.typemap[sub_type] == sub) {
                                 //Ignore if this element was bound earlier (such as during a Parent Type Binding).
-                            } else if (typemap[sub_type].Tag().Equals(sub.Tag())) {
+                            } else if (userTypes.typemap[sub_type].Tag().Equals(sub.Tag())) {
                                 //If the UNID is bound to a Design with the same tag, then it's probably an override
                                 //out.println(getConsoleMessage2(sub.getName(), String.format("%-15s %s", "[Warning] Override Type:", sub_type)));
 
                                 //Override for now
-                                typemap[sub_type] = sub;
+                                userTypes.typemap[sub_type] = sub;
+                                userTypes.overriddenTypes.Add(sub_type);
+
                                 bound.Add(sub_type);
                             } else {
                                 //out.println(getConsoleMessage2(sub.getName(), String.format("%-15s %s", "[Warning] Duplicate Type:", sub_type)));
@@ -288,7 +344,7 @@ namespace Transgenesis {
                             //For now, we track this type
                             bool bindUnknown = true;
                             if(bindUnknown) {
-                                typemap[sub_type] = sub;
+                                userTypes.typemap[sub_type] = sub;
                                 bound.Add(sub_type);
                             }
 
@@ -301,14 +357,14 @@ namespace Transgenesis {
             }
             return bound;
         }
-        private HashSet<string> bindModuleTypes(Dictionary<string,XElement> typemap, Environment e) {
+        private HashSet<string> bindModuleTypes(TypeInfo userTypes, Environment e) {
 
             HashSet<string> boundTypes = new HashSet<string>();
             foreach (TranscendenceExtension module in modules) {
-                boundTypes.UnionWith(module.bindInternalTypes(typemap));
+                boundTypes.UnionWith(module.bindInternalTypes(userTypes));
                 //Let sub-modules bind Types for us too
                 module.updateModules(e);
-                module.bindModuleTypes(typemap, e);
+                module.bindModuleTypes(userTypes, e);
             }
             return boundTypes;
         }
@@ -343,7 +399,10 @@ namespace Transgenesis {
         public Dictionary<string, uint> unidmap = new Dictionary<string, uint>();
         public Dictionary<string, XElement> typemap = new Dictionary<string, XElement>();    //Binds entities to designs
         public HashSet<string> ownedTypes = new HashSet<string>();         //Types that we have defined
+        public HashSet<string> overriddenTypes = new HashSet<string>();         //Types that we have overridden
         public Dictionary<string, TranscendenceExtension> dependencyTypes = new Dictionary<string, TranscendenceExtension>();
+        public Dictionary<TranscendenceExtension, List<string>> typesByDependency = new Dictionary<TranscendenceExtension, List<string>>();
+
         public List<string> entities => elements.SelectMany(element =>
         element is TypeEntry e ? new List<string>() { e.entity } :
         (element is TypeRange range ? range.entities :
@@ -354,6 +413,18 @@ namespace Transgenesis {
                 e.BindAll(context);
             }
             return context.entity2unid;
+        }
+        public void ClearDependencyTypes() {
+            dependencyTypes.Clear();
+            typesByDependency.Clear();
+        }
+        public void AddDependencyType(TranscendenceExtension dependency, string entity) {
+            dependencyTypes[entity] = dependency;
+            if(typesByDependency.ContainsKey(dependency)) {
+                typesByDependency[dependency].Add(entity);
+            } else {
+                typesByDependency[dependency] = new List<string> { entity };
+            }
         }
     }
 
