@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using SadConsole;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -15,6 +16,7 @@ namespace Transgenesis {
         Tooltip t;
         Environment env;
         ConsoleManager c;
+        Scroller scroller;
 
 
 
@@ -29,6 +31,8 @@ namespace Transgenesis {
                             "Sets the color scheme of the console"},
                 {"create",  "create <extensionType> <file>\r\n" +
                             "Creates a new Transcendence extension with the specified file path."},
+                {"bindall", "bindall\r\n" +
+                            "Binds all loaded extensions" },
                 {"load",    "load <extensionFile|extensionFolder>\r\n" +
                             "Loads an extension with the specified file path" },
                 {"unload",  "unload <extensionFile>\r\n" +
@@ -48,6 +52,7 @@ namespace Transgenesis {
                 {"loadmodules", "loadmodules <extensionFile|extensionFolder>\r\n" +
                             "Loads an extension at the specified file path along with all of its modules"}
             });
+            this.scroller = new Scroller(i, c);
             this.env = new Environment();
             this.screens = screens;
             this.state = new ProgramState();
@@ -55,10 +60,10 @@ namespace Transgenesis {
         public void Draw() {
             c.Clear();
             c.SetCursor(new Point(0, 0));
-            c.WriteLine("Transgenesis II");
-            c.NextLine();
+            List<ColoredString> buffer = new List<ColoredString>();
+            buffer.Add(c.CreateString("Transgenesis II"));
 
-            c.WriteLine($"Extensions Loaded: {env.extensions.Count}");
+            buffer.Add(c.CreateString($"Extensions Loaded: {env.extensions.Count}"));
             var ext = new List<TranscendenceExtension>(env.extensions.Values);
             ext.Sort((TranscendenceExtension t1, TranscendenceExtension t2) => {
                 var p1 = t1;
@@ -94,8 +99,9 @@ namespace Transgenesis {
                     }
                 }
                 string tag = $"{e.structure.Tag(),-24}";
-                c.WriteLine($"{tag}{name,-32}{e.path}");
+                buffer.Add(c.CreateString($"{tag}{name,-32}{e.path}"));
             }
+            scroller.Draw(buffer);
 
             i.Draw();
             s.Draw();
@@ -105,6 +111,7 @@ namespace Transgenesis {
         public void Handle(ConsoleKeyInfo k) {
             i.Handle(k);
             s.Handle(k);
+            scroller.Handle(k);
             string input = i.Text;
             switch (k.Key) {
                 case ConsoleKey.Enter:
@@ -159,6 +166,16 @@ namespace Transgenesis {
                                     //Always use full-path so that we can easily find this
                                     env.CreateExtension(ex, Path.GetFullPath(parts[2]));
                                 }
+                                break;
+                            }
+                        case "bindall": {
+                                foreach (var ext in env.extensions.Values) {
+                                    ext.updateTypeBindings(env);
+                                }
+                                foreach (var ext in env.extensions.Values) {
+                                    ext.updateTypeBindings(env);
+                                }
+                                i.Clear();
                                 break;
                             }
                         case "unload": {
@@ -328,7 +345,7 @@ namespace Transgenesis {
                     }
 
                     Dictionary<string, Func<List<string>>> autocomplete = new Dictionary<string, Func<List<string>>> {
-                        {"", () => new List<string>{ "types", "theme", "create", "load", "unload", "edit", "open", "reload", "reloadmodules", "reloadall", "reloadallmodules", "loadmodules" } },
+                        {"", () => new List<string>{ "types", "theme", "create", "bindall", "load", "unload", "edit", "open", "reload", "reloadmodules", "reloadall", "reloadallmodules", "loadmodules" } },
                         {"theme", () => new List<string>{ "blue", "green", "pine", "orange", "default"} },
                         {"create", () => new List<string>{ "TranscendenceAdventure", "TranscendenceExtension", "TranscendenceLibrary", "TranscendenceModule" } },
                         {"load", () => Directory.GetFiles(Directory.GetCurrentDirectory(), "*.xml").ToList() },
