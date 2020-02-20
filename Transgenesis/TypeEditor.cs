@@ -15,6 +15,7 @@ namespace Transgenesis {
         Input i;
         Suggest s;
         Tooltip t;
+        Scroller scroller;
 
         public TypeEditor(Stack<IComponent> screens, Environment env, TranscendenceExtension extension, ConsoleManager c) {
             this.screens = screens;
@@ -38,33 +39,58 @@ namespace Transgenesis {
                 { "exit",       "exit\r\n" +
                                 "Exits the Type Editor to the main menu"},
             });
+            scroller = new Scroller(i, c);
         }
         public void Draw() {
             c.Clear();
             c.SetCursor(new Microsoft.Xna.Framework.Point(0, 0));
-            c.WriteLine($"    {"Entity",-32}{"UNID",-32}{"DesignType",-32}"); //{entry.comment}
 
+            List<ColoredString> buffer = new List<ColoredString>();
+            AddLine($"    {"Entity",-32}{"UNID",-32}{"DesignType",-32}{"Extension", -32}"); //{entry.comment}
+
+            AddLine("<!-- Types defined by this extension -->");
+            string extensionName = extension.name ?? extension.entity ?? "<!--This Extension -->";
             int index = 0;
             foreach (TypeElement e in extension.types.elements) {
-                Action<string> write = s => c.WriteLine(s);
+                Action<string> addLine = s => AddLine(s);
                 if(index == elementIndex) {
-                    write = s => c.WriteLineHighlight(s);
+                    addLine = s => AddHighlightLine(s);
                 }
 
                 if (e is TypeEntry entry) {
-                    write($"    {entry.entity,-32}{entry.unid?.ToUNID() ?? "Auto",-32}{(extension.types.typemap.TryGetValue(entry.entity, out XElement design) ? design?.Tag() ?? "None" : "None"),-32}"); //{entry.comment}
+                    addLine($"    {entry.entity,-32}{entry.unid?.ToUNID() ?? "Auto",-32}{(extension.types.typemap.TryGetValue(entry.entity, out XElement design) ? design?.Tag() ?? "None" : "None"),-32}{extensionName,-32}"); //{entry.comment}
                 } else if (e is TypeRange group) {
-                    string range = $"{group.unid_min?.ToUNID() ?? "Auto"} - {group.unid_max?.ToUNID() ?? "Auto"}";
-                    write($"    {"",-32}{range,-32}");
+                    string range = $"{group.unid_min?.ToUNID() ?? "Auto"} -- {group.unid_max?.ToUNID() ?? "Auto"}";
+                    addLine($"    <!-- {range} -->");
 
                     int rangeIndex = 0;
                     foreach (var entity in group.entities) {
-                        write($"    {entity, -32}{(group.unid_min != null ? ((uint)(group.unid_min+rangeIndex)).ToUNID() : ""), -32}{(extension.types.typemap.TryGetValue(entity, out XElement design) ? design?.Tag() ?? "None" : "None"),-32}");
+                        addLine($"    {entity, -32}{(group.unid_min != null ? ((uint)(group.unid_min+rangeIndex)).ToUNID() : "Auto"), -32}{(extension.types.typemap.TryGetValue(entity, out XElement design) ? design?.Tag() ?? "None" : "None"),-32}{extensionName, -32}");
                         rangeIndex++;
                     }
                 }
                 index++;
             }
+
+            AddLine("<!-- Types overridden by this extension -->");
+            foreach(var owned in extension.types.overriddenTypes) {
+                AddLine($"    {owned,-32}{extension.types.unidmap[owned].ToUNID(),-32}{(extension.types.typemap.TryGetValue(owned, out XElement design) ? design?.Tag() ?? "None" : "None"),-32}{extensionName, -32}"); //{entry.comment}
+            }
+            AddLine("<!-- Types defined by dependencies -->");
+            foreach (var dependency in extension.types.typesByDependency.Keys) {
+                string dependencyName = dependency.name ?? dependency.entity ?? dependency.path ?? dependency.structure.Tag();
+                foreach (var entity in extension.types.typesByDependency[dependency]) {
+                    AddLine($"    {entity,-32}{extension.types.unidmap[entity].ToUNID(),-32}{(extension.types.typemap.TryGetValue(entity, out XElement design) ? design?.Tag() ?? "None" : "None"),-32}{dependencyName, -32}"); //{entry.comment}
+                }
+            }
+
+            void AddLine(string s) {
+                buffer.Add(c.CreateString(s));
+            }
+            void AddHighlightLine(string s) {
+                buffer.Add(c.CreateHighlightString(s));
+            }
+            scroller.Draw(buffer);
 
             i.Draw();
             s.Draw();
@@ -74,6 +100,7 @@ namespace Transgenesis {
         public void Handle(ConsoleKeyInfo k) {
             i.Handle(k);
             s.Handle(k);
+            scroller.Handle(k);
 
             string input = i.Text;
             switch (k.Key) {
