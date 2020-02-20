@@ -159,7 +159,9 @@ namespace Transgenesis {
                         //Wrap around
                         index = -1;
                     break;
-                case ConsoleKey.Spacebar:
+                case ConsoleKey.Spacebar when (k.Modifiers & ConsoleModifiers.Shift) == 0:
+                    //If we're holding shift down, then do not insert the entry
+
                     /*
                     if (index != -1) {
                         i.Text = options[index].str + " ";
@@ -251,6 +253,7 @@ namespace Transgenesis {
         }
 
         public void Handle(ConsoleKeyInfo k) {
+            //Use Up/Down arrows with Shift held down
         }
 
         public void Draw() {
