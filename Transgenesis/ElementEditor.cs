@@ -16,13 +16,12 @@ namespace Transgenesis {
         ConsoleManager c;
 
         XElement focused;
-        HashSet<XElement> expanded;
+        HashSet<XElement> keepExpanded;
 
         Input i;
         Suggest s;
         Tooltip t;
-
-        int scrolling = 0;
+        Scroller scroller;
 
         public ElementEditor(ProgramState state, Stack<IComponent> screens, Environment env, TranscendenceExtension extension, ConsoleManager c) {
             this.state = state;
@@ -30,7 +29,7 @@ namespace Transgenesis {
             this.env = env;
             this.extension = extension;
             this.focused = extension.structure;
-            this.expanded = new HashSet<XElement>();
+            this.keepExpanded = new HashSet<XElement>();
             this.c = c;
             i = new Input(c);
             s = new Suggest(i, c);
@@ -81,11 +80,8 @@ namespace Transgenesis {
                         "Opens the Type Editor on this extension"},
                 {"exit", "exit\r\n" +
                         "Exits this XML Editor and returns to the main menu"},
-
-
-
-
             });
+            scroller = new Scroller(i, c);
             //{"", () => new List<string>{ "set", "add", "remove", "bind", "bindall", "save", "saveall", "moveup", "movedown", "root", "parent", "next", "prev", "types", "exit" } },
         }
         public void Draw() {
@@ -93,10 +89,21 @@ namespace Transgenesis {
             c.SetCursor(new Point(0, 0));
             //Console.WriteLine(extension.structure.ToString());
 
+            HashSet<XElement> expanded = new HashSet<XElement>(keepExpanded);
+
+            const bool expandFocusedPath = true;
+            if(expandFocusedPath) {
+                var f = focused;
+                while (f != null) {
+                    expanded.Add(f);
+                    f = f.Parent;
+                }
+            }
+
             HashSet<XElement> semiexpanded = new HashSet<XElement>();
 
             //Add this element and its ancestors to the semiexpanded list
-            foreach(var expandedElement in expanded) {
+            foreach(var expandedElement in keepExpanded) {
                 MarkAncestorsSemiExpanded(expandedElement);
             }
             MarkAncestorsSemiExpanded(focused);
@@ -167,32 +174,8 @@ namespace Transgenesis {
                 buffer = buffer2;
             }
             */
-            //IMPLEMENT SCROLLING
 
-            int screenRows = 45;
-            scrolling = Math.Max(0, Math.Min(scrolling, buffer.Count - screenRows));
-
-            
-            //Print only a portion of the buffer
-            //c.margin = new Point(30, 0);
-            c.margin = new Point(0, 0);
-            c.SetCursor(c.margin);
-            var count = Math.Min(screenRows, buffer.Count);
-            var lines = buffer.GetRange(scrolling, count);
-
-            //Let user know that there's more text
-            if(scrolling + count + 1 < buffer.Count) {
-                lines[lines.Count - 1] = new ColoredString("...", Color.White, Color.Black);
-            }
-            foreach (var line in lines) {
-                c.Write(line);
-                //Printing to the edge of the view already moves the cursor to the next line
-                if(line.Count < 150) {
-                    c.NextLine();
-                }
-                //Add black background
-                //c.Write(new ColoredString(new string(' ', 150 - line.Count), Color.White, Color.Black));
-            }
+            scroller.Draw(buffer);
 
             i.Draw();
             s.Draw();
@@ -201,19 +184,19 @@ namespace Transgenesis {
 
             void AddLine(string line) {
                 int index = 0;
-                ColoredString s = new ColoredString(150);
+                ColoredString s = new ColoredString(200);
                 foreach(var ch in line) {
                     if(ch == '\n') {
                         buffer.Add(s.SubString(0, index));
-                        s = new ColoredString(150);
+                        s = new ColoredString(200);
                         index = 0;
                         continue;
                     }
                     s[index] = new SadConsole.ColoredGlyph(ch, c.theme.front, c.theme.back);
                     index++;
-                    if(index == 150) {
+                    if(index == 200) {
                         buffer.Add(s);
-                        s = new ColoredString(150);
+                        s = new ColoredString(200);
                         index = 0;
                     }
                 }
@@ -223,19 +206,19 @@ namespace Transgenesis {
             }
             void AddLineHighlight(string line) {
                 int index = 0;
-                ColoredString s = new ColoredString(150);
+                ColoredString s = new ColoredString(200);
                 foreach (var ch in line) {
                     if (ch == '\n') {
                         buffer.Add(s.SubString(0, index));
-                        s = new ColoredString(150);
+                        s = new ColoredString(200);
                         index = 0;
                         continue;
                     }
                     s[index] = new SadConsole.ColoredGlyph(ch, c.theme.highlight, c.theme.back);
                     index++;
-                    if (index == 150) {
+                    if (index == 200) {
                         buffer.Add(s);
-                        s = new ColoredString(150);
+                        s = new ColoredString(200);
                         index = 0;
                     }
                 }
@@ -511,6 +494,7 @@ namespace Transgenesis {
         public void Handle(ConsoleKeyInfo k) {
             i.Handle(k);
             s.Handle(k);
+            scroller.Handle(k);
 
             string input = i.Text;
             switch (k.Key) {
@@ -577,10 +561,10 @@ namespace Transgenesis {
                     break;
                 case ConsoleKey.Enter: {
                         if(input.Length == 0) {
-                            if(expanded.Contains(focused)) {
-                                expanded.Remove(focused);
+                            if(keepExpanded.Contains(focused)) {
+                                keepExpanded.Remove(focused);
                             } else {
-                                expanded.Add(focused);
+                                keepExpanded.Add(focused);
                             }
 
                             break;
@@ -663,12 +647,12 @@ namespace Transgenesis {
                                     break;
                                 }
                             case "expand": {
-                                    expanded.Add(focused);
+                                    keepExpanded.Add(focused);
                                     i.Clear();
                                     break;
                                 }
                             case "collapse": {
-                                    expanded.Remove(focused);
+                                    keepExpanded.Remove(focused);
                                     i.Clear();
                                     break;
                                 }
