@@ -72,7 +72,7 @@ namespace Transgenesis {
            return;
         }
         public static string ToUNID(this uint i) {
-            return $"0x{i.ToString("X")}";
+            return $"0x{i.ToString("X").PadLeft(8, '0')}";
         }
     }
 }
