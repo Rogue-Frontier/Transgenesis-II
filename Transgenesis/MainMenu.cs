@@ -348,20 +348,62 @@ namespace Transgenesis {
                         {"", () => new List<string>{ "types", "theme", "create", "bindall", "load", "unload", "edit", "open", "reload", "reloadmodules", "reloadall", "reloadallmodules", "loadmodules" } },
                         {"theme", () => new List<string>{ "blue", "green", "pine", "orange", "default"} },
                         {"create", () => new List<string>{ "TranscendenceAdventure", "TranscendenceExtension", "TranscendenceLibrary", "TranscendenceModule" } },
-                        {"load", () => Directory.GetFiles(Directory.GetCurrentDirectory(), "*.xml").ToList() },
-                        {"loadmodules", () => Directory.GetFiles(Directory.GetCurrentDirectory(), "*.xml").ToList() },
-                        {"unload", () => env.extensions.Keys.ToList() },
-                        {"edit", () => env.extensions.Keys.ToList() },
-                        {"types", () => env.extensions.Keys.ToList() },
-                        {"open", () => Directory.GetFiles(Directory.GetCurrentDirectory(), "*.xml").ToList() },
-                        {"reload", () => env.extensions.Keys.ToList() },
-                        {"reloadmodules", () => env.extensions.Keys.ToList() },
+                        {"load", GetFiles },
+                        {"loadmodules", GetFiles },
+                        {"unload", GetExtensions },
+                        {"edit", GetExtensions },
+                        {"types", GetExtensions },
+                        {"open", GetFiles },
+                        {"reload", GetExtensions },
+                        {"reloadmodules", GetExtensions },
                     };
                     string str = autocomplete.Keys.Last(prefix => input.StartsWith((prefix + " ").TrimStart()));
                     List<string> all = autocomplete[str]();
 
                     var items = Global.GetSuggestions(input.Substring(str.Length).TrimStart(), all);
                     s.SetItems(items);
+
+                    List<string> GetExtensions() {
+                        return env.extensions.Keys.ToList();
+                    }
+                    List<string> GetFiles() {
+                        var result = Directory.GetFiles(Directory.GetCurrentDirectory(), "*.xml").ToList();
+
+                        var path = string.Join(" ", i.Text.Split(' ').Skip(1));
+                        if(path.Length > 0) {
+                            path = Path.GetFullPath(path);
+                        } else {
+                            return result;
+                        }
+                        if (Directory.Exists(path)) {
+                            result.Add(path);
+                            foreach (var file in Directory.GetFiles(path, "*.xml")) {
+                                result.Add(file);
+                            }
+                            foreach (var dir in Directory.GetDirectories(path)) {
+                                result.Add(dir + Path.DirectorySeparatorChar); //Add path separator to the end to speed up autocomplete navigation
+                            }
+                        } else if(File.Exists(path)) {
+                            /*
+                            result.Remove(path);
+                            result.Insert(0, path);
+                            */
+                            result.Add(path);
+                        } else {
+                            var dir = Path.GetDirectoryName(path);
+                            if (Directory.Exists(dir)) {
+                                result.Add(dir);
+                                foreach (var file in Directory.GetFiles(dir, "*.xml")) {
+                                    result.Add(file);
+                                }
+                                foreach (var subdir in Directory.GetDirectories(dir)) {
+                                    result.Add(subdir + Path.DirectorySeparatorChar); //Add path separator to the end to speed up autocomplete navigation
+                                }
+                            }
+                        }
+
+                        return result;
+                    }
 
                     break;
             }
