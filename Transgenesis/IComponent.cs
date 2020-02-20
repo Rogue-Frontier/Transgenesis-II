@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 namespace Transgenesis {
     interface IComponent {
@@ -184,33 +185,86 @@ namespace Transgenesis {
             }
         }
         public void Draw() {
-            int columns = c.width;
-            int column = 0;
             c.SetCursor(pos);
             c.margin = pos;
-            for (int i = 0; i < items.Count; i++) {
-                var o = items[i];
-                if (index == i) {
-                    c.DrawSelected(o);
-                } else {
-                    c.Draw(o);
-                }
-                c.NextLine();
+            int columnHeight = 8;
 
-                //Begin a new column of items
-                int columnHeight = Math.Max(8, 1 + items.Count / columns);
-                if (i % columnHeight == columnHeight - 1) {
-                    //if(c.margin.X + 32 >= Console.WindowWidth) {
-                    if (column >= columns) {
-                        continue;
+            if(items.Count == 0) {
+                return;
+            }
+
+            var totalColumns = (items.Count - 1) / 8 + 1;
+            int[] columnSizes = new int[totalColumns];
+
+            int columnIndex;
+            for(columnIndex = 0; columnIndex < columnSizes.Length; columnIndex++) {
+                int index = columnIndex * 8;
+                int itemCount = Math.Max(0, Math.Min(8, items.Count - index));
+                int columnSize = items.GetRange(index, itemCount).Select(i => i.str.Length).Max();
+                columnSize = ((columnSize + 3) / 4) * 4 + 4;
+                columnSizes[index / 8] = columnSize;
+            }
+            /*
+            while(X < c.width && index < items.Count) {
+                index = columnsPerRow * 8;
+                int itemCount = Math.Max(0, Math.Min(8, items.Count - columnsPerRow));
+                int columnSize = items.GetRange(index, itemCount).Select(i => i.str.Length).Max();
+                columnSize = ((3 + columnSize) / 4) * 4;
+                X += columnSize;
+                columnsPerRow++;
+            }
+            */
+
+
+            int lastColumn = index / 8;
+            int widthLeft = c.width;
+            int columnCount = 0;
+            columnIndex = lastColumn;
+
+            //Count the columns preceding the selected column
+            CountColumnsBefore:
+            widthLeft -= columnSizes[columnIndex];
+            if(widthLeft > -1) {
+                columnCount++;
+                if(columnIndex > 0) {
+                    columnIndex--;
+                    goto CountColumnsBefore;
+                }
+            }
+
+            if(lastColumn + 1 < totalColumns) {
+                columnIndex = lastColumn + 1;
+                //Count the columns after the selected column
+                CountColumnsAfter:
+                widthLeft -= columnSizes[columnIndex];
+                if (widthLeft > -1) {
+                    if (columnIndex < totalColumns - 1) {
+                        lastColumn++;
+                        columnCount++;
+                        columnIndex++;
+                        goto CountColumnsAfter;
                     }
-                    column++;
-                    c.margin.X += 32;
-                    c.ResetCursor();
+                }
+            }
+
+
+            int width = c.width;
+            for (columnIndex = lastColumn - columnCount + 1; columnIndex <= lastColumn; columnIndex++) {
+
+                for(int i = columnIndex * 8; i < (columnIndex + 1) * 8 && i < items.Count; i++) {
+                    var o = items[i];
+                    if (index == i) {
+                        c.DrawSelected(o);
+                    } else {
+                        c.Draw(o);
+                    }
+
+                    //We're already on the next line if this line is the full width
+                    c.NextLine();
                 }
 
-                //ClearAhead();
-                //Console.WriteLine();
+                c.margin.X += columnSizes[columnIndex];
+                c.ResetCursor();
             }
             //Reset the margin after we're done printing
             c.margin = pos;
