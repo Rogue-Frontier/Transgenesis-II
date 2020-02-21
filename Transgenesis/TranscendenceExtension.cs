@@ -23,10 +23,32 @@ namespace Transgenesis {
             modules = new HashSet<TranscendenceExtension>();
             this.structure = structure;
         }
+        public ExtensionTypes? type {
+            get {
+                if(Enum.TryParse(structure?.Tag(), out ExtensionTypes type)) {
+                    return type;
+                } else {
+                    return null;
+                }
+
+            }
+        }
         public string name { get {
                 var element = structure;
                 while(element != null) {
                     if(element.Att("name", out string result)) {
+                        return result;
+                    }
+                    element = element.Parent;
+                }
+                return null;
+            }
+        }
+        public string credits {
+            get {
+                var element = structure;
+                while (element != null) {
+                    if (element.Att("credits", out string result)) {
                         return result;
                     }
                     element = element.Parent;
