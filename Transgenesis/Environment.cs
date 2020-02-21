@@ -138,6 +138,7 @@ namespace Transgenesis {
                         extension.types.elements.Add(new TypeEntry(entity.Name, uint.Parse(entity.InnerText.Replace("0x", ""), System.Globalization.NumberStyles.HexNumber)));
                     }
                 }
+                extension.UpdateSaveCode();
                 e = extension;
                 return true;
             }
@@ -352,6 +353,14 @@ namespace Transgenesis {
             );
             extensions[path] = extension;
             extension.Save();
+        }
+        public void BindAll() {
+            foreach (var ext in extensions.Values) {
+                ext.updateTypeBindingsWithModules(this);
+            }
+            foreach (var ext in extensions.Values) {
+                ext.updateTypeBindingsWithModules(this);
+            }
         }
     }
     enum ExtensionTypes {

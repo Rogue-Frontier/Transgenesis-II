@@ -131,7 +131,11 @@ namespace Transgenesis {
                     }
                 }
                 string tag = $"{e.structure.Tag(),-24}";
-                buffer.Add(c.CreateString($"{tag}{e.unid?.ToUNID() ?? "Unknown", -12}{name,-48}{e.path}"));
+
+                string unsaved = e.isUnsaved() ? "[S] " : "    ";
+                string unbound = e.isUnbound() ? "[B] " : "    ";
+
+                buffer.Add(c.CreateString($"{unsaved}{unbound}{tag}{e.unid?.ToUNID() ?? "Unknown", -12}{name,-48}{e.path}"));
                 if(hideModules && modulesByExtension.ContainsKey(e)) {
                     buffer.Add(c.CreateString($"    Modules: {modulesByExtension[e].Count}"));
                 }
@@ -207,12 +211,7 @@ namespace Transgenesis {
                                 break;
                             }
                         case "bindall": {
-                                foreach (var ext in env.extensions.Values) {
-                                    ext.updateTypeBindings(env);
-                                }
-                                foreach (var ext in env.extensions.Values) {
-                                    ext.updateTypeBindings(env);
-                                }
+                                env.BindAll();
                                 i.Clear();
                                 break;
                             }
@@ -478,6 +477,7 @@ namespace Transgenesis {
                 if(modules) {
                     LoadModules(e);
                 }
+                e.updateTypeBindingsWithModules(env);
             }
             void LoadModules(TranscendenceExtension e) {
                 foreach (var module in e.structure.Elements()) {
@@ -490,7 +490,6 @@ namespace Transgenesis {
                 }
             }
         }
-
         public void Update() {
             i.Update();
             s.Update();

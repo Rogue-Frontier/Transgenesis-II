@@ -14,18 +14,16 @@ namespace Transgenesis {
         HashSet<TranscendenceExtension> dependencies;
         HashSet<TranscendenceExtension> modules;
         public XElement structure;
-        public TranscendenceExtension(string path, XElement structure) {
-            parent = null;
-            this.path = path;
-            types = new TypeInfo();
-            
-            dependencies = new HashSet<TranscendenceExtension>();
-            modules = new HashSet<TranscendenceExtension>();
-            this.structure = structure;
-        }
+
+        private int lastSaveCode;
+        private int lastBindCode;
+
+        public int bindCode => (types, dependencies, modules).GetHashCode();
+        public int saveCode => (types, structure).GetHashCode();
+
         public ExtensionTypes? type {
             get {
-                if(Enum.TryParse(structure?.Tag(), out ExtensionTypes type)) {
+                if (Enum.TryParse(structure?.Tag(), out ExtensionTypes type)) {
                     return type;
                 } else {
                     return null;
@@ -33,10 +31,11 @@ namespace Transgenesis {
 
             }
         }
-        public string name { get {
+        public string name {
+            get {
                 var element = structure;
-                while(element != null) {
-                    if(element.Att("name", out string result)) {
+                while (element != null) {
+                    if (element.Att("name", out string result)) {
                         return result;
                     }
                     element = element.Parent;
@@ -72,12 +71,21 @@ namespace Transgenesis {
             get {
                 if (structure.Att("unid", out string result) || structure.Att("UNID", out result)) {
                     result = result.Replace("&", "").Replace(";", "");
-                    if(types.unidmap.ContainsKey(result)) {
+                    if (types.unidmap.ContainsKey(result)) {
                         return types.unidmap[result];
                     }
                 }
                 return null;
             }
+        }
+        public TranscendenceExtension(string path, XElement structure) {
+            parent = null;
+            this.path = path;
+            types = new TypeInfo();
+            
+            dependencies = new HashSet<TranscendenceExtension>();
+            modules = new HashSet<TranscendenceExtension>();
+            this.structure = structure;
         }
         public void Save() {
             StringBuilder s = new StringBuilder();
@@ -101,6 +109,10 @@ namespace Transgenesis {
             //Unreplace all ampersands
             s.Append(structure.ToString().Replace("&amp;", "&"));
             File.WriteAllText(path, s.ToString());
+            UpdateSaveCode();
+        }
+        public void UpdateSaveCode() {
+            lastSaveCode = saveCode;
         }
 
         //Get a set of all the modules in this extension
@@ -120,7 +132,6 @@ namespace Transgenesis {
             foreach (TranscendenceExtension module in modules) {
                 module.updateTypeBindingsWithModules(types.typemap, e);
             }
-            //codes.setLastBindCode(getBindCode());
         }
 
         public void updateTypeBindingsWithModules(Dictionary<string, XElement> parentMap, Environment e) {
@@ -129,15 +140,16 @@ namespace Transgenesis {
             foreach (TranscendenceExtension module in modules) {
                 module.updateTypeBindingsWithModules(types.typemap, e);
             }
-            //codes.setLastBindCode(getBindCode());
         }
 
         public void updateTypeBindings(Environment e) {
+            /*
             //Check if anything changed since the last binding. If not, then we don't update.
             if (!isUnbound()) {
                 //out.println(getConsoleMessage("[Warning] Type binding skipped; no changes"));
                 return;
             }
+            */
             types.typemap.Clear();
             types.unidmap.Clear();
             types.ownedTypes.Clear();
@@ -151,14 +163,18 @@ namespace Transgenesis {
                 }
                 
 			    //out.println(getConsoleMessage("[General] Type Binding requested from Parent Extension"));
-
+                
+                //Unbound flag is only for convenience
+                /*
                 //We only update Parent Extension Type Bindings if there are unbound changes
                 if (parent.isUnbound()) {
                     parent.updateTypeBindings(e);
                 } else {
 				    //out.println(getConsoleMessage("[Warning] Parent Type Binding skipped; no changes"));
                 }
-			
+                */
+                parent.updateTypeBindings(e);
+
 			    //out.println(getConsoleMessage("[Success] Parent Type Binding complete; copying Types"));
                 //Inherit types from our Parent Extension; we will not automatically receive them when the Parent Extension is updated
                 //We make a copy of the type map from the Parent Extension since we don't want it to inherit Types/Dependencies that are exclusive to us
@@ -167,7 +183,11 @@ namespace Transgenesis {
 
             bindAccessibleTypes(e);
             //codes.setLastBindCode(getBindCode());
-		    //out.println(getConsoleMessage("[Success] Type Binding complete"));
+            //out.println(getConsoleMessage("[Success] Type Binding complete"));
+            UpdateBindCode();
+        }
+        public void UpdateBindCode() {
+            lastBindCode = bindCode;
         }
 
         public void bindAccessibleTypes(Environment e) {
@@ -406,12 +426,10 @@ namespace Transgenesis {
         }
 
         public bool isUnbound() {
-            //return getBindCode() != codes.getLastBindCode();
-            return true;
+            return lastBindCode != bindCode;
         }
         public bool isUnsaved() {
-            //return getSaveCode() != codes.getLastSaveCode();
-            return false;
+            return lastSaveCode != saveCode;
         }
         /*
         public int getLastBindCode() {
