@@ -65,32 +65,61 @@ namespace Transgenesis {
 
             buffer.Add(c.CreateString($"Extensions Loaded: {env.extensions.Count}"));
             var ext = new List<TranscendenceExtension>(env.extensions.Values);
-            ext.Sort((TranscendenceExtension t1, TranscendenceExtension t2) => {
+
+            Comparison<TranscendenceExtension> modulesUnderParent = (TranscendenceExtension t1, TranscendenceExtension t2) => {
                 if (t1 == t2.parent) {
                     return -1;
                 } else if (t1.parent == t2) {
                     return 1;
                 } else if (t1.parent != null && t2.parent != null) {
-                    if(t1.parent == t2.parent) {
+                    if (t1.parent == t2.parent) {
                         return Compare(t1, t2);
                     } else {
                         return Compare(t1.parent, t2.parent);
                     }
-                } else if(t1.parent != null) {
+                } else if (t1.parent != null) {
                     return Compare(t1.parent, t2);
-                } else if(t2.parent != null) {
+                } else if (t2.parent != null) {
                     return -Compare(t2.parent, t1);
                 } else {
                     return Compare(t1, t2);
                 }
-                int Compare(TranscendenceExtension e1, TranscendenceExtension e2) {
-                    return e1.unid != null && e2.unid != null && e1.unid != e2.unid ? ((uint)e1.unid).CompareTo((uint)e2.unid) :
-                            e1.name != null && e2.name != null && e1.name != e2.name ? e1.name.CompareTo(e2.name) :
-                            e1.type != null && e2.type != null && e1.type != e2.type ? ((ExtensionTypes)e1.type).CompareTo((ExtensionTypes)e2.type) :
-                            e1.path.CompareTo(e2.path);
+            };
+            Comparison<TranscendenceExtension> modulesLast = (TranscendenceExtension t1, TranscendenceExtension t2) => {
+                if (t1.parent != null && t2.parent != null) {
+                    if (t1.parent == t2.parent) {
+                        return Compare(t1, t2);
+                    } else if (t1 == t2.parent) {
+                        return -1;
+                    } else if (t1.parent == t2) {
+                        return 1;
+                    } else {
+                        return Compare(t1.parent, t2.parent);
+                    }
+                } else if (t1.parent != null) {
+                    return Compare(t1.parent, t2);
+                } else if (t2.parent != null) {
+                    return -Compare(t2.parent, t1);
+                } else {
+                    return Compare(t1, t2);
                 }
-            });
+            };
+            int Compare(TranscendenceExtension e1, TranscendenceExtension e2) {
+                return e1.unid != null && e2.unid != null && e1.unid != e2.unid ? ((uint)e1.unid).CompareTo((uint)e2.unid) :
+                        e1.name != null && e2.name != null && e1.name != e2.name ? e1.name.CompareTo(e2.name) :
+                        e1.type != null && e2.type != null && e1.type != e2.type ? ((ExtensionTypes)e1.type).CompareTo((ExtensionTypes)e2.type) :
+                        e1.path.CompareTo(e2.path);
+            }
+            ext.Sort(modulesUnderParent);
+
+            var orphans = new TranscendenceExtension(null, null);
+            var modulesByExtension = (from mod in ext group mod by mod.parent into groups select groups).ToDictionary(group => group.ToList()[0].parent ?? orphans, gdc => gdc.ToList());
+
+            bool hideModules = false;
             foreach (var e in ext) {
+                if(hideModules && e.type == ExtensionTypes.TranscendenceModule) {
+                    continue;
+                }
                 var nameSource = e;
 
                 string name = "";
@@ -103,6 +132,12 @@ namespace Transgenesis {
                 }
                 string tag = $"{e.structure.Tag(),-24}";
                 buffer.Add(c.CreateString($"{tag}{e.unid?.ToUNID() ?? "Unknown", -12}{name,-32}{e.path}"));
+                if(hideModules && modulesByExtension.ContainsKey(e)) {
+                    buffer.Add(c.CreateString($"    Modules: {modulesByExtension[e].Count}"));
+                }
+            }
+            if(hideModules && modulesByExtension.ContainsKey(orphans)) {
+                buffer.Add(c.CreateString($"Orphan Modules: {modulesByExtension[orphans].Count}"));
             }
             scroller.Draw(buffer);
 
