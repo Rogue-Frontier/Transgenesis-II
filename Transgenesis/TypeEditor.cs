@@ -72,9 +72,11 @@ namespace Transgenesis {
                 index++;
             }
 
+            index = 0;
             AddLine("<!-- Types overridden by this extension -->");
             foreach(var owned in extension.types.overriddenTypes) {
                 AddLine($"    {owned,-32}{extension.types.unidmap[owned].ToUNID(),-16}{(extension.types.typemap.TryGetValue(owned, out XElement design) ? design?.Tag() ?? "None" : "None"),-32}{extensionName, -32}"); //{entry.comment}
+                index++;
             }
             AddLine("<!-- Types defined by dependencies -->");
             foreach (var dependency in extension.types.typesByDependency.Keys) {
