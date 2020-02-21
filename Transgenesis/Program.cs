@@ -19,11 +19,11 @@ namespace Transgenesis {
                 game.Run();
             }
         }
-        public Program() : base("Content/IBM_ext.font", 200, 65, null) { }
+        public Program() : base("Content/IBM_ext.font", 210, 65, null) { }
         protected override void Initialize() {
             IsMouseVisible = true;
             base.Initialize();
-            var con = new MainConsole(200, 65);
+            var con = new MainConsole(210, 65);
             //This allows trailing spaces to show up in command
             con.Cursor.DisableWordBreak = true;
 

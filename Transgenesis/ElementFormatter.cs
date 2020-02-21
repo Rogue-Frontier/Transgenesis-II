@@ -27,19 +27,19 @@ namespace Transgenesis {
         }
         void AddLine(string line) {
             int index = 0;
-            ColoredString s = new ColoredString(200);
+            ColoredString s = new ColoredString(c.width);
             foreach (var ch in line) {
                 if (ch == '\n') {
                     buffer.Add(s.SubString(0, index));
-                    s = new ColoredString(200);
+                    s = new ColoredString(c.width);
                     index = 0;
                     continue;
                 }
                 s[index] = new SadConsole.ColoredGlyph(ch, c.theme.front, c.theme.back);
                 index++;
-                if (index == 200) {
+                if (index == c.width) {
                     buffer.Add(s);
-                    s = new ColoredString(200);
+                    s = new ColoredString(c.width);
                     index = 0;
                 }
             }
@@ -49,19 +49,19 @@ namespace Transgenesis {
         }
         void AddLineHighlight(string line) {
             int index = 0;
-            ColoredString s = new ColoredString(200);
+            ColoredString s = new ColoredString(c.width);
             foreach (var ch in line) {
                 if (ch == '\n') {
                     buffer.Add(s.SubString(0, index));
-                    s = new ColoredString(200);
+                    s = new ColoredString(c.width);
                     index = 0;
                     continue;
                 }
                 s[index] = new SadConsole.ColoredGlyph(ch, c.theme.highlight, c.theme.back);
                 index++;
-                if (index == 200) {
+                if (index == c.width) {
                     buffer.Add(s);
-                    s = new ColoredString(200);
+                    s = new ColoredString(c.width);
                     index = 0;
                 }
             }

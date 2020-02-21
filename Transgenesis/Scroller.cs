@@ -45,7 +45,7 @@ namespace Transgenesis {
             foreach (var line in lines) {
                 c.Write(line);
                 //Printing to the edge of the view already moves the cursor to the next line
-                if (line.Count < 200) {
+                if (line.Count < c.width) {
                     c.NextLine();
                 }
             }
