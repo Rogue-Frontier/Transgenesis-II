@@ -81,10 +81,15 @@ namespace Transgenesis {
                     } else if (t1.structure.Tag() == module && t2.structure.Tag() != module) {
                         return 1;
                     } else {
-                        return 0;
+                        return t1.unid != null && t2.unid != null && t1.unid != t2.unid ? ((uint)t1.unid).CompareTo((uint)t2.unid) :
+                            t1.name != null && t2.name != null && t1.name != t2.name ? t1.name.CompareTo(t2.name) :
+                            t1.path.CompareTo(t2.path);
                     }
                 } else {
-                    return (p1.structure.Att("name", out string n1) ? n1 : "").CompareTo(p2.structure.Att("name", out string n2) ? n2 : "");
+                    //return (p1.structure.Att("name", out string n1) ? n1 : "").CompareTo(p2.structure.Att("name", out string n2) ? n2 : "");
+                    return p1.unid != null && p2.unid != null && p1.unid != p2.unid ? ((uint)p1.unid).CompareTo((uint)p2.unid) :
+                            p1.name != null && p2.name != null && p1.name != p2.name ? p1.name.CompareTo(p2.name) :
+                            p1.path.CompareTo(p2.path);
                 }
             });
             foreach (var e in ext) {
@@ -99,7 +104,7 @@ namespace Transgenesis {
                     }
                 }
                 string tag = $"{e.structure.Tag(),-24}";
-                buffer.Add(c.CreateString($"{tag}{name,-32}{e.path}"));
+                buffer.Add(c.CreateString($"{tag}{e.unid?.ToUNID() ?? "Unknown", -12}{name,-32}{e.path}"));
             }
             scroller.Draw(buffer);
 
