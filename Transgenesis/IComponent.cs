@@ -193,27 +193,19 @@ namespace Transgenesis {
                 return;
             }
 
+            //One column per 8 items
             var totalColumns = (items.Count - 1) / 8 + 1;
             int[] columnSizes = new int[totalColumns];
 
+            //Find the largest width of each group of 8 items
             int columnIndex;
             for(columnIndex = 0; columnIndex < columnSizes.Length; columnIndex++) {
                 int index = columnIndex * 8;
                 int itemCount = Math.Max(0, Math.Min(8, items.Count - index));
                 int columnSize = items.GetRange(index, itemCount).Select(i => i.str.Length).Max();
-                columnSize = ((columnSize + 3) / 4) * 4 + 4;
+                columnSize = ((columnSize) / 4) * 4 + 4;
                 columnSizes[index / 8] = columnSize;
             }
-            /*
-            while(X < c.width && index < items.Count) {
-                index = columnsPerRow * 8;
-                int itemCount = Math.Max(0, Math.Min(8, items.Count - columnsPerRow));
-                int columnSize = items.GetRange(index, itemCount).Select(i => i.str.Length).Max();
-                columnSize = ((3 + columnSize) / 4) * 4;
-                X += columnSize;
-                columnsPerRow++;
-            }
-            */
 
 
             int lastColumn = index / 8;
@@ -221,10 +213,11 @@ namespace Transgenesis {
             int columnCount = 0;
             columnIndex = lastColumn;
 
-            //Count the columns preceding the selected column
+            //Count the columns we can show preceding the selected column
             CountColumnsBefore:
             widthLeft -= columnSizes[columnIndex];
             if(widthLeft > -1) {
+                //If we still had width left to show this column
                 columnCount++;
                 if(columnIndex > 0) {
                     columnIndex--;
@@ -232,21 +225,23 @@ namespace Transgenesis {
                 }
             }
 
-            if(lastColumn + 1 < totalColumns) {
-                columnIndex = lastColumn + 1;
+            //If the column we selected is not the very last column
+            columnIndex = lastColumn + 1;
+            if (columnIndex < totalColumns) {
                 //Count the columns after the selected column
                 CountColumnsAfter:
                 widthLeft -= columnSizes[columnIndex];
                 if (widthLeft > -1) {
+                    lastColumn++;
+                    columnCount++;
+                    //If we still had width left to show this column
                     if (columnIndex < totalColumns - 1) {
-                        lastColumn++;
-                        columnCount++;
+                        //And we still have columns left to show (we have to make sure index won't be out of range when we goto
                         columnIndex++;
                         goto CountColumnsAfter;
                     }
                 }
             }
-
 
             int width = c.width;
             for (columnIndex = lastColumn - columnCount + 1; columnIndex <= lastColumn; columnIndex++) {
