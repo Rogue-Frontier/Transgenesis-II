@@ -131,7 +131,7 @@ namespace Transgenesis {
                     }
                 }
                 string tag = $"{e.structure.Tag(),-24}";
-                buffer.Add(c.CreateString($"{tag}{e.unid?.ToUNID() ?? "Unknown", -12}{name,-32}{e.path}"));
+                buffer.Add(c.CreateString($"{tag}{e.unid?.ToUNID() ?? "Unknown", -12}{name,-48}{e.path}"));
                 if(hideModules && modulesByExtension.ContainsKey(e)) {
                     buffer.Add(c.CreateString($"    Modules: {modulesByExtension[e].Count}"));
                 }
@@ -405,13 +405,13 @@ namespace Transgenesis {
                         return env.extensions.Keys.ToList();
                     }
                     List<string> GetFiles() {
-                        var result = Directory.GetFiles(Directory.GetCurrentDirectory(), "*.xml").ToList();
+                        var result = new List<string>();
 
                         var path = string.Join(" ", i.Text.Split(' ').Skip(1));
                         if(path.Length > 0) {
                             path = Path.GetFullPath(path);
                         } else {
-                            return result;
+                            goto Done;
                         }
                         if (Directory.Exists(path)) {
                             result.Add(path);
@@ -439,7 +439,9 @@ namespace Transgenesis {
                                 }
                             }
                         }
-
+                        Done:
+                        //Add current directory files last
+                        result.AddRange(Directory.GetFiles(Directory.GetCurrentDirectory(), "*.xml").ToList());
                         return result;
                     }
 
