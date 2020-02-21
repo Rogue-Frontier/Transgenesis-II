@@ -66,14 +66,13 @@ namespace Transgenesis {
             buffer.Add(c.CreateString($"Extensions Loaded: {env.extensions.Count}"));
             var ext = new List<TranscendenceExtension>(env.extensions.Values);
             ext.Sort((TranscendenceExtension t1, TranscendenceExtension t2) => {
-
-                if(t1.parent != null && t2.parent != null) {
+                if (t1 == t2.parent) {
+                    return -1;
+                } else if (t1.parent == t2) {
+                    return 1;
+                } else if (t1.parent != null && t2.parent != null) {
                     if(t1.parent == t2.parent) {
                         return Compare(t1, t2);
-                    } else if (t1 == t2.parent) {
-                        return -1;
-                    } else if (t1.parent == t2) {
-                        return 1;
                     } else {
                         return Compare(t1.parent, t2.parent);
                     }

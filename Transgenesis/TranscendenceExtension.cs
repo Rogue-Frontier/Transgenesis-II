@@ -299,23 +299,33 @@ namespace Transgenesis {
             foreach (XElement sub in structure.Elements()) {
                 switch (sub.Tag()) {
                     case "TranscendenceAdventure":
-                    case "CoreLibrary":
-                        //Used by TranscendenceUniverse
+                    case "CoreLibrary": {
+                            //Used by TranscendenceUniverse
+                            var moduleFilename = sub.Att("filename");
+                            var modulePath = Path.GetFullPath(Path.Combine(path, "..", moduleFilename));
 
-                    case "Module":
-                        var moduleFilename = sub.Att("filename");
-                        var modulePath = Path.GetFullPath(Path.Combine(path, "..", moduleFilename));
+                            //Look for our module in the Extensions list
+                            //out.println(getConsoleMessage("[General] Looking for Module " + modulePath + "."));
+                            if (env.extensions.TryGetValue(modulePath, out TranscendenceExtension e)) {
+                                //Do not set the parent of the module, since we want to sort modules below their parents but not below everything else
 
-				//Look for our module in the Extensions list
-				//out.println(getConsoleMessage("[General] Looking for Module " + modulePath + "."));
-                        if(env.extensions.TryGetValue(modulePath, out TranscendenceExtension e)) {
-                            e.parent = this;
-                            modules.Add(e);
-                        } else {
-                            continue;
+                                modules.Add(e);
+                            }
+                            break;
                         }
-                        //Maybe we should automatically load the module if it is not loaded already
-                        break;
+                    case "Module": {
+                            var moduleFilename = sub.Att("filename");
+                            var modulePath = Path.GetFullPath(Path.Combine(path, "..", moduleFilename));
+
+                            //Look for our module in the Extensions list
+                            //out.println(getConsoleMessage("[General] Looking for Module " + modulePath + "."));
+                            if (env.extensions.TryGetValue(modulePath, out TranscendenceExtension e)) {
+                                e.parent = this;
+                                modules.Add(e);
+                            }
+                            //Maybe we should automatically load the module if it is not loaded already
+                            break;
+                        }
                 }
             }
         }
