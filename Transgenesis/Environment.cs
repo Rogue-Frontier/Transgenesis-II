@@ -99,6 +99,13 @@ namespace Transgenesis {
             if (Enum.TryParse(structure.Tag(), out ExtensionTypes ex)) {
                 XElement template;
                 switch (ex) {
+                    case ExtensionTypes.TranscendenceUniverse:
+                        template = coreStructures["TranscendenceUniverse"];
+                        break;
+                    case ExtensionTypes.CoreLibrary:
+                        template = coreStructures["CoreLibrary"];
+                        break;
+
                     case ExtensionTypes.TranscendenceAdventure:
                         template = coreStructures["TranscendenceAdventure"];
                         break;

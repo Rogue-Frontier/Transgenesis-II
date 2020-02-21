@@ -298,6 +298,10 @@ namespace Transgenesis {
 
             foreach (XElement sub in structure.Elements()) {
                 switch (sub.Tag()) {
+                    case "TranscendenceAdventure":
+                    case "CoreLibrary":
+                        //Used by TranscendenceUniverse
+
                     case "Module":
                         var moduleFilename = sub.Att("filename");
                         var modulePath = Path.GetFullPath(Path.Combine(path, "..", moduleFilename));
