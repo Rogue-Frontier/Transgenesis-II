@@ -66,30 +66,29 @@ namespace Transgenesis {
             buffer.Add(c.CreateString($"Extensions Loaded: {env.extensions.Count}"));
             var ext = new List<TranscendenceExtension>(env.extensions.Values);
             ext.Sort((TranscendenceExtension t1, TranscendenceExtension t2) => {
-                var p1 = t1;
-                while(p1.parent != null) {
-                    p1 = p1.parent;
-                }
-                var p2 = t2;
-                while (p2.parent != null) {
-                    p2 = p2.parent;
-                }
-                var module = "TranscendenceModule";
-                if(p1 == p2) {
-                    if (t1.structure.Tag() != module && t2.structure.Tag() == module) {
+
+                if(t1.parent != null && t2.parent != null) {
+                    if(t1.parent == t2.parent) {
+                        return Compare(t1, t2);
+                    } else if (t1 == t2.parent) {
                         return -1;
-                    } else if (t1.structure.Tag() == module && t2.structure.Tag() != module) {
+                    } else if (t1.parent == t2) {
                         return 1;
                     } else {
-                        return t1.unid != null && t2.unid != null && t1.unid != t2.unid ? ((uint)t1.unid).CompareTo((uint)t2.unid) :
-                            t1.name != null && t2.name != null && t1.name != t2.name ? t1.name.CompareTo(t2.name) :
-                            t1.path.CompareTo(t2.path);
+                        return Compare(t1.parent, t2.parent);
                     }
+                } else if(t1.parent != null) {
+                    return Compare(t1.parent, t2);
+                } else if(t2.parent != null) {
+                    return -Compare(t2.parent, t1);
                 } else {
-                    //return (p1.structure.Att("name", out string n1) ? n1 : "").CompareTo(p2.structure.Att("name", out string n2) ? n2 : "");
-                    return p1.unid != null && p2.unid != null && p1.unid != p2.unid ? ((uint)p1.unid).CompareTo((uint)p2.unid) :
-                            p1.name != null && p2.name != null && p1.name != p2.name ? p1.name.CompareTo(p2.name) :
-                            p1.path.CompareTo(p2.path);
+                    return Compare(t1, t2);
+                }
+                int Compare(TranscendenceExtension e1, TranscendenceExtension e2) {
+                    return e1.unid != null && e2.unid != null && e1.unid != e2.unid ? ((uint)e1.unid).CompareTo((uint)e2.unid) :
+                            e1.name != null && e2.name != null && e1.name != e2.name ? e1.name.CompareTo(e2.name) :
+                            e1.type != null && e2.type != null && e1.type != e2.type ? ((ExtensionTypes)e1.type).CompareTo((ExtensionTypes)e2.type) :
+                            e1.path.CompareTo(e2.path);
                 }
             });
             foreach (var e in ext) {
@@ -275,8 +274,8 @@ namespace Transgenesis {
                                     //Global.Break();
 
                                     //Note: This starts a new thread. We should indicate some way that this is running
-                                    Task.Run(() => LoadFolder(path));
-
+                                    //Task.Run(() => LoadFolder(path));
+                                    LoadFolder(path);
                                 }
                                 
                                 break;
@@ -446,9 +445,10 @@ namespace Transgenesis {
             }
             void LoadModules(TranscendenceExtension e) {
                 foreach (var module in e.structure.Elements()) {
-                    if (module.Tag() == "Module" || module.Tag() == "CoreLibrary") {
+                    if (module.Tag() == "Module" || module.Tag() == "CoreLibrary" || module.Tag() == "TranscendenceAdventure") {
                         string filename = module.Att("filename");
-                        string path = Path.Combine(Directory.GetParent(e.path).FullName, filename);
+                        //Use the full path when finding modules
+                        string path = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(e.path), filename));
                         Load(path, true);
                     }
                 }
