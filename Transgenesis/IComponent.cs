@@ -9,7 +9,7 @@ namespace Transgenesis {
         void Handle(ConsoleKeyInfo k);
         void Draw();
     }
-    class Input : IComponent {
+    class Input {
         ConsoleManager c;
         private StringBuilder s = new StringBuilder();
         public int cursor = 0;
@@ -28,8 +28,6 @@ namespace Transgenesis {
         public void Clear() {
             s.Clear();
             cursor = 0;
-        }
-        public void Update() {
         }
         public void Handle(ConsoleKeyInfo k) {
             //Global.Break();
@@ -113,7 +111,7 @@ namespace Transgenesis {
             */
         }
     }
-    class Suggest : IComponent {
+    class Suggest {
         Input i;
         public int index = -1;
         public List<HighlightEntry> items;
@@ -140,9 +138,6 @@ namespace Transgenesis {
         public void Clear() {
             items.Clear();
             index = -1;
-        }
-        public void Update() {
-
         }
         public void Handle(ConsoleKeyInfo k) {
             switch (k.Key) {
@@ -270,7 +265,7 @@ namespace Transgenesis {
         }
     }
 
-    class Tooltip : IComponent {
+    class Tooltip {
         Input i;
         Suggest s;
         Dictionary<string, string> help;
@@ -294,10 +289,8 @@ namespace Transgenesis {
         }
         public void Handle(ConsoleKeyInfo k) {
         }
-        public void Update() {
-        }
     }
-    class History : IComponent {
+    class History {
         Input i;
         public List<string> items = new List<string>();
         int index = -1;
@@ -311,9 +304,6 @@ namespace Transgenesis {
             items.Remove(i.Text);
             items.Add(i.Text);
             i.Clear();
-        }
-        public void Update() {
-
         }
 
         public void Handle(ConsoleKeyInfo k) {
@@ -346,9 +336,6 @@ namespace Transgenesis {
                     index = -1;
                     break;
             }
-        }
-
-        public void Draw() {
         }
     }
 }

@@ -522,8 +522,6 @@ namespace Transgenesis {
         }
 
         public void Update() {
-            i.Update();
-            s.Update();
         }
     }
 }
