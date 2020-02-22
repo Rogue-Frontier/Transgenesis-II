@@ -120,22 +120,13 @@ namespace Transgenesis {
                 if(hideModules && e.type == ExtensionTypes.TranscendenceModule) {
                     continue;
                 }
-                var nameSource = e;
-
-                string name = "";
-                while(nameSource != null) {
-                    if(nameSource.structure.Att("name", out name)) {
-                        break;
-                    } else {
-                        nameSource = nameSource.parent;
-                    }
-                }
+                
                 string tag = $"{e.structure.Tag(),-24}";
 
                 string unsaved = e.isUnsaved() ? "[S] " : "    ";
                 string unbound = e.isUnbound() ? "[B] " : "    ";
 
-                buffer.Add(c.CreateString($"{unsaved}{unbound}{tag}{e.unid?.ToUNID() ?? "Unknown", -12}{name,-48}{e.path}"));
+                buffer.Add(c.CreateString($"{unsaved}{unbound}{tag}{e.unid?.ToUNID() ?? "Unknown", -12}{e.name,-48}{e.path}"));
                 if(hideModules && modulesByExtension.ContainsKey(e)) {
                     buffer.Add(c.CreateString($"    Modules: {modulesByExtension[e].Count}"));
                 }
