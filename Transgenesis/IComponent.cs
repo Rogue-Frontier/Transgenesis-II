@@ -24,7 +24,7 @@ namespace Transgenesis {
         public Input(ConsoleManager c) {
             this.c = c;
         }
-        public Point pos = new Point(0, 47);
+        public Point pos = new Point(0, 44);
         public void Clear() {
             s.Clear();
             cursor = 0;
@@ -115,7 +115,7 @@ namespace Transgenesis {
         Input i;
         public int index = -1;
         public List<HighlightEntry> items;
-        public Point pos = new Point(0, 48);
+        public Point pos = new Point(0, 45);
         ConsoleManager c;
         public Suggest(Input i, ConsoleManager c) {
             this.i = i;
@@ -269,7 +269,7 @@ namespace Transgenesis {
         Input i;
         Suggest s;
         Dictionary<string, string> help;
-        Point pos = new Point(0, 56);
+        Point pos = new Point(0, 53);
         ConsoleManager c;
         public Tooltip(Input i, Suggest s, ConsoleManager c, Dictionary<string, string> help) {
             this.i = i;
