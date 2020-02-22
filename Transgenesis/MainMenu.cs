@@ -115,25 +115,38 @@ namespace Transgenesis {
             var orphans = new TranscendenceExtension(null, null);
             var modulesByExtension = (from mod in ext group mod by mod.parent into groups select groups).ToDictionary(group => group.ToList()[0].parent ?? orphans, gdc => gdc.ToList());
 
-            bool hideModules = false;
-            foreach (var e in ext) {
-                if(hideModules && e.type == ExtensionTypes.TranscendenceModule) {
+            ModuleMode moduleMode = ModuleMode.HideBaseGame;
+            foreach(var e in ext) {
+                if(e.type == ExtensionTypes.TranscendenceModule && e.parent != null &&
+                    (moduleMode == ModuleMode.HideParentedModules ||
+                        (moduleMode == ModuleMode.HideBaseGame && IsBaseGame(e)))
+                    ) {
+                    
                     continue;
                 }
                 
+
                 string tag = $"{e.structure.Tag(),-24}";
 
                 string unsaved = e.isUnsaved() ? "[S] " : "    ";
                 string unbound = e.isUnbound() ? "[B] " : "    ";
+                buffer.Add(c.CreateString($"{unsaved}{unbound}{tag}{e.unid?.ToUNID() ?? "Unknown",-12}{e.name,-48}{e.path}"));
 
-                buffer.Add(c.CreateString($"{unsaved}{unbound}{tag}{e.unid?.ToUNID() ?? "Unknown", -12}{e.name,-48}{e.path}"));
-                if(hideModules && modulesByExtension.ContainsKey(e)) {
-                    buffer.Add(c.CreateString($"    Modules: {modulesByExtension[e].Count}"));
+                if (moduleMode != ModuleMode.HideNone && modulesByExtension.ContainsKey(e)) {
+                    buffer.Add(c.CreateString($"        Modules: {modulesByExtension[e].Count}"));
                 }
             }
+
+            bool IsBaseGame(TranscendenceExtension e) {
+                var unid = e.unid ?? e.parent?.unid;
+                return unid != null && unid < 0xA0000000;
+            }
+            /*
             if(hideModules && modulesByExtension.ContainsKey(orphans)) {
                 buffer.Add(c.CreateString($"Orphan Modules: {modulesByExtension[orphans].Count}"));
             }
+            */
+
             scroller.Draw(buffer);
 
             i.Draw();
