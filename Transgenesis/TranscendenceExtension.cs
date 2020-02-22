@@ -33,36 +33,36 @@ namespace Transgenesis {
         }
         public string name {
             get {
-                var element = structure;
-                while (element != null) {
-                    if (element.Att("name", out string result)) {
+                var ext = this;
+                while (ext != null) {
+                    if (ext.structure.Att("name", out string result)) {
                         return result;
                     }
-                    element = element.Parent;
+                    ext = ext.parent;
                 }
                 return null;
             }
         }
         public string credits {
             get {
-                var element = structure;
-                while (element != null) {
-                    if (element.Att("credits", out string result)) {
+                var ext = this;
+                while (ext != null) {
+                    if (ext.structure.Att("credits", out string result)) {
                         return result;
                     }
-                    element = element.Parent;
+                    ext = ext.parent;
                 }
                 return null;
             }
         }
         public string entity {
             get {
-                var element = structure;
-                while (element != null) {
-                    if (element.Att("unid", out string result) || structure.Att("UNID", out result)) {
+                var ext = this;
+                while (ext != null) {
+                    if (ext.structure.Att("unid", out string result) || ext.structure.Att("UNID", out result)) {
                         return result.Replace("&", "").Replace(";", "");
                     }
-                    element = element.Parent;
+                    ext = ext.parent;
                 }
                 return null;
             }
