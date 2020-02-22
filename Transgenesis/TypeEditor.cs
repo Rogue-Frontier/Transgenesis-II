@@ -46,7 +46,7 @@ namespace Transgenesis {
             c.SetCursor(new Microsoft.Xna.Framework.Point(0, 0));
 
             List<ColoredString> buffer = new List<ColoredString>();
-            AddLine($"    {"Entity",-32}{"UNID",-32}{"DesignType",-32}{"Extension", -32}"); //{entry.comment}
+            AddLine($"    {"Entity",-32}{"UNID",-12}{"DesignType",-32}{"Extension", -32}"); //{entry.comment}
 
             AddLine("<!-- Types defined by this extension -->");
             string extensionName = extension.name ?? extension.entity ?? "<!--This Extension -->";
@@ -58,14 +58,14 @@ namespace Transgenesis {
                 }
 
                 if (e is TypeEntry entry) {
-                    addLine($"    {entry.entity,-32}{entry.unid?.ToUNID() ?? "Auto",-16}{(extension.types.typemap.TryGetValue(entry.entity, out XElement design) ? design?.Tag() ?? "None" : "None"),-32}{extensionName,-32}"); //{entry.comment}
+                    addLine($"    {entry.entity,-32}{entry.unid?.ToUNID() ?? "Auto",-12}{(extension.types.typemap.TryGetValue(entry.entity, out XElement design) ? design?.Tag() ?? "None" : "None"),-32}{extensionName,-32}"); //{entry.comment}
                 } else if (e is TypeRange group) {
                     string range = $"{group.unid_min?.ToUNID() ?? "Auto"} -- {group.unid_max?.ToUNID() ?? "Auto"}";
                     addLine($"    <!-- {range} -->");
 
                     int rangeIndex = 0;
                     foreach (var entity in group.entities) {
-                        addLine($"    {entity, -32}{(group.unid_min != null ? ((uint)(group.unid_min+rangeIndex)).ToUNID() : "Auto"), -16}{(extension.types.typemap.TryGetValue(entity, out XElement design) ? design?.Tag() ?? "None" : "None"),-32}{extensionName, -32}");
+                        addLine($"    {entity, -32}{(group.unid_min != null ? ((uint)(group.unid_min+rangeIndex)).ToUNID() : "Auto"), -12}{(extension.types.typemap.TryGetValue(entity, out XElement design) ? design?.Tag() ?? "None" : "None"),-32}{extensionName, -32}");
                         rangeIndex++;
                     }
                 }
