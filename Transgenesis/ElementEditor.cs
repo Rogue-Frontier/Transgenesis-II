@@ -37,12 +37,14 @@ namespace Transgenesis {
             s = new Suggest(i, c);
             t = new Tooltip(i, s, c, new Dictionary<string, string>() {
                 {"",    "Navigate Mode" + "\r\n" +
-                        "-Up arrow: Previous element" + "\r\n" +
-                        "-Down arrow: Next element" + "\r\n" +
-                        "-Left arrow: Parent element" + "\r\n" +
-                        "-Right arrow: First child element" + "\r\n" +
-                        "-Return: Expand/collapse element" + "\r\n" +
-                        "-Typing: Enter a command" + "\r\n"},
+                        "-Up          Previous element" + "\r\n" +
+                        "-Down        Next element" + "\r\n" +
+                        "-Ctrl+Up     Move element up" + "\r\n" +
+                        "-Ctrl+Down   Move element down" + "\r\n" +
+                        "-Left        Parent element" + "\r\n" +
+                        "-Right       First child element" + "\r\n" +
+                        "-Return      Expand/collapse element" + "\r\n" +
+                        "-Typing      Enter a command" + "\r\n"},
                 {"add", "add <subelement>\r\n" +
                         "Adds the named subelement to the current element, if allowed"},
                 {"reorder", "reorder <attribute...>\r\n" +

@@ -27,6 +27,16 @@ namespace Transgenesis {
             h = new History(i);
             s = new Suggest(i, c);
             t = new Tooltip(i, s, c, new Dictionary<string, string>() {
+                {"",    "General controls" + "\r\n" +
+                        "-Up          Suggest selection up" + "\r\n" +
+                        "-Down        Suggest selection up" + "\r\n" +
+                        "-Space       Enter Suggest selection" + "\r\n" +
+                        "-Shift+Up    History selection up" + "\r\n" +
+                        "-Shift+Down  History selection down" + "\r\n" +
+                        "-PageUp      Scroll up" + "\r\n" +
+                        "-PageDown    Scroll down" + "\r\n" +
+                        "-Return      Run command" + "\r\n" +
+                        "-[Typing]    Input command" + "\r\n"},
                 { "types",  "types <extensionFile>\r\n" +
                             "Opens the Type Editor on the loaded extension with the specified file path" },
                 {"theme",   "theme <blue|green|pine|orange|default>\r\n" +
