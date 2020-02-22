@@ -182,6 +182,9 @@ namespace Transgenesis {
                     i.Text = input.Substring(0, input.Length - item.highlightLength - 1) + itemStr;
                     Clear();
                     break;
+                case ConsoleKey.Enter:
+                    Clear();
+                    break;
             }
         }
         public void Draw() {
