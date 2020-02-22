@@ -12,6 +12,7 @@ namespace Transgenesis {
         ProgramState state;
         Stack<IComponent> screens;
         Input i;
+        History h;
         Suggest s;
         Tooltip t;
         Environment env;
@@ -23,6 +24,7 @@ namespace Transgenesis {
         public MainMenu(Stack<IComponent> screens) {
             c = new ConsoleManager(new Point(0, 0));
             i = new Input(c);
+            h = new History(i);
             s = new Suggest(i, c);
             t = new Tooltip(i, s, c, new Dictionary<string, string>() {
                 { "types",  "types <extensionFile>\r\n" +
@@ -156,19 +158,19 @@ namespace Transgenesis {
 
         public void Handle(ConsoleKeyInfo k) {
             i.Handle(k);
+            h.Handle(k);
             s.Handle(k);
             scroller.Handle(k);
             string input = i.Text;
             switch (k.Key) {
                 case ConsoleKey.Enter:
                     string command = i.Text;
-                    i.Clear();
-                    s.Clear();
                     string[] parts = command.Split(' ');
                     switch (parts.First().ToLower()) {
                         case "theme": {
                                 var theme = c.theme;
                                 if (parts.Length == 1) {
+                                    h.Record();
                                     Reset();
                                     break;
                                 }
@@ -177,24 +179,25 @@ namespace Transgenesis {
                                         theme.front = new Color(0x00, 0x69, 0xE7);
                                         theme.back = Color.Black;
                                         theme.highlight = Color.White;
+                                        h.Record();
                                         break;
                                     case "green":
                                         theme.front = new Color(0xA8, 0xB7, 0x0E);
                                         theme.back = Color.Black;
                                         theme.highlight = Color.LightBlue;
+                                        h.Record();
                                         break;
                                     case "pine":
                                         theme.front = new Color(0x00, 0x76, 0x6B);
                                         theme.back = Color.Black;
                                         theme.highlight = Color.Magenta;
+                                        h.Record();
                                         break;
                                     case "orange":
                                         theme.front = new Color(0xFF, 0x92, 0x07);
                                         theme.back = Color.Black;
                                         theme.highlight = Color.White;
-                                        break;
-                                    default:
-                                        Reset();
+                                        h.Record();
                                         break;
                                 }
                                 void Reset() {
@@ -216,7 +219,7 @@ namespace Transgenesis {
                             }
                         case "bindall": {
                                 env.BindAll();
-                                i.Clear();
+                                h.Record();
                                 break;
                             }
                         case "unload": {
@@ -226,6 +229,9 @@ namespace Transgenesis {
                                 string path = Path.GetFullPath(string.Join(" ", parts.Skip(1)).Trim());
                                 if (env.extensions.TryGetValue(path, out TranscendenceExtension existing)) {
                                     env.Unload(existing);
+                                    h.Record();
+                                } else {
+                                    i.Clear();
                                 }
                                 break;
                             }
@@ -237,6 +243,7 @@ namespace Transgenesis {
                                 foreach(var e in extensions) {
                                     Load(e.path);
                                 }
+                                h.Record();
                                 break;
                             }
                         case "reloadallmodules": {
@@ -251,6 +258,7 @@ namespace Transgenesis {
                                     }
                                     Load(e.path, true);
                                 }
+                                h.Record();
                                 break;
                             }
                         case "reload": {
@@ -262,6 +270,7 @@ namespace Transgenesis {
                                     env.Unload(existing);
                                 }
                                 Load(path);
+                                h.Record();
                                 break;
                             }
                         case "reloadmodules": {
@@ -277,6 +286,7 @@ namespace Transgenesis {
                                     }
                                 }
                                 LoadFolder(path, true);
+                                h.Record();
                                 break;
                             }
                         case "load": {
@@ -314,7 +324,8 @@ namespace Transgenesis {
                                     //Task.Run(() => LoadFolder(path));
                                     LoadFolder(path);
                                 }
-                                
+                                h.Record();
+
                                 break;
                             }
                         case "loadmodules": {
@@ -329,7 +340,7 @@ namespace Transgenesis {
                                 } else {
                                     LoadFolder(path, true);
                                 }
-                                
+                                h.Record();
 
                                 break;
                             }
@@ -348,7 +359,7 @@ namespace Transgenesis {
                                 if (env.extensions.TryGetValue(path, out TranscendenceExtension result)) {
                                     screens.Push(state.sessions.Initialize(result, new ElementEditor(state, screens, env, result, c)));
                                 }
-
+                                h.Record();
                                 break;
                             }
                         case "edit": {
@@ -359,6 +370,7 @@ namespace Transgenesis {
                                 //Global.Break();
                                 if (env.extensions.TryGetValue(path, out TranscendenceExtension result)) {
                                     screens.Push(state.sessions.Initialize(result, new ElementEditor(state, screens, env, result, c)));
+                                    h.Record();
                                 }
                                 break;
                             }
@@ -369,6 +381,7 @@ namespace Transgenesis {
                                 string path = Path.GetFullPath(string.Join(" ", parts.Skip(1)).Trim());
                                 if (env.extensions.TryGetValue(path, out TranscendenceExtension result)) {
                                     screens.Push(new TypeEditor(screens, env, result, c));
+                                    h.Record();
                                 }
                                 break;
                             }

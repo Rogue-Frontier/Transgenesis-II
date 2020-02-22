@@ -19,6 +19,7 @@ namespace Transgenesis {
         HashSet<XElement> keepExpanded;
 
         Input i;
+        History h;
         Suggest s;
         Tooltip t;
         Scroller scroller;
@@ -32,6 +33,7 @@ namespace Transgenesis {
             this.keepExpanded = new HashSet<XElement>();
             this.c = c;
             i = new Input(c);
+            h = new History(i);
             s = new Suggest(i, c);
             t = new Tooltip(i, s, c, new Dictionary<string, string>() {
                 {"",    "Navigate Mode" + "\r\n" +
@@ -181,6 +183,7 @@ namespace Transgenesis {
 
         public void Handle(ConsoleKeyInfo k) {
             i.Handle(k);
+            h.Handle(k);
             s.Handle(k);
             scroller.Handle(k);
 
@@ -265,7 +268,7 @@ namespace Transgenesis {
                                     if (env.CanAddElement(focused, env.bases[focused], elementName, out XElement subtemplate)) {
                                         var subelement = env.FromTemplate(subtemplate, elementName);
                                         focused.Add(subelement);
-                                        i.Clear();
+                                        h.Record();
                                     }
                                     break;
                                 }
@@ -277,11 +280,12 @@ namespace Transgenesis {
                                     if (value.Length > 0) {
                                         //Set the value
                                         focused.SetAttributeValue(attribute, value);
+                                        h.Record();
                                     } else if (!string.IsNullOrEmpty(attribute)) {
                                         //Delete the attribute if we enter no value
                                         focused.Attribute(attribute)?.Remove();
+                                        h.Record();
                                     }
-                                    i.Clear();
                                     break;
                                 }
                             case "reorder": {
@@ -299,31 +303,31 @@ namespace Transgenesis {
                                     foreach(var a in attributes.Keys) {
                                         focused.SetAttributeValue(a, attributes[a]);
                                     }
-                                    i.Clear();
+                                    h.Record();
                                     break;
                                 }
                             case "bind": {
                                     extension.updateTypeBindings(env);
-                                    i.Clear();
+                                    h.Record();
                                     break;
                                 }
                             case "bindall": {
                                     foreach (var ext in env.extensions.Values) {
                                         ext.updateTypeBindings(env);
                                     }
-                                    i.Clear();
+                                    h.Record();
                                     break;
                                 }
                             case "save": {
                                     extension.Save();
-                                    i.Clear();
+                                    h.Record();
                                     break;
                                 }
                             case "saveall": {
                                     foreach (var extension in env.extensions.Values) {
                                         extension.Save();
                                     }
-                                    i.Clear();
+                                    h.Record();
                                     break;
                                 }
                             case "remove": {
@@ -331,27 +335,27 @@ namespace Transgenesis {
 
                                     //For now, this just removes the current element if it's not the root
                                     RemoveFocused();
-                                    i.Clear();
+                                    h.Record();
                                     break;
                                 }
                             case "expand": {
                                     keepExpanded.Add(focused);
-                                    i.Clear();
+                                    h.Record();
                                     break;
                                 }
                             case "collapse": {
                                     keepExpanded.Remove(focused);
-                                    i.Clear();
+                                    h.Record();
                                     break;
                                 }
                             case "moveup": {
                                     MoveUp();
-                                    i.Clear();
+                                    h.Record();
                                     break;
                                 }
                             case "movedown": {
                                     MoveDown();
-                                    i.Clear();
+                                    h.Record();
                                     break;
                                 }
                             case "goto": {
@@ -362,12 +366,12 @@ namespace Transgenesis {
                                     while (focused.Parent != null) {
                                         focused = focused.Parent;
                                     }
-                                    i.Clear();
+                                    h.Record();
                                     break;
                                 }
                             case "parent": {
                                     focused = focused.Parent ?? focused;
-                                    i.Clear();
+                                    h.Record();
                                     break;
                                 }
                                 /*
@@ -382,23 +386,23 @@ namespace Transgenesis {
                             */
                             case "next": {
                                     focused = focused.ElementsAfterSelf().FirstOrDefault() ?? focused;
-                                    i.Clear();
+                                    h.Record();
 
                                     break;
                                 }
                             case "prev": {
                                     focused = focused.ElementsBeforeSelf().LastOrDefault() ?? focused;
-                                    i.Clear();
+                                    h.Record();
                                     break;
                                 }
                             case "types": {
                                     screens.Push(new TypeEditor(screens, env, extension, c));
-                                    i.Clear();
+                                    h.Record();
                                     break;
                                 }
                             case "exit": {
                                     screens.Pop();
-                                    i.Clear();
+                                    h.Record();
                                     break;
                                 }
                         }

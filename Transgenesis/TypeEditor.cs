@@ -13,6 +13,7 @@ namespace Transgenesis {
         int elementIndex = 0;
 
         Input i;
+        History h;
         Suggest s;
         Tooltip t;
         Scroller scroller;
@@ -24,6 +25,7 @@ namespace Transgenesis {
             this.c = c;
 
             i = new Input(c);
+            h = new History(i);
             s = new Suggest(i, c);
             t = new Tooltip(i, s, c, new Dictionary<string, string>() {
                 { "add",        "add <entity>\r\n" +
@@ -36,6 +38,8 @@ namespace Transgenesis {
                                 "Creates a range of types starting from unidMin and ending at unidMax with a modifiable list of entities. If unidMax is omitted, then the range is unlimited. If unidMin is omitted, then it is automatically assigned following the last assigned unid."},
                 { "bind",       "bind\r\n" +
                                 "Binds all entities to UNIDs and DesignTypes for this extension"},
+                { "bindall",    "bindall\r\n" +
+                                "Binds all entities to UNIDs and DesignTypes for all loaded extensions" },
                 { "exit",       "exit\r\n" +
                                 "Exits the Type Editor to the main menu"},
             });
@@ -101,6 +105,7 @@ namespace Transgenesis {
 
         public void Handle(ConsoleKeyInfo k) {
             i.Handle(k);
+            h.Handle(k);
             s.Handle(k);
             scroller.Handle(k);
 
@@ -138,7 +143,7 @@ namespace Transgenesis {
                                     } else {
                                         //Expected entity
                                     }
-                                    i.Clear();
+                                    h.Record();
                                     break;
                                 }
                             case "remove": {
@@ -167,8 +172,8 @@ namespace Transgenesis {
                                             //Success
                                             break;
                                         }
-
                                     }
+                                    h.Record();
                                     break;
                                 }
                             case "type": {
@@ -205,7 +210,7 @@ namespace Transgenesis {
                                     } else {
                                         extension.types.elements.Insert(elementIndex + 1, result);
                                     }
-                                    i.Clear();
+                                    h.Record();
                                     break;
                                 }
                             case "range": {
@@ -240,16 +245,20 @@ namespace Transgenesis {
                                     } else {
                                         extension.types.elements.Insert(elementIndex + 1, result);
                                     }
-                                    i.Clear();
+                                    h.Record();
                                     break;
                                 }
+                            case "bindall":
+                                env.BindAll();
+                                h.Record();
+                                break;
                             case "bind":
                                 extension.updateTypeBindings(env);
-                                i.Clear();
+                                h.Record();
                                 break;
                             case "exit":
                                 screens.Pop();
-                                i.Clear();
+                                h.Record();
                                 break;
                         }
                         break;
@@ -270,7 +279,7 @@ namespace Transgenesis {
 
                             var empty = new List<string>();
                             Dictionary<string, Func<List<string>>> autocomplete = new Dictionary<string, Func<List<string>>> {
-                                {"", () => new List<string>{"add", "type", "range", "bind", "exit"} },
+                                {"", () => new List<string>{"add", "type", "range", "bind", "bindall", "exit"} },
 
                             };
                             string p = autocomplete.Keys.Last(prefix => input.StartsWith((prefix + " ").TrimStart()));

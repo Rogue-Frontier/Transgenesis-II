@@ -146,14 +146,14 @@ namespace Transgenesis {
         }
         public void Handle(ConsoleKeyInfo k) {
             switch (k.Key) {
-                case ConsoleKey.UpArrow:
+                case ConsoleKey.UpArrow when (k.Modifiers & ConsoleModifiers.Shift) == 0:
                     if (index > -1)
                         index--;
                     else
                         //Wrap around
                         index = items.Count - 1;
                     break;
-                case ConsoleKey.DownArrow:
+                case ConsoleKey.DownArrow when (k.Modifiers & ConsoleModifiers.Shift) == 0:
                     if (index + 1 < items.Count)
                         index++;
                     else
@@ -296,13 +296,53 @@ namespace Transgenesis {
     }
     class History : IComponent {
         Input i;
+        public List<string> items = new List<string>();
         int index = -1;
-        public List<string> items;
+        public History(Input i) {
+            this.i = i;
+        }
+        public void Record() {
+            if(i.Text.Length == 0) {
+                return;
+            }
+            items.Remove(i.Text);
+            items.Add(i.Text);
+            i.Clear();
+        }
         public void Update() {
+
         }
 
         public void Handle(ConsoleKeyInfo k) {
-            //Use Up/Down arrows with Shift held down
+            switch(k.Key) {
+                case ConsoleKey.UpArrow when (k.Modifiers & ConsoleModifiers.Shift) != 0:
+                    if(index == -1) {
+                        index = items.Count - 1;
+                    } else {
+                        index--;
+                    }
+                    if(index != -1) {
+                        i.Text = items[index];
+                    } else {
+                        i.Clear();
+                    }
+                    break;
+                case ConsoleKey.DownArrow when (k.Modifiers & ConsoleModifiers.Shift) != 0:
+                    if (index >= items.Count - 1) {
+                        index = -1;
+                    } else {
+                        index++;
+                    }
+                    if (index != -1) {
+                        i.Text = items[index];
+                    } else {
+                        i.Clear();
+                    }
+                    break;
+                case ConsoleKey.Enter:
+                    index = -1;
+                    break;
+            }
         }
 
         public void Draw() {
