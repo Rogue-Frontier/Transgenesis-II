@@ -374,13 +374,14 @@ namespace Transgenesis {
                         sub_type = sub_type.Replace("&", "").Replace(";", "");
                         if (userTypes.typemap.ContainsKey(sub_type)) {
                             //Check if the UNID has not already been bound to a Design
-                            if (userTypes.typemap[sub_type] == null) {
+                            var existing = userTypes.typemap[sub_type];
+                            if (existing == null) {
                                 //Bind it
                                 userTypes.typemap[sub_type] = sub;
                                 bound.Add(sub_type);
-                            } else if (userTypes.typemap[sub_type] == sub) {
+                            } else if (existing == sub) {
                                 //Ignore if this element was bound earlier (such as during a Parent Type Binding).
-                            } else if (userTypes.typemap[sub_type].Tag().Equals(sub.Tag())) {
+                            } else if (existing.Tag().Equals(sub.Tag()) || existing.Tag().Equals(sub.Tag() + "Override")) {
                                 //If the UNID is bound to a Design with the same tag, then it's probably an override
                                 //out.println(getConsoleMessage2(sub.getName(), String.format("%-15s %s", "[Warning] Override Type:", sub_type)));
 

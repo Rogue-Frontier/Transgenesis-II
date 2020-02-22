@@ -81,6 +81,7 @@
     <Compile Include="HighlightEntry.cs" />
     <Compile Include="IComponent.cs" />
     <Compile Include="MainMenu.cs" />
+    <Compile Include="ModuleMode.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="ProgramState.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
