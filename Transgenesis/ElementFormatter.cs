@@ -15,6 +15,7 @@ namespace Transgenesis {
         string noBox = "    ";
 
         public List<ColoredString> buffer = new List<ColoredString>();
+        public HashSet<int> highlightLines = new HashSet<int>();
 
         ConsoleManager c;
         public ElementFormatter(ConsoleManager c, bool showBoxes = true) {
@@ -52,6 +53,7 @@ namespace Transgenesis {
             ColoredString s = new ColoredString(c.width);
             foreach (var ch in line) {
                 if (ch == '\n') {
+                    highlightLines.Add(buffer.Count);
                     buffer.Add(s.SubString(0, index));
                     s = new ColoredString(c.width);
                     index = 0;
@@ -60,12 +62,14 @@ namespace Transgenesis {
                 s[index] = new SadConsole.ColoredGlyph(ch, c.theme.highlight, c.theme.back);
                 index++;
                 if (index == c.width) {
+                    highlightLines.Add(buffer.Count);
                     buffer.Add(s);
                     s = new ColoredString(c.width);
                     index = 0;
                 }
             }
             if (index > 0) {
+                highlightLines.Add(buffer.Count);
                 buffer.Add(s.SubString(0, index));
             }
         }
