@@ -19,6 +19,8 @@ namespace Transgenesis {
         ConsoleManager c;
         Scroller scroller;
 
+        List<ConsoleKeyInfo> busyQueue;
+
 
 
         public MainMenu(Stack<IComponent> screens) {
@@ -161,12 +163,22 @@ namespace Transgenesis {
 
             scroller.Draw(buffer);
 
+            if(busyQueue != null) {
+                c.NextLine();
+                c.WriteLine("Loading extensions...");
+            }
+
             i.Draw();
             s.Draw();
             t.Draw();
         }
 
         public void Handle(ConsoleKeyInfo k) {
+            if(busyQueue != null) {
+                busyQueue.Add(k);
+                return;
+            }
+
             i.Handle(k);
             h.Handle(k);
             s.Handle(k);
@@ -331,8 +343,12 @@ namespace Transgenesis {
                                     //Global.Break();
 
                                     //Note: This starts a new thread. We should indicate some way that this is running
-                                    //Task.Run(() => LoadFolder(path));
-                                    LoadFolder(path);
+                                    Task.Run(() => {
+                                        busyQueue = new List<ConsoleKeyInfo>();
+                                        LoadFolder(path);
+                                        busyQueue = null;
+                                    });
+                                    //LoadFolder(path);
                                 }
                                 h.Record();
 
