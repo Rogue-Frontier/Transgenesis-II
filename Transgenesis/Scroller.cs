@@ -8,8 +8,8 @@ using System.Threading.Tasks;
 
 namespace Transgenesis {
     class Scroller {
-        int scrolling = 0;
-        int screenRows = 42;
+        public int scrolling = 0;
+        public int screenRows = 42;
         Input i;
         ConsoleManager c;
 
@@ -39,7 +39,7 @@ namespace Transgenesis {
             if(scrolling > 0) {
                 lines[0] = c.CreateString("...");
             }
-            if (scrolling + count + 1 < buffer.Count) {
+            if (scrolling + count < buffer.Count) {
                 lines[lines.Count - 1] = c.CreateString("...");
             }
             foreach (var line in lines) {
