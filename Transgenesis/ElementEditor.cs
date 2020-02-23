@@ -496,6 +496,7 @@ namespace Transgenesis {
                                         //And use that entity to find the module where it is defined
 
                                         arg = destExtension.types.unid2entity[extension.types.entity2unid[arg]];
+                                        destModule = destExtension.types.moduleTypes[arg];
                                         destElement = destExtension.types.typemap[arg];
 
                                         //It is a UNID, so we advance to the next argument
