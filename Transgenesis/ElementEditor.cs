@@ -15,8 +15,11 @@ namespace Transgenesis {
         TranscendenceExtension extension;
         ConsoleManager c;
 
+        bool scrollToFocused;
         XElement focused;
         HashSet<XElement> keepExpanded;
+
+        ElementFormatter formatter;
 
         Input i;
         History h;
@@ -141,7 +144,7 @@ namespace Transgenesis {
                 root = root.Parent;
             }
 
-            var formatter = new ElementFormatter(c);
+            formatter = new ElementFormatter(c);
             formatter.ShowElementTree(root, focused, expanded, semiexpanded);
             formatter.SyntaxHighlight();
             List<ColoredString> buffer = formatter.buffer;
@@ -175,12 +178,55 @@ namespace Transgenesis {
                 buffer = buffer2;
             }
             */
+            if(scrollToFocused) {
+                ScrollToFocused();
+                scrollToFocused = false;
+            }
 
             scroller.Draw(buffer);
 
             i.Draw();
             s.Draw();
             t.Draw();
+        }
+        public void ScrollToFocused() {
+            if (formatter.highlightLines.Count > 0) {
+                int topRow = scroller.scrolling;
+                int bottomRow = topRow + scroller.screenRows - 1;
+
+                int topLine = formatter.highlightLines.Min();
+                int bottomLine = formatter.highlightLines.Max();
+
+                if (bottomRow - 1 < topLine) {
+                    //Scroll down to see the top of the element on the last line
+                    scroller.scrolling = topLine - scroller.screenRows + 2;
+                } else if (topRow + 1 > bottomLine) {
+                    //Scroll up to see the bottom of the element on the first line
+                    scroller.scrolling = bottomLine - 1;
+                }
+            }
+        }
+        public void ScrollToHome() {
+            scroller.scrolling = 0;
+        }
+        public void ScrollToEnd() {
+            scroller.scrolling = formatter.buffer.Count - scroller.screenRows;
+        }
+        public void ScrollToFocusedOpenTag() {
+            if (formatter.highlightLines.Count > 0) {
+                int topLine = formatter.highlightLines.Min();
+                //Scroll down to see the start of the element on the first line
+                scroller.scrolling = topLine - 1;
+            }
+        }
+        public void ScrollToFocusedCloseTag() {
+            if (formatter.highlightLines.Count > 0) {
+                int topRow = scroller.scrolling;
+                int bottomLine = formatter.highlightLines.Max();
+
+                //Scroll down to see the end of the element on the last line
+                scroller.scrolling = bottomLine - scroller.screenRows + 2;
+            }
         }
 
         public void Handle(ConsoleKeyInfo k) {
@@ -242,15 +288,34 @@ namespace Transgenesis {
                 //Navigate using arrow keys when command input is empty
                 case ConsoleKey.LeftArrow when i.Text.Length == 0:
                     focused = focused.Parent ?? focused;
+                    scrollToFocused = true;
                     break;
                 case ConsoleKey.RightArrow when i.Text.Length == 0:
                     focused = focused.Elements().FirstOrDefault() ?? focused;
+                    scrollToFocused = true;
                     break;
                 case ConsoleKey.DownArrow when i.Text.Length == 0:
                     focused = focused.ElementsAfterSelf().FirstOrDefault() ?? focused;
+                    scrollToFocused = true;
                     break;
                 case ConsoleKey.UpArrow when i.Text.Length == 0:
                     focused = focused.ElementsBeforeSelf().LastOrDefault() ?? focused;
+                    scrollToFocused = true;
+                    break;
+                case ConsoleKey.Home when i.Text.Length == 0:
+                    if((k.Modifiers & ConsoleModifiers.Shift) == 0) {
+                        ScrollToHome();
+                    } else {
+                        ScrollToFocusedOpenTag();
+                    }
+                    
+                    break;
+                case ConsoleKey.End when i.Text.Length == 0:
+                    if ((k.Modifiers & ConsoleModifiers.Shift) == 0) {
+                        ScrollToEnd();
+                    } else {
+                        ScrollToFocusedCloseTag();
+                    }
                     break;
                 case ConsoleKey.Enter: {
                         if(input.Length == 0) {
