@@ -346,6 +346,7 @@ namespace Transgenesis {
                                     Task.Run(() => {
                                         busyQueue = new List<ConsoleKeyInfo>();
                                         LoadFolder(path);
+                                        busyQueue.ForEach(k => Handle(k));
                                         busyQueue = null;
                                     });
                                     //LoadFolder(path);
