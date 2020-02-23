@@ -461,8 +461,8 @@ namespace Transgenesis {
                                                 destElement = destModule.structure;
                                                 goto ElementShow;
                                             }
-                                        } else if(extension.types.dependencyTypes.TryGetValue(arg, out destExtension)) {
-                                            //Otherwise, we're looking at a type defined in a dependency, so we advance to the next argument
+                                        } else if(!extension.types.overriddenTypes.Contains(arg) && extension.types.dependencyTypes.TryGetValue(arg, out destExtension)) {
+                                            //Otherwise, we're looking at a non-overridden type defined in a dependency, so we advance to the next argument
 
                                             if (result.Count > 0) {
                                                 arg = result[0];
@@ -629,7 +629,7 @@ namespace Transgenesis {
                                 {"set", () => env.bases[focused].GetValidAttributes() },
                                 {"add", () => env.GetAddableElements(focused, env.bases[focused]) },
                                 {"remove", () => env.GetRemovableElements(focused, env.bases[focused]) },
-                                {"goto", () => extension.types.ownedTypes.ToList() }
+                                {"goto", () => extension.types.GetDesignBoundTypes() }
                                 //bind
                                 //bindall
                                 //save

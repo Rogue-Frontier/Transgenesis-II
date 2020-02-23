@@ -468,8 +468,10 @@ namespace Transgenesis {
         public Dictionary<string, XElement> typemap = new Dictionary<string, XElement>();    //Binds entities to designs
         public HashSet<string> ownedTypes = new HashSet<string>();         //Types that we have defined
         public HashSet<string> overriddenTypes = new HashSet<string>();         //Types that we have overridden
+        //Types that we have bound to a Design in one of our dependencies
         public Dictionary<string, TranscendenceExtension> dependencyTypes = new Dictionary<string, TranscendenceExtension>();
         public Dictionary<TranscendenceExtension, List<string>> typesByDependency = new Dictionary<TranscendenceExtension, List<string>>();
+        //Types that we have bound to a Design in one of our files
         public Dictionary<string, TranscendenceExtension> moduleTypes = new Dictionary<string, TranscendenceExtension>();
         public Dictionary<TranscendenceExtension, List<string>> typesByModule = new Dictionary<TranscendenceExtension, List<string>>();
 
@@ -483,6 +485,9 @@ namespace Transgenesis {
                 e.BindAll(context);
             }
             return context.entity2unid;
+        }
+        public List<string> GetDesignBoundTypes() {
+            return moduleTypes.Keys.Concat(dependencyTypes.Keys).ToList();
         }
         public void ClearDependencyTypes() {
             dependencyTypes.Clear();
