@@ -31,20 +31,29 @@ namespace Transgenesis {
         }
         public void Handle(ConsoleKeyInfo k) {
             //Global.Break();
+            bool ctrl = (k.Modifiers & ConsoleModifiers.Control) != 0;
             switch (k.Key) {
-                case ConsoleKey.LeftArrow when (k.Modifiers & ConsoleModifiers.Control) == 0:
+                case ConsoleKey.LeftArrow:
+                    LeftArrow:
                     if (cursor > 0) {
                         cursor--;
+                        if(ctrl && s[cursor] != ' ') {
+                            goto LeftArrow;
+                        }
                     }
                     break;
-                case ConsoleKey.RightArrow when (k.Modifiers & ConsoleModifiers.Control) == 0:
-                    if (cursor < s.Length) {
+                case ConsoleKey.RightArrow:
+                    RightArrow:
+                    if(cursor < s.Length - 1 && ctrl && s[cursor+1] != ' ') {
+                        cursor++;
+                        goto RightArrow;
+                    } else if (cursor < s.Length) {
                         cursor++;
                     }
                     break;
                 case ConsoleKey.Backspace:
                     //Global.Break();
-                    if ((k.Modifiers & ConsoleModifiers.Control) != 0) {
+                    if (ctrl) {
                         //Make sure we have characters to delete
                         if (cursor == 0) {
                             break;
@@ -73,8 +82,8 @@ namespace Transgenesis {
 
                     break;
                 default:
-                    //Don't type of we are doing a keyboard shortcut
-                    if((k.Modifiers & ConsoleModifiers.Control) != 0) {
+                    //Don't type if we are doing a keyboard shortcut
+                    if(ctrl) {
                         break;
                     }
 
