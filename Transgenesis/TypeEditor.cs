@@ -94,7 +94,7 @@ namespace Transgenesis {
             index = 0;
             AddLine("<!-- Types overridden by this extension -->");
             foreach(var owned in extension.types.overriddenTypes) {
-                AddLine($"    {owned,-32}{extension.types.unidmap[owned].ToUNID(),-16}{(extension.types.typemap.TryGetValue(owned, out XElement design) ? design?.Tag() ?? "None" : "None"),-32}{extensionName, -32}"); //{entry.comment}
+                AddLine($"    {owned,-32}{extension.types.entity2unid[owned].ToUNID(),-16}{(extension.types.typemap.TryGetValue(owned, out XElement design) ? design?.Tag() ?? "None" : "None"),-32}{extensionName, -32}"); //{entry.comment}
                 index++;
             }
             AddLine($"    {"Entity",-32}{"UNID",-12}{"DesignType",-32}{"Extension",-32}"); //{entry.comment}
@@ -102,7 +102,7 @@ namespace Transgenesis {
             foreach (var dependency in extension.types.typesByDependency.Keys) {
                 string dependencyName = dependency.name ?? dependency.entity ?? dependency.path ?? dependency.structure.Tag();
                 foreach (var entity in extension.types.typesByDependency[dependency]) {
-                    AddLine($"    {entity,-32}{extension.types.unidmap[entity].ToUNID(),-16}{(extension.types.typemap.TryGetValue(entity, out XElement design) ? design?.Tag() ?? "None" : "None"),-32}{dependencyName, -32}"); //{entry.comment}
+                    AddLine($"    {entity,-32}{extension.types.entity2unid[entity].ToUNID(),-16}{(extension.types.typemap.TryGetValue(entity, out XElement design) ? design?.Tag() ?? "None" : "None"),-32}{dependencyName, -32}"); //{entry.comment}
                 }
             }
 

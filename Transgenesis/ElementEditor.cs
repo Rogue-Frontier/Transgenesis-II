@@ -447,24 +447,12 @@ namespace Transgenesis {
                                     TranscendenceExtension destExtension;
                                     TranscendenceExtension destModule;
                                     XElement destElement;
-                                    if (extension.types.unidmap.TryGetValue(arg, out uint unid)) {
+                                    if (extension.types.entity2unid.TryGetValue(arg, out uint unid)) {
                                         destExtension = env.extensions.Values.ToList().Find(e => e.unid == unid);
                                         //Our first argument is an extension UNID
                                         if (destExtension != null) {
                                             //We found a destination extension, so we advance to the next argument
                                             if(result.Count > 0) {
-                                                arg = result[0];
-                                                result = result.GetRange(1, result.Count - 1);
-                                            } else {
-                                                //We're out of arguments, so we assume it's in the parent's structure
-                                                destModule = destExtension;
-                                                destElement = destModule.structure;
-                                                goto ElementShow;
-                                            }
-                                        } else if(!extension.types.overriddenTypes.Contains(arg) && extension.types.dependencyTypes.TryGetValue(arg, out destExtension)) {
-                                            //Otherwise, we're looking at a non-overridden type defined in a dependency, so we advance to the next argument
-
-                                            if (result.Count > 0) {
                                                 arg = result[0];
                                                 result = result.GetRange(1, result.Count - 1);
                                             } else {
@@ -491,6 +479,23 @@ namespace Transgenesis {
                                     if (destExtension.types.moduleTypes.TryGetValue(arg, out destModule)) {
                                         //It is a UNID
                                         //Since we know which module it is in, we also know that it is bound to a Design in the module
+                                        destElement = destExtension.types.typemap[arg];
+
+                                        //It is a UNID, so we advance to the next argument
+                                        if (result.Count > 0) {
+                                            arg = result[0];
+                                            result = result.GetRange(1, result.Count - 1);
+                                        } else {
+                                            //We have no arguments left, so we just show the Design
+                                            goto ElementShow;
+                                        }
+                                    } else if (destExtension.types.dependencyTypes.TryGetValue(arg, out destExtension)) {
+                                        //Otherwise, we are looking at a UNID defined in a dependency
+
+                                        //Convert this to an entity in the local extension and convert that back to an entity in the destination extension
+                                        //And use that entity to find the module where it is defined
+
+                                        arg = destExtension.types.unid2entity[extension.types.entity2unid[arg]];
                                         destElement = destExtension.types.typemap[arg];
 
                                         //It is a UNID, so we advance to the next argument
