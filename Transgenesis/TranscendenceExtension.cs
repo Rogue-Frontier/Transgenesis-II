@@ -71,8 +71,8 @@ namespace Transgenesis {
             get {
                 if (structure.Att("unid", out string result) || structure.Att("UNID", out result)) {
                     result = result.Replace("&", "").Replace(";", "");
-                    if (types.unidmap.ContainsKey(result)) {
-                        return types.unidmap[result];
+                    if (types.entity2unid.ContainsKey(result)) {
+                        return types.entity2unid[result];
                     }
                 }
                 return null;
@@ -99,8 +99,8 @@ namespace Transgenesis {
                 s.AppendLine($@"    {entity, -32}""{entity2unid[entity]}""");
             }
             */
-            foreach(var entity in types.unidmap.Keys) {
-                s.AppendLine($@"    <!ENTITY {entity,-32}""{types.unidmap[entity].ToUNID()}"">");
+            foreach(var entity in types.entity2unid.Keys) {
+                s.AppendLine($@"    <!ENTITY {entity,-32}""{types.entity2unid[entity].ToUNID()}"">");
             }
 
             //TO DO: Display bound types
@@ -151,7 +151,8 @@ namespace Transgenesis {
             }
             */
             types.typemap.Clear();
-            types.unidmap.Clear();
+            types.entity2unid.Clear();
+            types.unid2entity.Clear();
             types.ownedTypes.Clear();
             types.overriddenTypes.Clear();
             types.ClearDependencyTypes();
@@ -198,7 +199,8 @@ namespace Transgenesis {
                 if (types.typemap.ContainsKey(s)) {
                     //System.out.println(getConsoleMessage("[Failure] Duplicate UNID: " + s));
                 } else {
-                    types.unidmap[s] = bound[s];
+                    types.entity2unid[s] = bound[s];
+                    types.unid2entity[bound[s]] = s;
                     types.typemap[s] = null;
                 }
             }
@@ -236,12 +238,12 @@ namespace Transgenesis {
                 switch (subName) {
                     case "Library":
                         var library_entity = sub.Att("unid").Replace("&", "").Replace(";", "");
-                        if(!types.unidmap.ContainsKey(library_entity)) {
+                        if(!types.entity2unid.ContainsKey(library_entity)) {
                             //Error: Unknown library UNID
                             break;
                         }
 
-                        var library_unid = types.unidmap[library_entity];
+                        var library_unid = types.entity2unid[library_entity];
 				        //out.println(getConsoleMessage("[General] Looking for " + subName + " " + library_unid));
                         //Make sure that Library Types are defined in our TypeManager so that they always work in-game
                         bool found = false;
@@ -289,13 +291,17 @@ namespace Transgenesis {
             */
             //Initialize the entry for each type we define
 
-            types.unidmap.Clear();
+            types.entity2unid.Clear();
+            types.unid2entity.Clear();
             var bound = types.BindAll();
             foreach (var entity in bound.Keys) {
                 //Use this opportunity to update our own bindings in case we never had our own bindAccessibleTypes called
-                types.unidmap[entity] = bound[entity];
+                types.entity2unid[entity] = bound[entity];
+                types.unid2entity[bound[entity]] = entity;
                 //Give the unid-entity bindings to the user also
-                userTypes.unidmap[entity] = bound[entity];
+                userTypes.entity2unid[entity] = bound[entity];
+                userTypes.unid2entity[bound[entity]] = entity;
+
                 userTypes.typemap[entity] = null;
 
                 //Add this to dependency types whether it is bound to a design or not
@@ -464,7 +470,8 @@ namespace Transgenesis {
     }
     class TypeInfo {
         public List<TypeElement> elements = new List<TypeElement>();  //TO DO: Make sure that entries and ranges are correctly sorted at extension loading time if no working metadata file is available
-        public Dictionary<string, uint> unidmap = new Dictionary<string, uint>();
+        public Dictionary<string, uint> entity2unid = new Dictionary<string, uint>();
+        public Dictionary<uint, string> unid2entity = new Dictionary<uint, string>();
         public Dictionary<string, XElement> typemap = new Dictionary<string, XElement>();    //Binds entities to designs
         public HashSet<string> ownedTypes = new HashSet<string>();         //Types that we have defined
         public HashSet<string> overriddenTypes = new HashSet<string>();         //Types that we have overridden
