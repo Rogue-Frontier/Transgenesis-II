@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using static Transgenesis.Global;
 using ColoredString = SadConsole.ColoredString;
@@ -27,12 +28,12 @@ namespace Transgenesis {
         Tooltip t;
         Scroller scroller;
 
-        public ElementEditor(ProgramState state, Stack<IComponent> screens, Environment env, TranscendenceExtension extension, ConsoleManager c) {
+        public ElementEditor(ProgramState state, Stack<IComponent> screens, Environment env, TranscendenceExtension extension, ConsoleManager c, XElement focused = null) {
             this.state = state;
             this.screens = screens;
             this.env = env;
             this.extension = extension;
-            this.focused = extension.structure;
+            this.focused = focused ?? extension.structure;
             this.keepExpanded = new HashSet<XElement>();
             this.c = c;
             i = new Input(c);
@@ -81,8 +82,10 @@ namespace Transgenesis {
                         "Selects the parent of the current element"},
                 {"next", "next\r\n" +
                         "Selects the next child of the current element's parent"},
-                {"previous", "previous\r\n" +
+                {"prev", "prev\r\n" +
                         "Selects the previous child of the current element's parent"},
+                {"goto", "[entity.]element[.element[#index]]" + "\r\n" +
+                        "Selects the specified element"},
                 {"types", "types\r\n" +
                         "Opens the Type Editor on this extension"},
                 {"exit", "exit\r\n" +
@@ -427,6 +430,114 @@ namespace Transgenesis {
                                 }
                             case "goto": {
                                     //Go to the specified element
+                                    if (parts.Length == 1)
+                                        break;
+                                    string dest = parts[1];
+
+                                    string pattern = $"({Regex.Escape(".")}|{Regex.Escape("#")})";
+                                    List<string> result = Regex.Split(dest, pattern).ToList();
+
+                                    var arg = result[0];
+                                    result = result.GetRange(1, result.Count - 1);
+
+
+                                    //We start with a UNID.
+                                    //This can either be an extension UNID, in which case we jump to the extension first
+                                    //Otherwise it is a type UNID, either in this extension or in some dependency
+                                    TranscendenceExtension destExtension;
+                                    TranscendenceExtension destModule;
+                                    XElement destElement;
+                                    if (extension.types.unidmap.TryGetValue(arg, out uint unid)) {
+                                        destExtension = env.extensions.Values.ToList().Find(e => e.unid == unid);
+                                        //Our first argument is an extension UNID
+                                        if (destExtension != null) {
+                                            //We found a destination extension, so we advance to the next argument
+                                            if(result.Count > 0) {
+                                                arg = result[0];
+                                                result = result.GetRange(1, result.Count - 1);
+                                            } else {
+                                                //We're out of arguments, so we assume it's in the parent's structure
+                                                destModule = destExtension;
+                                                destElement = destModule.structure;
+                                                goto ElementShow;
+                                            }
+                                        } else if(extension.types.dependencyTypes.TryGetValue(arg, out destExtension)) {
+                                            //Otherwise, we're looking at a type defined in a dependency, so we advance to the next argument
+
+                                            if (result.Count > 0) {
+                                                arg = result[0];
+                                                result = result.GetRange(1, result.Count - 1);
+                                            } else {
+                                                //We're out of arguments, so we assume it's in the parent's structure
+                                                destModule = destExtension;
+                                                destElement = destModule.structure;
+                                                goto ElementShow;
+                                            }
+                                        } else {
+                                            //Otherwise we don't have an extension UNID, so we look at the current extension
+                                            destExtension = extension;
+                                        }
+                                    } else {
+                                        //If it's not a UNID, then we're definitely looking for an element within this extension in the focused element
+                                        destExtension = extension;
+                                        destModule = extension;
+                                        destElement = focused;
+                                        goto ElementPath;
+                                    }
+
+                                    //Now the argument should be type UNID within the destination extension, or the name of an element within the current focused element
+
+                                    //If it's a UNID, then we will find which module it is in. Otherwise, we are looking for some kind of element
+                                    if (destExtension.types.moduleTypes.TryGetValue(arg, out destModule)) {
+                                        //It is a UNID
+                                        //Since we know which module it is in, we also know that it is bound to a Design in the module
+                                        destElement = destExtension.types.typemap[arg];
+
+                                        //It is a UNID, so we advance to the next argument
+                                        if (result.Count > 0) {
+                                            arg = result[0];
+                                            result = result.GetRange(1, result.Count - 1);
+                                        } else {
+                                            //We have no arguments left, so we just show the Design
+                                            goto ElementShow;
+                                        }
+                                    } else {
+                                        //It's not a UNID, so it's within the current module
+                                        destModule = destExtension;
+
+                                        //We're looking for an element, so we start from the base
+                                        destElement = destModule.structure;
+                                        goto ElementPath;
+                                    }
+
+                                    //Now find the element
+                                ElementPath:
+                                    var pairs = result.Select((value, index) => new { value, index }).GroupBy(x => x.index / 2, x => x.value);
+                                    for (int i = 0; i < result.Count; i++) {
+                                        if (result[i] == ".") {
+                                            if (++i < result.Count) {
+                                                var tag = result[i];
+                                                var subelements = destElement.Elements(tag);
+                                                if (subelements.Count() == 0) {
+
+                                                } else if (subelements.Count() == 1) {
+                                                    //We take the first one
+                                                    destElement = subelements.First();
+                                                } else {
+                                                    if (++i < result.Count && result[i] == "#" && ++i < result.Count && int.TryParse(result[i], out int index)) {
+                                                        destElement = subelements.Skip(index).First();
+                                                    } else {
+                                                        //Error: We need to specify an index
+                                                    }
+                                                }
+                                            }
+                                        } else {
+
+                                        }
+                                    }
+                                    ElementShow:
+                                    screens.Push(new ElementEditor(state, screens, env, destModule, c, destElement));
+
                                     break;
                                 }
                             case "root": {
@@ -514,10 +625,11 @@ namespace Transgenesis {
 
                             var empty = new List<string>();
                             Dictionary<string, Func<List<string>>> autocomplete = new Dictionary<string, Func<List<string>>> {
-                                {"", () => new List<string>{ "set", "add", "remove", "bind", "bindall", "save", "saveall", "expand", "collapse", "moveup", "movedown", "root", "parent", "next", "prev", "types", "exit" } },
+                                {"", () => new List<string>{ "set", "add", "remove", "bind", "bindall", "save", "saveall", "expand", "collapse", "moveup", "movedown", "root", "parent", "next", "prev", "goto", "types", "exit" } },
                                 {"set", () => env.bases[focused].GetValidAttributes() },
                                 {"add", () => env.GetAddableElements(focused, env.bases[focused]) },
                                 {"remove", () => env.GetRemovableElements(focused, env.bases[focused]) },
+                                {"goto", () => extension.types.ownedTypes.ToList() }
                                 //bind
                                 //bindall
                                 //save
