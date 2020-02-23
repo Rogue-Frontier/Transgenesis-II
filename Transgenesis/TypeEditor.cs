@@ -1,6 +1,7 @@
 ﻿using SadConsole;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 namespace Transgenesis {
@@ -50,10 +51,15 @@ namespace Transgenesis {
             c.SetCursor(new Microsoft.Xna.Framework.Point(0, 0));
 
             List<ColoredString> buffer = new List<ColoredString>();
-            AddLine($"    {"Entity",-32}{"UNID",-12}{"DesignType",-32}{"Extension", -32}"); //{entry.comment}
+            AddLine($"    {"Entity",-32}{"UNID",-12}{"DesignType",-32}{"Extension", -32}{"Module", -32}"); //{entry.comment}
+
+            if(extension.type == ExtensionTypes.TranscendenceModule) {
+                AddLine("<!-- Types defined by the parent -->");
+                //TODO
+            }
 
             AddLine("<!-- Types defined by this extension -->");
-            string extensionName = extension.name ?? extension.entity ?? "<!--This Extension -->";
+            string extensionName = extension.name ?? extension.entity ?? "This";
             int index = 0;
             foreach (TypeElement e in extension.types.elements) {
                 Action<string> addLine = s => AddLine(s);
@@ -62,14 +68,23 @@ namespace Transgenesis {
                 }
 
                 if (e is TypeEntry entry) {
-                    addLine($"    {entry.entity,-32}{entry.unid?.ToUNID() ?? "Auto",-12}{(extension.types.typemap.TryGetValue(entry.entity, out XElement design) ? design?.Tag() ?? "None" : "None"),-32}{extensionName,-32}"); //{entry.comment}
+                    string moduleName = "";
+                    if (extension.types.moduleTypes.TryGetValue(entry.entity, out TranscendenceExtension module)) {
+                        moduleName = Path.GetFileName(extension.types.moduleTypes[entry.entity].path);
+                    }
+                    
+                    addLine($"    {entry.entity,-32}{entry.unid?.ToUNID() ?? "Auto",-12}{(extension.types.typemap.TryGetValue(entry.entity, out XElement design) ? design?.Tag() ?? "None" : "None"),-32}{extensionName,-32}{moduleName, -32}"); //{entry.comment}
                 } else if (e is TypeRange group) {
                     string range = $"{group.unid_min?.ToUNID() ?? "Auto"} -- {group.unid_max?.ToUNID() ?? "Auto"}";
                     addLine($"    <!-- {range} -->");
 
                     int rangeIndex = 0;
                     foreach (var entity in group.entities) {
-                        addLine($"    {entity, -32}{(group.unid_min != null ? ((uint)(group.unid_min+rangeIndex)).ToUNID() : "Auto"), -12}{(extension.types.typemap.TryGetValue(entity, out XElement design) ? design?.Tag() ?? "None" : "None"),-32}{extensionName, -32}");
+                        string moduleName = "";
+                        if (extension.types.moduleTypes.TryGetValue(entity, out TranscendenceExtension module)) {
+                            moduleName += Path.GetFileName(extension.types.moduleTypes[entity].path);
+                        }
+                        addLine($"    {entity, -32}{(group.unid_min != null ? ((uint)(group.unid_min+rangeIndex)).ToUNID() : "Auto"), -12}{(extension.types.typemap.TryGetValue(entity, out XElement design) ? design?.Tag() ?? "None" : "None"),-32}{extensionName, -32}{moduleName, -32}");
                         rangeIndex++;
                     }
                 }
@@ -82,6 +97,7 @@ namespace Transgenesis {
                 AddLine($"    {owned,-32}{extension.types.unidmap[owned].ToUNID(),-16}{(extension.types.typemap.TryGetValue(owned, out XElement design) ? design?.Tag() ?? "None" : "None"),-32}{extensionName, -32}"); //{entry.comment}
                 index++;
             }
+            AddLine($"    {"Entity",-32}{"UNID",-12}{"DesignType",-32}{"Extension",-32}"); //{entry.comment}
             AddLine("<!-- Types defined by dependencies -->");
             foreach (var dependency in extension.types.typesByDependency.Keys) {
                 string dependencyName = dependency.name ?? dependency.entity ?? dependency.path ?? dependency.structure.Tag();
