@@ -155,6 +155,7 @@ namespace Transgenesis {
             types.ownedTypes.Clear();
             types.overriddenTypes.Clear();
             types.ClearDependencyTypes();
+            types.ClearModuleTypes();
             if (structure.Name.LocalName.Equals("TranscendenceModule")) {
                 //We should have our parent extension handle this
                 if (parent == null) {
@@ -210,9 +211,18 @@ namespace Transgenesis {
             updateDependencies(e);
             bindDependencyTypes();
             updateModules(e);
-            
-            types.ownedTypes.UnionWith(bindInternalTypes(types));
-            types.ownedTypes.UnionWith(bindModuleTypes(types, e));
+
+            var internalTypes = bindInternalTypes(types);
+            types.ownedTypes.UnionWith(internalTypes);
+
+            var typesByModule = bindModuleTypes(types, e);
+            typesByModule[this] = internalTypes;
+            foreach (var module in typesByModule.Keys) {
+                types.ownedTypes.UnionWith(typesByModule[module]);
+                foreach(var type in typesByModule[module]) {
+                    types.AddModuleType(module, type);
+                }
+            }
         }
 
         //Allow modules to take external entities
@@ -352,7 +362,7 @@ namespace Transgenesis {
 
         //Bindings between Types and Designs are stored in the map
         //This only binds Types with Designs that are defined within THIS file; Module bindings happen later
-        public HashSet<string> bindInternalTypes(TypeInfo userTypes) {
+        public List<string> bindInternalTypes(TypeInfo userTypes) {
             //out.println(getConsoleMessage("[General] Binding Internal Designs"));
             //Include ourself
             /*
@@ -360,7 +370,7 @@ namespace Transgenesis {
                 typeMap.put(getAttributeByName("unid").getValue(), this);
             }
             */
-            HashSet<string> bound = new HashSet<string>();
+            List<string> bound = new List<string>();
             //Now, we bind our DesignTypes to the TypeMap
             foreach (XElement sub in structure.Elements()) {
                 //We already handled Library types as dependencies
@@ -414,16 +424,19 @@ namespace Transgenesis {
             }
             return bound;
         }
-        private HashSet<string> bindModuleTypes(TypeInfo userTypes, Environment e) {
+        private Dictionary<TranscendenceExtension, List<string>> bindModuleTypes(TypeInfo userTypes, Environment e) {
+            Dictionary<TranscendenceExtension, List<string>> boundTypesByModule = new Dictionary<TranscendenceExtension, List<string>>();
 
-            HashSet<string> boundTypes = new HashSet<string>();
             foreach (TranscendenceExtension module in modules) {
-                boundTypes.UnionWith(module.bindInternalTypes(userTypes));
+                boundTypesByModule[module] = module.bindInternalTypes(userTypes);
                 //Let sub-modules bind Types for us too
                 module.updateModules(e);
-                module.bindModuleTypes(userTypes, e);
+                
+                foreach(var pair in module.bindModuleTypes(userTypes, e)) {
+                    boundTypesByModule[pair.Key] = pair.Value;
+                }
             }
-            return boundTypes;
+            return boundTypesByModule;
         }
 
         public bool isUnbound() {
@@ -457,6 +470,8 @@ namespace Transgenesis {
         public HashSet<string> overriddenTypes = new HashSet<string>();         //Types that we have overridden
         public Dictionary<string, TranscendenceExtension> dependencyTypes = new Dictionary<string, TranscendenceExtension>();
         public Dictionary<TranscendenceExtension, List<string>> typesByDependency = new Dictionary<TranscendenceExtension, List<string>>();
+        public Dictionary<string, TranscendenceExtension> moduleTypes = new Dictionary<string, TranscendenceExtension>();
+        public Dictionary<TranscendenceExtension, List<string>> typesByModule = new Dictionary<TranscendenceExtension, List<string>>();
 
         public List<string> entities => elements.SelectMany(element =>
         element is TypeEntry e ? new List<string>() { e.entity } :
@@ -479,6 +494,18 @@ namespace Transgenesis {
                 typesByDependency[dependency].Add(entity);
             } else {
                 typesByDependency[dependency] = new List<string> { entity };
+            }
+        }
+        public void ClearModuleTypes() {
+            moduleTypes.Clear();
+            typesByModule.Clear();
+        }
+        public void AddModuleType(TranscendenceExtension module, string entity) {
+            moduleTypes[entity] = module;
+            if (typesByModule.ContainsKey(module)) {
+                typesByModule[module].Add(entity);
+            } else {
+                typesByModule[module] = new List<string> { entity };
             }
         }
     }
