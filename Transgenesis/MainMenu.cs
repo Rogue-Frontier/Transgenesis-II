@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Newtonsoft.Json;
 using SadConsole;
 using System;
 using System.Collections.Generic;
@@ -20,6 +21,8 @@ namespace Transgenesis {
         Scroller scroller;
 
         List<ConsoleKeyInfo> busyQueue;
+
+        string extensionsFolder;
 
 
 
@@ -70,6 +73,15 @@ namespace Transgenesis {
             this.env = new Environment();
             this.screens = screens;
             this.state = new ProgramState();
+
+
+            if(File.Exists("Settings.json")) {
+                var f = File.ReadAllText("Settings.json");
+                var settings = JsonConvert.DeserializeObject<Dictionary<string,string>>(f);
+                extensionsFolder = settings["ExtensionsFolder"];
+            } else {
+                extensionsFolder = @"C:\Users\alexm\OneDrive\Documents\Transcendence";
+            }
         }
         public void Draw() {
             c.Clear();
@@ -346,7 +358,6 @@ namespace Transgenesis {
                                     Task.Run(() => {
                                         busyQueue = new List<ConsoleKeyInfo>();
                                         LoadFolder(path);
-                                        busyQueue.ForEach(k => Handle(k));
                                         busyQueue = null;
                                     });
                                     //LoadFolder(path);
@@ -482,9 +493,15 @@ namespace Transgenesis {
                                 }
                             }
                         }
-                        Done:
+                    Done:
+                        result.Add(extensionsFolder + Path.DirectorySeparatorChar);
+                        result.AddRange(Directory.GetFiles(extensionsFolder, "*.xml").ToList());
+
                         //Add current directory files last
+                        /*
+                        result.Add(Directory.GetCurrentDirectory() + Path.DirectorySeparatorChar);
                         result.AddRange(Directory.GetFiles(Directory.GetCurrentDirectory(), "*.xml").ToList());
+                        */
                         return result;
                     }
 
