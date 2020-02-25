@@ -37,14 +37,14 @@ namespace Transgenesis {
     class MainConsole : ControlsConsole {
         Stack<IComponent> screens = new Stack<IComponent>();
         public MainConsole(int width, int height) : base(width, height) {
-            screens.Push(new MainMenu(screens));
+            //screens.Push(new MainMenu(screens));
+            screens.Push(new TextEditor(screens, new ConsoleManager(new Point(0, 0)), s => { }));
             Theme = new WindowTheme {
                 ModalTint = Color.Black,
                 FillStyle = new Cell(Color.White, Color.Black),
             };
             DefaultBackground = Color.Black;
             DefaultForeground = Color.White;
-
         }
         public override void Update(TimeSpan delta) {
             base.Update(delta);

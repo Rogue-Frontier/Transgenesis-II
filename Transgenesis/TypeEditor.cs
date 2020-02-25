@@ -44,7 +44,7 @@ namespace Transgenesis {
                 { "exit",       "exit\r\n" +
                                 "Exits the Type Editor to the main menu"},
             });
-            scroller = new Scroller(i, c);
+            scroller = new Scroller(c, i);
         }
         public void Draw() {
             c.Clear();
