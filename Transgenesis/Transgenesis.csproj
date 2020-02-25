@@ -92,6 +92,8 @@
     </Compile>
     <Compile Include="Scroller.cs" />
     <Compile Include="Syntax.cs" />
+    <Compile Include="TextEditor.cs" />
+    <Compile Include="TextFormatter.cs" />
     <Compile Include="TranscendenceExtension.cs" />
     <Compile Include="TypeEditor.cs" />
   </ItemGroup>

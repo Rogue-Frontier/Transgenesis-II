@@ -68,6 +68,12 @@ namespace Transgenesis {
             cursor.Print(CreateHighlightString(s));
             NextLine();
         }
+        public ColoredGlyph CreateCharInvert(char c, Color? back = null, Color? front = null) {
+            return new ColoredGlyph(c, back ?? theme.back, front ?? theme.front);
+        }
+        public ColoredGlyph CreateChar(char c, Color? front = null, Color? back = null) {
+            return new ColoredGlyph(c, front ?? theme.front, back ?? theme.back);
+        }
         public ColoredString ColorString(string s, Color front, Color back) {
             return new ColoredString(s.Select(c => new ColoredGlyph(c, front, back)).ToArray());
         }

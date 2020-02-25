@@ -69,7 +69,7 @@ namespace Transgenesis {
                 {"loadmodules", "loadmodules <extensionFile|extensionFolder>\r\n" +
                             "Loads an extension at the specified file path along with all of its modules"}
             });
-            this.scroller = new Scroller(i, c);
+            this.scroller = new Scroller(c, i);
             this.env = new Environment();
             this.screens = screens;
             this.state = new ProgramState();

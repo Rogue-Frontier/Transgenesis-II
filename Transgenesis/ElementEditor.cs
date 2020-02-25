@@ -91,7 +91,7 @@ namespace Transgenesis {
                 {"exit", "exit\r\n" +
                         "Exits this XML Editor and returns to the main menu"},
             });
-            scroller = new Scroller(i, c);
+            scroller = new Scroller(c, i);
             //{"", () => new List<string>{ "set", "add", "remove", "bind", "bindall", "save", "saveall", "moveup", "movedown", "root", "parent", "next", "prev", "types", "exit" } },
         }
         public void Draw() {

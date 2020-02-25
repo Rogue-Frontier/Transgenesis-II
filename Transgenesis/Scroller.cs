@@ -13,17 +13,17 @@ namespace Transgenesis {
         Input i;
         ConsoleManager c;
 
-        public Scroller(Input i, ConsoleManager c) {
+        public Scroller(ConsoleManager c, Input i = null) {
             this.i = i;
             this.c = c;
         }
         public void Update() { }
         public void Handle(ConsoleKeyInfo k) {
             switch(k.Key) {
-                case ConsoleKey.PageUp when i.Text.Length == 0:
+                case ConsoleKey.PageUp when i == null || i.Text.Length == 0:
                     scrolling--;
                     break;
-                case ConsoleKey.PageDown when i.Text.Length == 0:
+                case ConsoleKey.PageDown when i == null || i.Text.Length == 0:
                     scrolling++;
                     break;
             }

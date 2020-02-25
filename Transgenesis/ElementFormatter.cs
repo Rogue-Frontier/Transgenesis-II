@@ -106,6 +106,7 @@ namespace Transgenesis {
                         //show all attributes and children
                         writeTag($"{box}{Tab()}{tagStart}{ShowAllAttributes(element)}>");
                         ShowChildren();
+                        ShowValue();
                         writeTag($"{box}{Tab()}</{element.Tag()}>");
                     } else {
                         //show only the important attributes and (semi)expanded children
@@ -129,7 +130,7 @@ namespace Transgenesis {
                                         //Show that we have previous children not shown
                                         if (skipped > 0) {
                                             skipped = 0;
-                                            AddLine($"{noBox}{Tab()}...");
+                                            AddLine($"{noBox}{Tab()}<.../>");
                                         }
                                         ShowElementTree(child);
                                     } else {
@@ -140,6 +141,9 @@ namespace Transgenesis {
                             
                             //Show that we have more children not shown
                             if (skipped > 0) {
+                                AddLine($"{noBox}{Tab()}<.../>");
+                            }
+                            if(element.Value.Length > 0) {
                                 AddLine($"{noBox}{Tab()}...");
                             }
                             tabs--;
@@ -148,6 +152,9 @@ namespace Transgenesis {
                     }
                     return;
 
+                    void ShowValue() {
+                        AddLine(element.Value);
+                    }
                     void ShowChildren() {
                         tabs++;
                         foreach (var child in element.Elements()) {
