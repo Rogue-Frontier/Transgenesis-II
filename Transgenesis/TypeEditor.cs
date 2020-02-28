@@ -58,53 +58,58 @@ namespace Transgenesis {
                 //TODO
             }
 
-            AddLine("<!-- Types defined by this extension -->");
             string extensionName = extension.name ?? extension.entity ?? "This";
-            int index = 0;
-            foreach (TypeElement e in extension.types.elements) {
-                Action<string> addLine = s => AddLine(s);
-                if(index == elementIndex) {
-                    addLine = s => AddHighlightLine(s);
-                }
 
-                if (e is TypeEntry entry) {
-                    string moduleName = "";
-                    if (extension.types.moduleTypes.TryGetValue(entry.entity, out TranscendenceExtension module)) {
-                        moduleName = Path.GetFileName(extension.types.moduleTypes[entry.entity].path);
+            if(extension.types.elements.Any()) {
+                AddLine("<!-- Types defined by this extension -->");
+                int index = 0;
+                foreach (TypeElement e in extension.types.elements) {
+                    Action<string> addLine = s => AddLine(s);
+                    if (index == elementIndex) {
+                        addLine = s => AddHighlightLine(s);
                     }
-                    
-                    addLine($"    {entry.entity,-32}{entry.unid?.ToUNID() ?? "Auto",-12}{(extension.types.typemap.TryGetValue(entry.entity, out XElement design) ? design?.Tag() ?? "None" : "None"),-32}{extensionName,-32}{moduleName, -32}"); //{entry.comment}
-                } else if (e is TypeRange group) {
-                    string range = $"{group.unid_min?.ToUNID() ?? "Auto"} -- {group.unid_max?.ToUNID() ?? "Auto"}";
-                    addLine($"    <!-- {range} -->");
 
-                    int rangeIndex = 0;
-                    foreach (var entity in group.entities) {
+                    if (e is TypeEntry entry) {
                         string moduleName = "";
-                        if (extension.types.moduleTypes.TryGetValue(entity, out TranscendenceExtension module)) {
-                            moduleName += Path.GetFileName(extension.types.moduleTypes[entity].path);
+                        if (extension.types.moduleTypes.TryGetValue(entry.entity, out TranscendenceExtension module)) {
+                            moduleName = Path.GetFileName(extension.types.moduleTypes[entry.entity].path);
                         }
-                        addLine($"    {entity, -32}{(group.unid_min != null ? ((uint)(group.unid_min+rangeIndex)).ToUNID() : "Auto"), -12}{(extension.types.typemap.TryGetValue(entity, out XElement design) ? design?.Tag() ?? "None" : "None"),-32}{extensionName, -32}{moduleName, -32}");
-                        rangeIndex++;
+
+                        addLine($"    {entry.entity,-32}{entry.unid?.ToUNID() ?? "Auto",-12}{(extension.types.typemap.TryGetValue(entry.entity, out XElement design) ? design?.Tag() ?? "None" : "None"),-32}{extensionName,-32}{moduleName,-32}"); //{entry.comment}
+                    } else if (e is TypeRange group) {
+                        string range = $"{group.unid_min?.ToUNID() ?? "Auto"} -- {group.unid_max?.ToUNID() ?? "Auto"}";
+                        addLine($"    <!-- {range} -->");
+
+                        int rangeIndex = 0;
+                        foreach (var entity in group.entities) {
+                            string moduleName = "";
+                            if (extension.types.moduleTypes.TryGetValue(entity, out TranscendenceExtension module)) {
+                                moduleName += Path.GetFileName(extension.types.moduleTypes[entity].path);
+                            }
+                            addLine($"    {entity,-32}{(group.unid_min != null ? ((uint)(group.unid_min + rangeIndex)).ToUNID() : "Auto"),-12}{(extension.types.typemap.TryGetValue(entity, out XElement design) ? design?.Tag() ?? "None" : "None"),-32}{extensionName,-32}{moduleName,-32}");
+                            rangeIndex++;
+                        }
+                    }
+                    index++;
+                }
+            }
+            if(extension.types.overriddenTypes.Any()) {
+                AddLine("<!-- Types overridden by this extension -->");
+                foreach (var owned in extension.types.overriddenTypes) {
+                    AddLine($"    {owned,-32}{extension.types.entity2unid[owned].ToUNID(),-16}{(extension.types.typemap.TryGetValue(owned, out XElement design) ? design?.Tag() ?? "None" : "None"),-32}{extensionName,-32}"); //{entry.comment}
+                }
+            }
+            //AddLine($"    {"Entity",-32}{"UNID",-12}{"DesignType",-32}{"Extension",-32}"); //{entry.comment}
+            if(extension.types.typesByDependency.Any()) {
+                AddLine("<!-- Types defined by dependencies -->");
+                foreach (var dependency in extension.types.typesByDependency.Keys) {
+                    string dependencyName = dependency.name ?? dependency.entity ?? dependency.path ?? dependency.structure.Tag();
+                    foreach (var entity in extension.types.typesByDependency[dependency]) {
+                        AddLine($"    {entity,-32}{extension.types.entity2unid[entity].ToUNID(),-16}{(extension.types.typemap.TryGetValue(entity, out XElement design) ? design?.Tag() ?? "None" : "None"),-32}{dependencyName,-32}"); //{entry.comment}
                     }
                 }
-                index++;
             }
-
-            index = 0;
-            AddLine("<!-- Types overridden by this extension -->");
-            foreach(var owned in extension.types.overriddenTypes) {
-                AddLine($"    {owned,-32}{extension.types.entity2unid[owned].ToUNID(),-16}{(extension.types.typemap.TryGetValue(owned, out XElement design) ? design?.Tag() ?? "None" : "None"),-32}{extensionName, -32}"); //{entry.comment}
-                index++;
-            }
-            AddLine($"    {"Entity",-32}{"UNID",-12}{"DesignType",-32}{"Extension",-32}"); //{entry.comment}
-            AddLine("<!-- Types defined by dependencies -->");
-            foreach (var dependency in extension.types.typesByDependency.Keys) {
-                string dependencyName = dependency.name ?? dependency.entity ?? dependency.path ?? dependency.structure.Tag();
-                foreach (var entity in extension.types.typesByDependency[dependency]) {
-                    AddLine($"    {entity,-32}{extension.types.entity2unid[entity].ToUNID(),-16}{(extension.types.typemap.TryGetValue(entity, out XElement design) ? design?.Tag() ?? "None" : "None"),-32}{dependencyName, -32}"); //{entry.comment}
-                }
-            }
+            
 
             void AddLine(string s) {
                 buffer.Add(c.CreateString(s));
