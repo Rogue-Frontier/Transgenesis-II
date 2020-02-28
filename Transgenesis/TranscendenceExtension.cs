@@ -180,7 +180,7 @@ namespace Transgenesis {
 			    //out.println(getConsoleMessage("[Success] Parent Type Binding complete; copying Types"));
                 //Inherit types from our Parent Extension; we will not automatically receive them when the Parent Extension is updated
                 //We make a copy of the type map from the Parent Extension since we don't want it to inherit Types/Dependencies that are exclusive to us
-                types.typemap = new Dictionary<string, XElement>(parent.types.typemap);
+                types.Inherit(parent.types);
             }
 
             bindAccessibleTypes(e);
@@ -486,6 +486,17 @@ namespace Transgenesis {
         element is TypeEntry e ? new List<string>() { e.entity } :
         (element is TypeRange range ? range.entities :
         null)).ToList();
+        public void Inherit(TypeInfo parent) {
+            this.entity2unid = new Dictionary<string, uint>(parent.entity2unid);
+            this.unid2entity = new Dictionary<uint, string>(parent.unid2entity);
+            this.typemap = new Dictionary<string, XElement>(parent.typemap);
+            this.ownedTypes = new HashSet<string>(parent.ownedTypes);
+            this.overriddenTypes = new HashSet<string>(parent.overriddenTypes);
+            this.dependencyTypes = new Dictionary<string, TranscendenceExtension>(parent.dependencyTypes);
+            this.typesByDependency = new Dictionary<TranscendenceExtension, List<string>>(parent.typesByDependency);
+            this.moduleTypes = new Dictionary<string, TranscendenceExtension>(parent.moduleTypes);
+            this.typesByModule = new Dictionary<TranscendenceExtension, List<string>>(parent.typesByModule);
+        }
         public Dictionary<string, uint> BindAll() {
             BindContext context = new BindContext();
             foreach (TypeElement e in elements) {
