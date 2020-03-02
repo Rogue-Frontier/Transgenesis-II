@@ -14,6 +14,7 @@ namespace Transgenesis {
         StringBuilder s;
         Point pos;
         int cursor;
+        int columnMemory;
         Action<string> OnClosed;
         public string Text => s.ToString();
 
@@ -23,6 +24,7 @@ namespace Transgenesis {
             this.scroller = new Scroller(c);
             this.s = new StringBuilder(Text);
             this.cursor = 0;
+            this.columnMemory = 0;
             this.pos = new Point(0, 0);
             this.OnClosed = OnClosed;
         }
@@ -33,39 +35,67 @@ namespace Transgenesis {
             //Global.Break();
             bool ctrl = (k.Modifiers & ConsoleModifiers.Control) != 0;
             switch (k.Key) {
-                case ConsoleKey.Escape:
-                    OnClosed?.Invoke(s.ToString());
-                    screens.Pop();
-                    break;
-                case ConsoleKey.LeftArrow:
-                LeftArrow:
-                    if (cursor > 0) {
-                        cursor--;
-                        if (ctrl && s[cursor] != ' ') {
-                            goto LeftArrow;
+                case ConsoleKey.Escape: {
+                        OnClosed?.Invoke(s.ToString());
+                        screens.Pop();
+                        break;
+                    }
+                case ConsoleKey.Home: {
+                    Home:
+                        if (FindPrevLine(out int index)) {
+                            cursor = index;
+                        } else {
+                            cursor = 0;
                         }
+                        columnMemory = CountColumn();
+                        break;
                     }
-                    break;
-                case ConsoleKey.RightArrow:
-                RightArrow:
-                    if (cursor < s.Length - 1 && ctrl && s[cursor + 1] != ' ') {
-                        cursor++;
-                        goto RightArrow;
-                    } else if (cursor < s.Length) {
-                        cursor++;
+                case ConsoleKey.End: {
+                        if (FindNextLine(out int index)) {
+                            cursor = index;
+                        } else {
+                            cursor = 0;
+                        }
+                        columnMemory = CountColumn();
+                        break;
                     }
-                    break;
+                case ConsoleKey.LeftArrow: {
+                    LeftArrow:
+                        if (cursor > 0) {
+                            cursor--;
+                            if (ctrl && s[cursor] != ' ') {
+                                goto LeftArrow;
+                            }
+                        }
+                        columnMemory = CountColumn();
+                        break;
+                    }
+                case ConsoleKey.RightArrow: {
+                    RightArrow:
+                        if (cursor < s.Length - 1 && ctrl && s[cursor + 1] != ' ') {
+                            cursor++;
+                            goto RightArrow;
+                        } else if (cursor < s.Length) {
+                            cursor++;
+                        }
+                        columnMemory = CountColumn();
+                        break;
+                    }
                 case ConsoleKey.UpArrow: {
                         if (FindPrevLine(out int index)) {
-                            int column = Math.Min(CountColumn(), CountLineLength(index) - 1);
+                            int column = Math.Min(columnMemory, CountLineLength(index));
                             cursor = index + column;
+                        } else {
+                            cursor = 0;
                         }
                         break;
                     }
                 case ConsoleKey.DownArrow: {
                         if (FindNextLine(out int index)) {
-                            int column = Math.Min(CountColumn(), CountLineLength(index) - 1);
+                            int column = Math.Min(columnMemory, CountLineLength(index));
                             cursor = index + column;
+                        } else {
+                            cursor = s.Length;
                         }
                         break;
                     }
@@ -95,6 +125,7 @@ namespace Transgenesis {
                             s.Remove(cursor, 1);
                         }
                     }
+                    columnMemory = CountColumn();
                     break;
                 case ConsoleKey.Enter:
                     if (cursor == s.Length) {
@@ -108,6 +139,7 @@ namespace Transgenesis {
                         cursor++;
                         cursor += indent;
                     }
+                    columnMemory = CountColumn();
                     break;
                 case ConsoleKey.Tab:
                     if (ctrl) {
@@ -119,6 +151,7 @@ namespace Transgenesis {
                         s.Insert(cursor, "    ");
                     }
                     cursor += 4;
+                    columnMemory = CountColumn();
                     break;
                 default:
                     //Don't type if we are doing a keyboard shortcut
@@ -133,6 +166,7 @@ namespace Transgenesis {
                             s.Insert(cursor, k.KeyChar);
                         }
                         cursor++;
+                        columnMemory = CountColumn();
                     }
                     break;
             }
@@ -173,6 +207,7 @@ namespace Transgenesis {
                 return false;
             }
             index--;
+
             while(index > -1 && s[index] != '\n') {
                 index--;
             }
@@ -214,8 +249,9 @@ namespace Transgenesis {
                     buffer.Add(line.SubString(0, length));
                     line = new ColoredString(width);
                     length = 0;
-                    if(cursor == length) {
-                        cursorAfterNewline = true;
+                    if(cursor == index) {
+                        buffer[buffer.Count - 1] += new ColoredString(c.CreateCharInvert(' '));
+                        //cursorAfterNewline = true;
                     }
                     index++;
                     continue;
