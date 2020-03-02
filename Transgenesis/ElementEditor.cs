@@ -455,6 +455,10 @@ namespace Transgenesis {
                                             result = result.GetRange(1, result.Count - 1);
                                             if (result.Count > 0) {
                                                 arg = result[0];
+                                                if(arg == ".") {
+                                                    result = result.GetRange(1, result.Count - 1);
+                                                    arg = result[0];
+                                                }
                                                 goto FindModule;
                                             } else {
                                                 //We're out of arguments, so we assume it's in the parent's structure
@@ -484,15 +488,15 @@ namespace Transgenesis {
                                                 //We have no arguments left, so we just show the Design
                                                 goto ElementShow;
                                             }
-                                        } else if (destExtension.types.dependencyTypes.TryGetValue(arg, out destExtension)) {
+                                        } else if (destExtension.types.dependencyTypes.TryGetValue(arg, out TranscendenceExtension destDependency)) {
                                             //Otherwise, we are looking at a UNID defined in a dependency
 
                                             //Convert this to an entity in the local extension and convert that back to an entity in the destination extension
                                             //And use that entity to find the module where it is defined
 
-                                            arg = destExtension.types.unid2entity[extension.types.entity2unid[arg]];
-                                            destModule = destExtension.types.moduleTypes[arg];
-                                            destElement = destExtension.types.typemap[arg];
+                                            arg = destDependency.types.unid2entity[extension.types.entity2unid[arg]];
+                                            destModule = destDependency.types.moduleTypes[arg];
+                                            destElement = destDependency.types.typemap[arg];
 
                                             //It is a UNID, so we advance to the next argument
                                             result = result.GetRange(1, result.Count - 1);
@@ -690,7 +694,7 @@ namespace Transgenesis {
             void RemoveFocused() {
                 var parent = focused.Parent;
                 if (parent != null && Environment.CanRemoveElement(parent, env.bases[focused])) {
-                    var before = focused.ElementsBeforeSelf().LastOrDefault();
+                    var before = focused.ElementsAfterSelf().FirstOrDefault();
                     focused.Remove();
                     //focused = parent;
                     focused = before ?? parent;
@@ -730,25 +734,28 @@ namespace Transgenesis {
                     destExtension = env.extensions.Values.ToList().Find(e => e.unid == unid);
                     //Our first argument is an extension UNID
                     if (destExtension != null) {
+                        suggest.Add(arg);
+                        suggest.AddRange(destExtension.types.moduleTypes.Keys.Select(entity => $"{arg}.{entity}"));
                         //We found a destination extension, so we advance to the next argument
                         result = result.GetRange(1, result.Count - 1);
                         if (result.Count > 1 && result[0] == ".") {
                             result = result.GetRange(1, result.Count - 1);
-                            arg = result[1];
+                            arg = result[0];
+                            if(arg == "") {
+                                goto Done;
+                            }
                             goto FindModule;
                         } else if (result.Count > 0) {
                             arg = result[0];
                             goto FindModule;
                         } else {
                             //We're out of arguments, and we only have an extension
-                            suggest.Add(arg);
-                            suggest.AddRange(destExtension.types.moduleTypes.Keys.Select(entity => $"{arg}.{entity}"));
-                            //suggest.AddRange(destExtension.structure.Elements().Select(sub => $"{dest}.{sub}"));
-                            return suggest;
+                            goto Done;
                         }
                     } else {
                         //We have a UNID but it's not an extension UNID, so we look within the current extension
                         destExtension = extension;
+                        suggest.AddRange(destExtension.types.moduleTypes.Keys);
                         goto FindModule;
                     }
                 FindModule:
@@ -791,8 +798,6 @@ namespace Transgenesis {
                         //If it's not a UNID, then it's either an incomplete UNID name or the name of an element
                         destModule = destExtension;
 
-                        suggest = new List<string>();
-                        suggest.AddRange(destExtension.types.moduleTypes.Keys);
                         destElement = destModule.structure;
                         expectElementName = true;
                         goto ElementPath;
@@ -821,7 +826,7 @@ namespace Transgenesis {
                         } else {
                             //Otherwise return a list of subelements we could go to
                             suggest.AddRange(destElement.Elements().Select(sub => $"{dest}{sub.Tag()}"));
-                            return suggest;
+                            goto Done;
                         }
                     } else if (expectElementName) {
 
@@ -830,13 +835,14 @@ namespace Transgenesis {
                         if (tag == "") {
                             break;
                         }
+
                         var subelements = destElement.Elements(tag);
                         if (subelements.Count() == 0) {
                             //Return a list of subelements we could go to
                             string prefix2 = string.Join("", result.Take(result.LastIndexOf(".")));
                             prefix2 = prefix2.Length > 0 ? $"{prefix2}." : prefix2;
                             suggest.AddRange(destElement.Elements().Select(sub => $"{prefix2}{sub.Tag()}"));
-                            return suggest;
+                            goto Done;
                         } else if (subelements.Count() == 1) {
                             //We take the first one
                             destElement = subelements.First();
@@ -846,16 +852,17 @@ namespace Transgenesis {
                             } else {
                                 //Error: We need to specify an index
                                 suggest.AddRange(Enumerable.Range(0, subelements.Count()).Select(n => $"{dest}#{n}"));
-                                return suggest;
+                                goto Done;
                             }
                         }
                     } else {
-                        return suggest;
+                        goto Done;
                     }
                 }
             ElementShow:
                 string prefix = (dest.Length > 0) ? $"{dest}." : "";
                 suggest.AddRange(destElement.Elements().Select(sub => $"{prefix}{sub.Tag()}"));
+                Done:
                 return suggest.Distinct().ToList();
             }
         }
