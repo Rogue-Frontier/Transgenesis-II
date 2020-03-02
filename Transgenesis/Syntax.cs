@@ -9,6 +9,7 @@ namespace Transgenesis {
         FocusedTag,
         Tag,
         Attribute,
+        Text,
         Quotes,
         Entity,
         Space
