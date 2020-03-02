@@ -20,11 +20,8 @@ namespace Transgenesis {
         ConsoleManager c;
         Scroller scroller;
 
-        List<ConsoleKeyInfo> busyQueue;
-
         string extensionsFolder;
-
-
+        Task loading;
 
         public MainMenu(Stack<IComponent> screens) {
             c = new ConsoleManager(new Point(0, 0));
@@ -131,9 +128,13 @@ namespace Transgenesis {
                 }
             };
             int Compare(TranscendenceExtension e1, TranscendenceExtension e2) {
-                return e1.unid != null && e2.unid != null && e1.unid != e2.unid ? ((uint)e1.unid).CompareTo((uint)e2.unid) :
-                        e1.name != null && e2.name != null && e1.name != e2.name ? e1.name.CompareTo(e2.name) :
-                        e1.type != null && e2.type != null && e1.type != e2.type ? ((ExtensionTypes)e1.type).CompareTo((ExtensionTypes)e2.type) :
+
+                var unid =     (e1.unid != null) && (e2.unid != null) && (e1.unid != e2.unid);
+                var name =     (e1.name != null) && (e2.name != null) && (e1.name != e2.name);
+                var category = (e1.type != null) && (e2.type != null) && (e1.type != e2.type);
+                return unid ? ((uint)e1.unid).CompareTo((uint)e2.unid) :
+                        name ? e1.name.CompareTo(e2.name) :
+                        category ? ((ExtensionTypes)e1.type).CompareTo((ExtensionTypes)e2.type) :
                         e1.path.CompareTo(e2.path);
             }
             ext.Sort(modulesUnderParent);
@@ -175,7 +176,7 @@ namespace Transgenesis {
 
             scroller.Draw(buffer);
 
-            if(busyQueue != null) {
+            if (loading != null) {
                 c.NextLine();
                 c.WriteLine("Loading extensions...");
             }
@@ -186,8 +187,7 @@ namespace Transgenesis {
         }
 
         public void Handle(ConsoleKeyInfo k) {
-            if(busyQueue != null) {
-                busyQueue.Add(k);
+            if(loading != null) {
                 return;
             }
 
@@ -352,15 +352,10 @@ namespace Transgenesis {
                                 if (env.extensions.TryGetValue(path, out TranscendenceExtension existing)) {
                                     //env.Unload(existing);
                                 } else {
-                                    //Global.Break();
-
-                                    //Note: This starts a new thread. We should indicate some way that this is running
-                                    Task.Run(() => {
-                                        busyQueue = new List<ConsoleKeyInfo>();
+                                    loading = Task.Run(() => {
                                         LoadFolder(path);
-                                        busyQueue = null;
+                                        loading = null;
                                     });
-                                    //LoadFolder(path);
                                 }
                                 h.Record();
 
@@ -538,7 +533,6 @@ namespace Transgenesis {
                 if(modules) {
                     LoadModules(e);
                 }
-                e.updateTypeBindingsWithModules(env);
             }
             void LoadModules(TranscendenceExtension e) {
                 foreach (var module in e.structure.Elements()) {
