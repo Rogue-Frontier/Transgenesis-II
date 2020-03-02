@@ -84,6 +84,8 @@ namespace Transgenesis {
                         "Selects the next child of the current element's parent"},
                 {"prev", "prev\r\n" +
                         "Selects the previous child of the current element's parent"},
+                {"text", "text\r\n" +
+                        "Edits the text content in the current element"},
                 {"goto", "[entity.]element[.element[#index]]" + "\r\n" +
                         "Selects the specified element"},
                 {"types", "types\r\n" +
@@ -589,6 +591,16 @@ namespace Transgenesis {
                                     h.Record();
                                     break;
                                 }
+                            case "text": {
+                                    screens.Push(new TextEditor(screens, c, string.Join(" ", focused.Nodes().OfType<XText>().Select(t => t.Value)), str => {
+                                        foreach (var t in focused.Nodes().OfType<XText>()) {
+                                            t.Remove();
+                                        }
+                                        focused.AddFirst(new XText(str));
+                                    }));
+                                    h.Record();
+                                    break;
+                                }
                             case "types": {
                                     screens.Push(new TypeEditor(screens, env, extension, c));
                                     h.Record();
@@ -641,7 +653,7 @@ namespace Transgenesis {
 
                             var empty = new List<string>();
                             Dictionary<string, Func<List<string>>> autocomplete = new Dictionary<string, Func<List<string>>> {
-                                {"", () => new List<string>{ "set", "add", "remove", "bind", "bindall", "save", "saveall", "expand", "collapse", "moveup", "movedown", "root", "parent", "next", "prev", "goto", "types", "exit" } },
+                                {"", () => new List<string>{ "set", "add", "remove", "bind", "bindall", "save", "saveall", "expand", "collapse", "moveup", "movedown", "root", "parent", "next", "prev", "text", "goto", "types", "exit" } },
                                 {"set", () => env.bases[focused].GetValidAttributes() },
                                 {"add", () => env.GetAddableElements(focused, env.bases[focused]) },
                                 {"remove", () => env.GetRemovableElements(focused, env.bases[focused]) },
@@ -694,10 +706,10 @@ namespace Transgenesis {
             void RemoveFocused() {
                 var parent = focused.Parent;
                 if (parent != null && Environment.CanRemoveElement(parent, env.bases[focused])) {
-                    var before = focused.ElementsAfterSelf().FirstOrDefault();
+                    var after = focused.ElementsAfterSelf().FirstOrDefault();
                     focused.Remove();
                     //focused = parent;
-                    focused = before ?? parent;
+                    focused = after ?? parent;
                 }
             }
             void MoveUp() {
