@@ -17,11 +17,11 @@ namespace Transgenesis {
         Action<string> OnClosed;
         public string Text => s.ToString();
 
-        public TextEditor(Stack<IComponent> screens, ConsoleManager c, Action<string> OnClosed) {
+        public TextEditor(Stack<IComponent> screens, ConsoleManager c, string Text = "", Action<string> OnClosed = null) {
             this.screens = screens;
             this.c = c;
             this.scroller = new Scroller(c);
-            this.s = new StringBuilder();
+            this.s = new StringBuilder(Text);
             this.cursor = 0;
             this.pos = new Point(0, 0);
             this.OnClosed = OnClosed;
@@ -33,6 +33,10 @@ namespace Transgenesis {
             //Global.Break();
             bool ctrl = (k.Modifiers & ConsoleModifiers.Control) != 0;
             switch (k.Key) {
+                case ConsoleKey.Escape:
+                    OnClosed?.Invoke(s.ToString());
+                    screens.Pop();
+                    break;
                 case ConsoleKey.LeftArrow:
                 LeftArrow:
                     if (cursor > 0) {
@@ -51,6 +55,20 @@ namespace Transgenesis {
                         cursor++;
                     }
                     break;
+                case ConsoleKey.UpArrow: {
+                        if (FindPrevLine(out int index)) {
+                            int column = Math.Min(CountColumn(), CountLineLength(index) - 1);
+                            cursor = index + column;
+                        }
+                        break;
+                    }
+                case ConsoleKey.DownArrow: {
+                        if (FindNextLine(out int index)) {
+                            int column = Math.Min(CountColumn(), CountLineLength(index) - 1);
+                            cursor = index + column;
+                        }
+                        break;
+                    }
                 case ConsoleKey.Backspace:
                     //Global.Break();
                     if (ctrl) {
@@ -80,27 +98,15 @@ namespace Transgenesis {
                     break;
                 case ConsoleKey.Enter:
                     if (cursor == s.Length) {
-                        s.Append('\n');
-                        for (int i = cursor - 1; i > -1; i--) {
-                            if(s[i] == ' ') {
-                                s.Append(' ');
-                                cursor++;
-                            } else if(s[i] == '\n') {
-                                break;
-                            }
-                        }
+                        int indent = CountIndent();
+                        s.Append("\n" + new string(' ', indent));
                         cursor++;
+                        cursor += indent;
                     } else {
-                        s.Insert(cursor, '\n');
-                        for (int i = cursor - 1; i > -1; i--) {
-                            if (s[i] == ' ') {
-                                cursor++;
-                                s.Insert(cursor, ' ');
-                            } else if (s[i] == '\n') {
-                                break;
-                            }
-                        }
+                        int indent = CountIndent();
+                        s.Insert(cursor, "\n" + new string(' ', indent));
                         cursor++;
+                        cursor += indent;
                     }
                     break;
                 case ConsoleKey.Tab:
@@ -130,6 +136,69 @@ namespace Transgenesis {
                     }
                     break;
             }
+        }
+        int CountColumn() {
+            int count = 0;
+            int index = cursor - 1;
+            while (index > -1 && s[index] != '\n') {
+                index--;
+                count++;
+            }
+            return count;
+        }
+        int CountIndent() {
+            int index = cursor - 1;
+            int indent = 0;
+            while (index > -1) {
+                switch (s[index]) {
+                    case ' ':
+                        indent++;
+                        break;
+                    case '\n':
+                        return indent;
+                    default:
+                        indent = 0;
+                        break;
+                }
+                index--;
+            }
+            return indent;
+        }
+        bool FindPrevLine(out int index) {
+            index = Math.Min(cursor, s.Length - 1);
+            while(index > -1 && s[index] != '\n') {
+                index--;
+            }
+            if(index == -1) {
+                return false;
+            }
+            index--;
+            while(index > -1 && s[index] != '\n') {
+                index--;
+            }
+            index++;
+            return true;
+        }
+        bool FindNextLine(out int index) {
+            index = Math.Min(cursor, s.Length - 1);
+            while(index < s.Length && s[index] != '\n') {
+                index++;
+            }
+            if(index != s.Length) {
+                //Return index of first char of line
+                index++;
+                return true;
+            } else {
+                return false;
+            }
+        }
+        int CountLineLength(int index) {
+            int count = 0;
+            while(index < s.Length && s[index] != '\n') {
+                index++;
+                count++;
+            }
+            return count;
         }
         public void Draw() {
             c.SetCursor(pos);
