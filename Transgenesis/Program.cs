@@ -38,7 +38,8 @@ namespace Transgenesis {
         Stack<IComponent> screens = new Stack<IComponent>();
         public MainConsole(int width, int height) : base(width, height) {
             //screens.Push(new MainMenu(screens));
-            screens.Push(new TextEditor(screens, new ConsoleManager(new Point(0, 0)), s => { }));
+            //screens.Push(new TextEditor(screens, new ConsoleManager(new Point(0, 0)), s => { }));
+            screens.Push(new MainMenu(screens));
             Theme = new WindowTheme {
                 ModalTint = Color.Black,
                 FillStyle = new Cell(Color.White, Color.Black),
