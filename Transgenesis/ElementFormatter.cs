@@ -95,7 +95,7 @@ namespace Transgenesis {
                     tagStart = tagStart.PadRightTab();
                 }
 
-                if (element.Elements().Count() > 0) {
+                if (element.Nodes().Count() > 0) {
                     Action<string> writeTag;
                     if (isFocused) {
                         writeTag = s => AddLineHighlight(s);
@@ -106,7 +106,6 @@ namespace Transgenesis {
                         //show all attributes and children
                         writeTag($"{box}{Tab()}{tagStart}{ShowAllAttributes(element)}>");
                         ShowChildren();
-                        ShowValue();
                         writeTag($"{box}{Tab()}</{element.Tag()}>");
                     } else {
                         //show only the important attributes and (semi)expanded children
@@ -120,19 +119,17 @@ namespace Transgenesis {
                             tabs++;
                             int skipped = 0;
 
-                            if(semiexpandAll) {
-                                foreach (var child in element.Elements()) {
-                                    ShowElementTree(child);
-                                }
-                            } else {
-                                foreach (var child in element.Elements()) {
-                                    if (semiexpanded.Contains(child)) {
+                            foreach (var child in element.Nodes()) {
+                                if(child is XText t) {
+                                    skipped++;
+                                } else if(child is XElement e) {
+                                    if (semiexpandAll || semiexpanded.Contains(e)) {
                                         //Show that we have previous children not shown
                                         if (skipped > 0) {
                                             skipped = 0;
                                             AddLine($"{noBox}{Tab()}<.../>");
                                         }
-                                        ShowElementTree(child);
+                                        ShowElementTree(e);
                                     } else {
                                         skipped++;
                                     }
@@ -151,14 +148,14 @@ namespace Transgenesis {
                         }
                     }
                     return;
-
-                    void ShowValue() {
-                        AddLine(element.Value);
-                    }
                     void ShowChildren() {
                         tabs++;
-                        foreach (var child in element.Elements()) {
-                            ShowElementTree(child);
+                        foreach (var child in element.Nodes()) {
+                            if (child is XText t) {
+                                AddLine(t.Value);
+                            } else if (child is XElement e) {
+                                ShowElementTree(e);
+                            }
                         }
                         tabs--;
                     }
