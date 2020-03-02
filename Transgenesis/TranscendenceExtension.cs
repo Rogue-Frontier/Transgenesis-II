@@ -99,7 +99,7 @@ namespace Transgenesis {
                 s.AppendLine($@"    {entity, -32}""{entity2unid[entity]}""");
             }
             */
-            foreach(var entity in types.entity2unid.Keys) {
+            foreach(var entity in types.entities) {
                 s.AppendLine($@"    <!ENTITY {entity,-32}""{types.entity2unid[entity].ToUNID()}"">");
             }
 
