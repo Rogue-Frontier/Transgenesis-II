@@ -152,7 +152,8 @@ namespace Transgenesis {
                         tabs++;
                         foreach (var child in element.Nodes()) {
                             if (child is XText t) {
-                                AddLine(t.Value);
+                                var text = t.Value.Replace("\t", "    ");
+                                AddLine(text);
                             } else if (child is XElement e) {
                                 ShowElementTree(e);
                             }
@@ -284,7 +285,7 @@ namespace Transgenesis {
                         PushGlyph:
                         switch (glyph.GlyphCharacter) {
                             case var c when char.IsLetterOrDigit(c):
-                                if(type.Any() && type.Peek() == Syntax.Tag || type.Peek() == Syntax.FocusedTag) {
+                                if(type.Any() && (type.Peek() == Syntax.Tag || type.Peek() == Syntax.FocusedTag)) {
                                     type.Push(Syntax.Attribute);
                                 } else {
                                     type.Push(Syntax.Text);
@@ -323,35 +324,34 @@ namespace Transgenesis {
                             break;
                         case Syntax.Text:
                             glyph.Foreground = Color.White;
-                            if (!char.IsLetter(glyph.GlyphCharacter) && !char.IsWhiteSpace(glyph.GlyphCharacter)) {
+                            if (!char.IsLetterOrDigit(glyph.GlyphCharacter) && !char.IsWhiteSpace(glyph.GlyphCharacter)) {
                                 type.Pop();
 
                                 switch (glyph.GlyphCharacter) {
                                     case var c when char.IsLetterOrDigit(c):
-                                        if (type.Any() && type.Peek() == Syntax.Tag || type.Peek() == Syntax.FocusedTag) {
+                                        if (type.Any() && (type.Peek() == Syntax.Tag || type.Peek() == Syntax.FocusedTag)) {
                                             type.Push(Syntax.Attribute);
                                         } else {
                                             type.Push(Syntax.Text);
                                         }
-                                        break;
+                                        goto CheckType;
                                     case '"':
                                         //Since we pop upon seeing the opening quote
                                         type.Push(Syntax.Quotes);
                                         type.Push(Syntax.Quotes);
-                                        break;
+                                        goto CheckType;
                                     case '<':
                                         if (glyph.Foreground == c.theme.highlight) {
                                             type.Push(Syntax.FocusedTag);
                                         } else {
                                             type.Push(Syntax.Tag);
                                         }
-
-                                        break;
+                                        goto CheckType;
                                     case '&':
                                         type.Push(Syntax.Entity);
-                                        break;
+                                        goto CheckType;
                                 }
-                                }
+                            }
                             break;
                         case Syntax.Entity:
                             glyph.Foreground = Color.SkyBlue;
