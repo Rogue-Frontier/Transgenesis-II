@@ -28,7 +28,8 @@ namespace Transgenesis {
                     break;
             }
         }
-        public void Draw(List<ColoredString> buffer) {
+        public void Draw(List<ColoredString> buffer) => Draw(buffer, screenRows);
+        public void Draw(List<ColoredString> buffer, int screenRows) {
             scrolling = Math.Max(0, Math.Min(scrolling, buffer.Count - screenRows));
             c.margin = new Point(0, 0);
             c.SetCursor(c.margin);
