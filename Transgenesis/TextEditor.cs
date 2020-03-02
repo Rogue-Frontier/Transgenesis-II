@@ -103,6 +103,17 @@ namespace Transgenesis {
                         cursor++;
                     }
                     break;
+                case ConsoleKey.Tab:
+                    if (ctrl) {
+                        break;
+                    }
+                    if (cursor == s.Length) {
+                        s.Append("    ");
+                    } else {
+                        s.Insert(cursor, "    ");
+                    }
+                    cursor += 4;
+                    break;
                 default:
                     //Don't type if we are doing a keyboard shortcut
                     if (ctrl) {
