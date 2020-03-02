@@ -323,7 +323,7 @@ namespace Transgenesis {
                             break;
                         case Syntax.Text:
                             glyph.Foreground = Color.White;
-                            if (!char.IsLetter(glyph.GlyphCharacter)) {
+                            if (!char.IsLetter(glyph.GlyphCharacter) && !char.IsWhiteSpace(glyph.GlyphCharacter)) {
                                 type.Pop();
 
                                 switch (glyph.GlyphCharacter) {
