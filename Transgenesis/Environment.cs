@@ -66,7 +66,7 @@ namespace Transgenesis {
             switch (subtemplate.Att("category")) {
                 case "*":
                 case "?":
-                    return element.Elements(subtemplate.Att("name")).Count() > 1;
+                    return true;
                 case "+":
                     return element.Elements(subtemplate.Att("name")).Count() > 1;
                 case "1":
