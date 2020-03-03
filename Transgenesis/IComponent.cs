@@ -10,6 +10,7 @@ namespace Transgenesis {
         void Draw();
     }
     class Input {
+        //To do: Flip Suggest area so that input is below to save space
         ConsoleManager c;
         private StringBuilder s = new StringBuilder();
         public int cursor = 0;
@@ -25,6 +26,7 @@ namespace Transgenesis {
             this.c = c;
         }
         public Point pos = new Point(0, 44);
+        public int height = 1;
         public void Clear() {
             s.Clear();
             cursor = 0;
@@ -99,7 +101,8 @@ namespace Transgenesis {
             }
         }
         public void Draw() {
-            c.SetCursor(pos);
+            //c.SetCursor(pos);
+            c.NextLine();
             if (cursor == s.Length) {
                 c.Write(Text);
                 c.WriteInvert(' ');
@@ -125,6 +128,7 @@ namespace Transgenesis {
         public int index = -1;
         public List<HighlightEntry> items;
         public Point pos = new Point(0, 45);
+        public int height = 8;
         ConsoleManager c;
         public Suggest(Input i, ConsoleManager c) {
             this.i = i;
@@ -192,8 +196,9 @@ namespace Transgenesis {
             }
         }
         public void Draw() {
-            c.SetCursor(pos);
-            c.margin = pos;
+            //c.SetCursor(pos);
+            c.NextLine();
+            c.margin.Y = c.cursor.Row;
             int columnHeight = 8;
 
             if(items.Count == 0) {
@@ -216,7 +221,8 @@ namespace Transgenesis {
 
 
             int lastColumn = index / 8;
-            int widthLeft = c.width;
+            int width = c.width - c.margin.X;
+            int widthLeft = width;
             int columnCount = 0;
             columnIndex = lastColumn;
 
@@ -250,7 +256,6 @@ namespace Transgenesis {
                 }
             }
 
-            int width = c.width;
             for (columnIndex = lastColumn - columnCount + 1; columnIndex <= lastColumn; columnIndex++) {
 
                 for(int i = columnIndex * 8; i < (columnIndex + 1) * 8 && i < items.Count; i++) {
@@ -288,10 +293,10 @@ namespace Transgenesis {
         }
         public void Draw() {
             //Note that if the input already has a match, then highlighting another option in the Suggest menu will not do anything
-            if (help.TryGetValue(i.Text.TrimStart().Split()[0], out string helptext)) {
+            if (s.index > -1 && help.TryGetValue(s.items[s.index].str, out string helptext)) {
                 c.SetCursor(pos);
                 c.Write(helptext);
-            } else if (s.index > -1 && help.TryGetValue(s.items[s.index].str, out helptext)) {
+            } else if (help.TryGetValue(i.Text.TrimStart().Split()[0], out helptext)) {
                 c.SetCursor(pos);
                 c.Write(helptext);
             }
@@ -301,10 +306,13 @@ namespace Transgenesis {
     }
     class History {
         Input i;
+        ConsoleManager c;
         public List<string> items = new List<string>();
         int index = -1;
-        public History(Input i) {
+        public int height = 10;
+        public History(Input i, ConsoleManager c) {
             this.i = i;
+            this.c = c;
         }
         public void Record() {
             if(i.Text.Length == 0) {
@@ -345,6 +353,35 @@ namespace Transgenesis {
                     index = -1;
                     break;
             }
+        }
+        public void Draw() {
+            //c.reverse = true;
+            int start = Math.Max(0, (index != -1 ? (index + 1) : items.Count) - height);
+            int end = Math.Min(start + height, items.Count);
+
+            Point pos = new Point(120, c.console.Height - 3 - Math.Min(height, end - start));
+            c.margin = pos;
+            c.SetCursor(pos);
+            c.NextLine();
+            for (int i = start; i < end; i++) {
+
+                if(i == index) {
+                    c.WriteLineInvert(items[i]);
+/*
+ * Given a grammar, what are the transitions we're going to have for this PDA? 2 kinds
+ * Defined for every variable of the grammar and every production of the variable
+ * Production A to Beta is a transition to replace A with Beta. Epsilon transition.
+ * For every production in the grammar, we have an epsilon transition
+ * 
+ * For every terminal of the grammar, we have a non-epsilon transition to consume it
+ * 
+ * */
+                } else {
+                    c.WriteLine(items[i]);
+                }
+            }
+
+            //c.reverse = false;
         }
     }
 }

@@ -43,12 +43,18 @@ namespace Transgenesis {
             if (scrolling + count < buffer.Count) {
                 lines[lines.Count - 1] = c.CreateString("...");
             }
+            int printed = 0;
             foreach (var line in lines) {
                 c.Write(line);
                 //Printing to the edge of the view already moves the cursor to the next line
                 if (line.Count < c.width) {
                     c.NextLine();
                 }
+                printed++;
+            }
+            while(printed < screenRows) {
+                c.NextLine();
+                printed++;
             }
         }
     }

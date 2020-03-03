@@ -26,7 +26,7 @@ namespace Transgenesis {
             this.c = c;
 
             i = new Input(c);
-            h = new History(i);
+            h = new History(i, c);
             s = new Suggest(i, c);
             t = new Tooltip(i, s, c, new Dictionary<string, string>() {
                 { "add",        "add <entity>\r\n" +
@@ -117,11 +117,16 @@ namespace Transgenesis {
             void AddHighlightLine(string s) {
                 buffer.Add(c.CreateHighlightString(s));
             }
-            scroller.Draw(buffer);
-
-            i.Draw();
-            s.Draw();
+            if (i.Text.Length == 0) {
+                scroller.Draw(buffer, scroller.screenRows + s.height);
+                i.Draw();
+            } else {
+                scroller.Draw(buffer);
+                i.Draw();
+                s.Draw();
+            }
             t.Draw();
+            //h.Draw();
         }
 
         public void Handle(ConsoleKeyInfo k) {

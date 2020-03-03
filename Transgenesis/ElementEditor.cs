@@ -37,7 +37,7 @@ namespace Transgenesis {
             this.keepExpanded = new HashSet<XElement>();
             this.c = c;
             i = new Input(c);
-            h = new History(i);
+            h = new History(i, c);
             s = new Suggest(i, c);
             t = new Tooltip(i, s, c, new Dictionary<string, string>() {
                 {"",    "Navigate Mode" + "\r\n" +
@@ -52,46 +52,47 @@ namespace Transgenesis {
                 {"add", "add <subelement>\r\n" +
                         "Adds the named subelement to the current element, if allowed"},
                 {"reorder", "reorder <attribute...>\r\n" +
-                        "Reorders the attributes in the current element in the specified order" },
-                {"set", "set <attribute> [value]\r\n" +
-                        "Sets the named attribute to the specified value on the current element. If [value] is empty, then deletes the attribute from the element" },
+                            "Reorders the attributes in the current element in the specified order" },
+                {"set",     "set <attribute> [value]\r\n" +
+                            "Sets the named attribute to the specified value on the current element.\r\n" +
+                            "If [value] is empty, then deletes the attribute from the element" },
 
                 //{"remove", "remove <subelement>\r\n" +
                 //        "Removes the named subelement from the current element"},
-                {"remove", "remove\r\n" +
-                        "Removes the current element from its parent, if allowed"},
-                {"bind", "bind\r\n" +
-                        "Updates type bindings for the current extension"},
+                {"remove",  "remove\r\n" +
+                            "Removes the current element from its parent, if allowed"},
+                {"bind",    "bind\r\n" +
+                            "Updates type bindings for the current extension"},
                 {"bindall", "bindall\r\n" +
-                        "Updates type bindings for all loaded extensions"},
-                {"save", "save\r\n" +
-                        "Saves the current extension to its file"},
+                            "Updates type bindings for all loaded extensions"},
+                {"save",    "save\r\n" +
+                            "Saves the current extension to its file"},
                 {"saveall", "saveall\r\n" +
-                        "Saves all loaded extensions to their files"},
-                {"expand", "expand\r\n" +
-                        "Expands the current element to display all of its attributes and children"},
-                {"collapse", "collapse\r\n" +
-                        "Collapses the current element to hide most of its attributes and children"},
-                {"moveup", "moveup\r\n" +
-                        "Moves the current element up in its parent's order of children"},
-                {"movedown", "movedown\r\n" +
-                        "Moves the current element down in its parent's order of children"},
-                {"root", "root\r\n" +
-                        "Selects the root as the current element"},
-                {"parent", "parent\r\n" +
-                        "Selects the parent of the current element"},
-                {"next", "next\r\n" +
-                        "Selects the next child of the current element's parent"},
-                {"prev", "prev\r\n" +
-                        "Selects the previous child of the current element's parent"},
-                {"text", "text\r\n" +
-                        "Edits the text content in the current element"},
-                {"goto", "[entity.]element[.element[#index]]" + "\r\n" +
-                        "Selects the specified element"},
-                {"types", "types\r\n" +
-                        "Opens the Type Editor on this extension"},
-                {"exit", "exit\r\n" +
-                        "Exits this XML Editor and returns to the main menu"},
+                            "Saves all loaded extensions to their files"},
+                {"expand",  "expand\r\n" +
+                            "Expands the current element to display all of its attributes and children"},
+                {"collapse","collapse\r\n" +
+                            "Collapses the current element to hide most of its attributes and children"},
+                {"moveup",  "moveup\r\n" +
+                            "Moves the current element up in its parent's order of children"},
+                {"movedown","movedown\r\n" +
+                            "Moves the current element down in its parent's order of children"},
+                {"root",    "root\r\n" +
+                            "Selects the root as the current element"},
+                {"parent",  "parent\r\n" +
+                            "Selects the parent of the current element"},
+                {"next",    "next\r\n" +
+                            "Selects the next child of the current element's parent"},
+                {"prev",    "prev\r\n" +
+                            "Selects the previous child of the current element's parent"},
+                {"text",    "text\r\n" +
+                            "Edits the text content in the current element"},
+                {"goto",    "[entity.]element[.element[#index]]" + "\r\n" +
+                            "Selects the specified element"},
+                {"types",   "types\r\n" +
+                            "Opens the Type Editor on this extension"},
+                {"exit",    "exit\r\n" +
+                            "Exits this XML Editor and returns to the main menu"},
             });
             scroller = new Scroller(c, i);
             //{"", () => new List<string>{ "set", "add", "remove", "bind", "bindall", "save", "saveall", "moveup", "movedown", "root", "parent", "next", "prev", "types", "exit" } },
@@ -187,12 +188,16 @@ namespace Transgenesis {
                 ScrollToFocused();
                 scrollToFocused = false;
             }
-
-            scroller.Draw(buffer);
-
-            i.Draw();
-            s.Draw();
+            if (i.Text.Length == 0) {
+                scroller.Draw(buffer, scroller.screenRows + s.height);
+                i.Draw();
+            } else {
+                scroller.Draw(buffer);
+                i.Draw();
+                s.Draw();
+            }
             t.Draw();
+            //h.Draw();
         }
         public void ScrollToFocused() {
             if (formatter.highlightLines.Count > 0) {

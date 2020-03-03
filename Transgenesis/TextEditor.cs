@@ -283,7 +283,7 @@ namespace Transgenesis {
                 }
             } 
 
-            scroller.Draw(buffer);
+            scroller.Draw(buffer, 64);
         }
     }
 }

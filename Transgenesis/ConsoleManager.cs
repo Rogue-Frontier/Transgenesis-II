@@ -16,30 +16,20 @@ namespace Transgenesis {
         }
     }
     class ConsoleManager {
-        SadConsole.Console console => SadConsole.Global.CurrentScreen;
-        SadConsole.Cursor cursor => SadConsole.Global.CurrentScreen.Cursor;
+        public SadConsole.Console console => SadConsole.Global.CurrentScreen;
+        public SadConsole.Cursor cursor => SadConsole.Global.CurrentScreen.Cursor;
         public int width => console.Width;
         public ConsoleManager(Point p) {
             this.margin = p;
             theme = new Theme();
         }
+        public bool reverse = false;
 
         public Point margin;
         public Theme theme;
-
-        List<(Point, string)> lines = new List<(Point, string)>();
-        public void ClearLines() => lines.Clear();
         public void Clear() {
-            ClearLines();
             console.Clear();
             console.Fill(theme.front, theme.back, ' ');
-            /*
-            lines.ForEach(t => {
-                (Point cursor, string s) = t;
-                Global.SetCursor(cursor);
-                Global.Print(new string(' ', s.Length), front, back);
-            });
-            */
         }
         public void SetCursor(Point p) => cursor.Move(p);
         public void ResetCursor() {
@@ -68,6 +58,10 @@ namespace Transgenesis {
             cursor.Print(CreateHighlightString(s));
             NextLine();
         }
+        public void WriteLineInvert(string s, Color? front = null, Color? back = null) {
+            cursor.Print(CreateInvertString(s, front, back));
+            NextLine();
+        }
         public ColoredGlyph CreateCharInvert(char c, Color? back = null, Color? front = null) {
             return new ColoredGlyph(c, back ?? theme.back, front ?? theme.front);
         }
@@ -83,6 +77,9 @@ namespace Transgenesis {
         public ColoredString CreateHighlightString(string s, Color? front = null, Color? back = null) {
             return ColorString(s, front ?? theme.highlight, back ?? theme.back);
         }
+        public ColoredString CreateInvertString(string s, Color? front = null, Color? back = null) {
+            return ColorString(s, back ?? theme.back, front ?? theme.front);
+        }
         public void WriteLine(string s, Color? front = null, Color? back = null) {
             Write(s, front, back);
             NextLine();
@@ -91,7 +88,11 @@ namespace Transgenesis {
             cursor.Column = margin.X;
         }
         public void NextLine() {
-            cursor.Row++;
+            if(reverse) {
+                cursor.Row--;
+            } else {
+                cursor.Row++;
+            }
             ResetLine();
         }
         public void Draw(HighlightEntry h) {

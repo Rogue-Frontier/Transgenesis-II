@@ -26,7 +26,7 @@ namespace Transgenesis {
         public MainMenu(Stack<IComponent> screens) {
             c = new ConsoleManager(new Point(0, 0));
             i = new Input(c);
-            h = new History(i);
+            h = new History(i, c);
             s = new Suggest(i, c);
             t = new Tooltip(i, s, c, new Dictionary<string, string>() {
                 {"",    "General controls" + "\r\n" +
@@ -173,17 +173,25 @@ namespace Transgenesis {
                 buffer.Add(c.CreateString($"Orphan Modules: {modulesByExtension[orphans].Count}"));
             }
             */
+            if (i.Text.Length == 0) {
+                scroller.Draw(buffer, scroller.screenRows + s.height);
+                i.Draw();
+            } else {
+                scroller.Draw(buffer);
+                i.Draw();
+                s.Draw();
+            }
+            t.Draw();
+            var pos = c.cursor.Position;
+            //h.Draw();
 
-            scroller.Draw(buffer);
-
+            c.SetCursor(pos);
+            c.margin.X = 0;
             if (loading != null) {
                 c.NextLine();
                 c.WriteLine("Loading extensions...");
             }
-
-            i.Draw();
-            s.Draw();
-            t.Draw();
+            
         }
 
         public void Handle(ConsoleKeyInfo k) {
