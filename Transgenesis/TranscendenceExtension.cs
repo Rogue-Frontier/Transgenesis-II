@@ -31,6 +31,7 @@ namespace Transgenesis {
 
             }
         }
+        public string firstIdentifier => name ?? entity ?? path ?? structure.Tag();
         public string name {
             get {
                 var ext = this;
@@ -209,6 +210,7 @@ namespace Transgenesis {
                 unid = unid.Replace("&", "").Replace(";", "");
                 types.typemap[unid] = structure;
                 types.ownedTypes.Add(unid);
+                types.AddModuleType(this, unid);
             }
             updateDependencies(e);
             bindDependencyTypes();
