@@ -73,15 +73,16 @@ namespace Transgenesis {
                 buffer.Add(s.SubString(0, index));
             }
         }
-        public void ShowElementTree(XElement root, XElement focused, HashSet<XElement> expanded = null, HashSet<XElement> semiexpanded = null) {
+        public void ShowElementTree(XElement root, XElement focused, HashSet<XElement> expanded = null, HashSet<XElement> semiexpanded = null, HashSet<XElement> collapsed = null) {
             bool expandAll = expanded == null;
             bool semiexpandAll = semiexpanded == null;
+            bool collapseNone = collapsed == null;
             ShowElementTree(root);
             void ShowElementTree(XElement element) {
                 const bool expandFocused = false;
                 var isFocused = focused == element;
 
-                bool expandedCheck = expandAll || expanded.Contains(element) || (expandFocused && isFocused);
+                bool expandedCheck = (expandAll || expanded.Contains(element) || (expandFocused && isFocused)) && (collapseNone || !collapsed.Contains(element));
                 string box;
                 if (expandedCheck) {
                     box = expandedBox;
@@ -140,9 +141,11 @@ namespace Transgenesis {
                             if (skipped > 0) {
                                 AddLine($"{noBox}{Tab()}<.../>");
                             }
+                            /*
                             if(element.Value.Length > 0) {
                                 AddLine($"{noBox}{Tab()}...");
                             }
+                            */
                             tabs--;
                             writeTag($"{box}{Tab()}</{element.Tag()}>");
                         }
@@ -284,11 +287,18 @@ namespace Transgenesis {
                         }
                         PushGlyph:
                         switch (glyph.GlyphCharacter) {
+                            /*
                             case var c when char.IsLetterOrDigit(c):
                                 if(type.Any() && (type.Peek() == Syntax.Tag || type.Peek() == Syntax.FocusedTag)) {
                                     type.Push(Syntax.Attribute);
                                 } else {
                                     type.Push(Syntax.Text);
+                                }
+                                break;
+                                */
+                            case var c when char.IsLetterOrDigit(c):
+                                if (type.Any() && (type.Peek() == Syntax.Tag || type.Peek() == Syntax.FocusedTag)) {
+                                    type.Push(Syntax.Attribute);
                                 }
                                 break;
                             case '"':
@@ -308,6 +318,7 @@ namespace Transgenesis {
                                 type.Push(Syntax.Entity);
                                 break;
                             default:
+                                type.Push(Syntax.Text);
                                 continue;
                         }
                     }
@@ -324,23 +335,16 @@ namespace Transgenesis {
                             break;
                         case Syntax.Text:
                             glyph.Foreground = Color.White;
-                            if (!char.IsLetterOrDigit(glyph.GlyphCharacter) && !char.IsWhiteSpace(glyph.GlyphCharacter)) {
-                                type.Pop();
-
+                            char ch = glyph.GlyphCharacter;
+                            if (ch == '"' || ch == '<' || ch == '&') {
                                 switch (glyph.GlyphCharacter) {
-                                    case var c when char.IsLetterOrDigit(c):
-                                        if (type.Any() && (type.Peek() == Syntax.Tag || type.Peek() == Syntax.FocusedTag)) {
-                                            type.Push(Syntax.Attribute);
-                                        } else {
-                                            type.Push(Syntax.Text);
-                                        }
-                                        goto CheckType;
                                     case '"':
                                         //Since we pop upon seeing the opening quote
                                         type.Push(Syntax.Quotes);
                                         type.Push(Syntax.Quotes);
                                         goto CheckType;
                                     case '<':
+                                        type.Pop();
                                         if (glyph.Foreground == c.theme.highlight) {
                                             type.Push(Syntax.FocusedTag);
                                         } else {
