@@ -199,7 +199,7 @@ namespace Transgenesis {
             //c.SetCursor(pos);
             c.NextLine();
             c.margin.Y = c.cursor.Row;
-            int columnHeight = 8;
+            //int columnHeight = 8;
 
             if(items.Count == 0) {
                 return;

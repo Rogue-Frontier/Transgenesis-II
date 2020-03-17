@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml;
@@ -361,7 +362,12 @@ namespace Transgenesis {
                                     //env.Unload(existing);
                                 } else {
                                     loading = Task.Run(() => {
-                                        LoadFolder(path);
+                                        try {
+                                            LoadFolder(path);
+                                        } catch(Exception e) {
+                                            throw;
+                                        }
+                                        
                                         loading = null;
                                     });
                                 }
@@ -421,7 +427,13 @@ namespace Transgenesis {
                                 }
                                 string path = Path.GetFullPath(string.Join(" ", parts.Skip(1)).Trim());
                                 if (env.extensions.TryGetValue(path, out TranscendenceExtension result)) {
-                                    screens.Push(new TypeEditor(screens, env, result, c));
+                                    screens.Push(new TypeEditor(screens, env, result, c, new GotoHandler() {
+                                        state = state,
+                                        screens = screens,
+                                        env = env,
+                                        extension = result,
+                                        c = c
+                                    }));
                                     h.Record();
                                 }
                                 break;
@@ -531,9 +543,16 @@ namespace Transgenesis {
                 }
             }
             void Load(string path, bool modules = false) {
+
+
                 string xml = File.ReadAllText(path);
                 //Cheat the XML reader by escaping ampersands so we don't parse entities
                 xml = xml.Replace("&", "&amp;");
+
+                var removeCommentOpen = new Regex(Regex.Escape("<!--") + Regex.Escape("-") + "+");
+                var removeCommentClose = new Regex(Regex.Escape("-") + "+" + Regex.Escape("-->"));
+                xml = removeCommentOpen.Replace(xml, "<!--");
+                xml = removeCommentClose.Replace(xml, "-->");
                 XmlDocument doc = new XmlDocument();
                 doc.LoadXml(xml);
 
