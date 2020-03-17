@@ -27,7 +27,7 @@
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>false</MapFileExtensions>
     <AutorunEnabled>true</AutorunEnabled>
-    <ApplicationRevision>6</ApplicationRevision>
+    <ApplicationRevision>7</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -78,6 +78,7 @@
     <Compile Include="ElementFormatter.cs" />
     <Compile Include="Environment.cs" />
     <Compile Include="Global.cs" />
+    <Compile Include="GotoHandler.cs" />
     <Compile Include="HighlightEntry.cs" />
     <Compile Include="IComponent.cs" />
     <Compile Include="MainMenu.cs" />
