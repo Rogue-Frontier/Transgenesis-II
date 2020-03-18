@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Xml.Linq;
@@ -33,6 +34,12 @@ namespace Transgenesis {
 
         public static string PadRightTab(this string s, int tabSize = 4) {
             return s.PadRight(((s.Length + 1) / tabSize) * tabSize + tabSize);
+        }
+        public static string TruncatePath(this string path) {
+            return path.Substring(new DirectoryInfo(path).Parent.Parent.Parent.FullName.Length);
+        }
+        public static string Truncate(this string s, int length) {
+            return s.Length <= length ? s : s.Substring(0, length - 3) + "...";
         }
 
         public static List<HighlightEntry> GetSuggestions(string input, IEnumerable<string> items) {

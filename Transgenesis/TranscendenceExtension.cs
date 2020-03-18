@@ -100,8 +100,9 @@ namespace Transgenesis {
                 s.AppendLine($@"    {entity, -32}""{entity2unid[entity]}""");
             }
             */
-            foreach(var entity in types.entities) {
-                s.AppendLine($@"    <!ENTITY {entity,-32}""{types.entity2unid[entity].ToUNID()}"">");
+            var entity2unid = types.BindAll();
+            foreach (var entity in entity2unid.Keys) {
+                s.AppendLine($@"    <!ENTITY {entity,-32}""{entity2unid[entity].ToUNID()}"">");
             }
 
             //TO DO: Display bound types
@@ -109,6 +110,13 @@ namespace Transgenesis {
             s.AppendLine("    ]>");
             //Unreplace all ampersands
             s.Append(structure.ToString().Replace("&amp;", "&"));
+
+            var parent = Directory.GetParent(path);
+            if(!parent.Exists) {
+                parent.Create();
+            }
+            while (!parent.Exists) { }
+
             File.WriteAllText(path, s.ToString());
             UpdateSaveCode();
         }

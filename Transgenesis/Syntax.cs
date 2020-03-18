@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 
 namespace Transgenesis {
     enum Syntax {
-        FocusedTag,
         Tag,
         Attribute,
         Text,
