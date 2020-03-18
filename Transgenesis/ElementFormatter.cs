@@ -297,7 +297,7 @@ namespace Transgenesis {
                                 break;
                                 */
                             case var c when char.IsLetterOrDigit(c):
-                                if (type.Any() && (type.Peek() == Syntax.Tag || type.Peek() == Syntax.FocusedTag)) {
+                                if (type.Any() && type.Peek() == Syntax.Tag) {
                                     type.Push(Syntax.Attribute);
                                 }
                                 break;
@@ -307,12 +307,7 @@ namespace Transgenesis {
                                 type.Push(Syntax.Quotes);
                                 break;
                             case '<':
-                                if (glyph.Foreground == c.theme.highlight) {
-                                    type.Push(Syntax.FocusedTag);
-                                } else {
-                                    type.Push(Syntax.Tag);
-                                }
-
+                                type.Push(Syntax.Tag);
                                 break;
                             case '&':
                                 type.Push(Syntax.Entity);
@@ -335,26 +330,19 @@ namespace Transgenesis {
                             break;
                         case Syntax.Text:
                             glyph.Foreground = Color.White;
-                            char ch = glyph.GlyphCharacter;
-                            if (ch == '"' || ch == '<' || ch == '&') {
-                                switch (glyph.GlyphCharacter) {
-                                    case '"':
-                                        //Since we pop upon seeing the opening quote
-                                        type.Push(Syntax.Quotes);
-                                        type.Push(Syntax.Quotes);
-                                        goto CheckType;
-                                    case '<':
-                                        type.Pop();
-                                        if (glyph.Foreground == c.theme.highlight) {
-                                            type.Push(Syntax.FocusedTag);
-                                        } else {
-                                            type.Push(Syntax.Tag);
-                                        }
-                                        goto CheckType;
-                                    case '&':
-                                        type.Push(Syntax.Entity);
-                                        goto CheckType;
-                                }
+                            switch (glyph.GlyphCharacter) {
+                                case '"':
+                                    //Since we pop upon seeing the opening quote
+                                    type.Push(Syntax.Quotes);
+                                    type.Push(Syntax.Quotes);
+                                    goto CheckType;
+                                case '<':
+                                    type.Pop();
+                                    type.Push(Syntax.Tag);
+                                    goto CheckType;
+                                case '&':
+                                    type.Push(Syntax.Entity);
+                                    goto CheckType;
                             }
                             break;
                         case Syntax.Entity:
@@ -375,15 +363,9 @@ namespace Transgenesis {
                             }
                             break;
                         case Syntax.Tag:
-                            glyph.Foreground = Color.LightGoldenrodYellow;
-                            if (glyph.GlyphCharacter == '>') {
-                                type.Pop();
-                            } else if (char.IsWhiteSpace(glyph.GlyphCharacter)) {
-                                type.Push(Syntax.Space);
+                            if(glyph.Foreground != c.theme.highlight) {
+                                glyph.Foreground = Color.LightGoldenrodYellow;
                             }
-                            break;
-                        case Syntax.FocusedTag:
-                            //Keep the highlight color
                             if (glyph.GlyphCharacter == '>') {
                                 type.Pop();
                             } else if (char.IsWhiteSpace(glyph.GlyphCharacter)) {
