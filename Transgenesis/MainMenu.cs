@@ -24,8 +24,13 @@ namespace Transgenesis {
         string extensionsFolder;
         Task loading;
 
-        public MainMenu(Stack<IComponent> screens) {
-            c = new ConsoleManager(new Point(0, 0));
+        public MainMenu(Stack<IComponent> screens, Environment env) {
+            this.state = new ProgramState();
+            this.screens = screens;
+            this.env = env;
+            this.c = new ConsoleManager(new Point(0, 0));
+            this.scroller = new Scroller(c, i);
+            
             i = new Input(c);
             h = new History(i, c);
             s = new Suggest(i, c);
@@ -65,13 +70,10 @@ namespace Transgenesis {
                 {"reloadallmodules", "reloadallmodules\r\n" +
                             "Unloads and loads all currently loaded extensions along with all of their modules" },
                 {"loadmodules", "loadmodules <extensionFile|extensionFolder>\r\n" +
-                            "Loads an extension at the specified file path along with all of its modules"}
+                            "Loads an extension at the specified file path along with all of its modules"},
+                {"exit",        "exit\r\n" +
+                            "Exits the current session"}
             });
-            this.scroller = new Scroller(c, i);
-            this.env = new Environment();
-            this.screens = screens;
-            this.state = new ProgramState();
-
 
             if(File.Exists("Settings.json")) {
                 var f = File.ReadAllText("Settings.json");
@@ -258,6 +260,7 @@ namespace Transgenesis {
                                     //Always use full-path so that we can easily find this
                                     env.CreateExtension(ex, Path.GetFullPath(parts[2]));
                                 }
+                                env.SaveState();
                                 break;
                             }
                         case "bindall": {
@@ -276,6 +279,7 @@ namespace Transgenesis {
                                 } else {
                                     i.Clear();
                                 }
+                                env.SaveState();
                                 break;
                             }
                         case "reloadall": {
@@ -284,8 +288,9 @@ namespace Transgenesis {
                                     env.Unload(e);
                                 }
                                 foreach(var e in extensions) {
-                                    Load(e.path);
+                                    env.Load(e.path);
                                 }
+                                env.SaveState(); 
                                 h.Record();
                                 break;
                             }
@@ -299,8 +304,9 @@ namespace Transgenesis {
                                     if(env.extensions.ContainsKey(e.path)) {
                                         continue;
                                     }
-                                    Load(e.path, true);
+                                    env.Load(e.path, true);
                                 }
+                                env.SaveState();
                                 h.Record();
                                 break;
                             }
@@ -312,7 +318,8 @@ namespace Transgenesis {
                                 if (env.extensions.TryGetValue(path, out TranscendenceExtension existing)) {
                                     env.Unload(existing);
                                 }
-                                Load(path);
+                                env.Load(path);
+                                env.SaveState();
                                 h.Record();
                                 break;
                             }
@@ -328,7 +335,8 @@ namespace Transgenesis {
                                         env.Unload(module);
                                     }
                                 }
-                                LoadFolder(path, true);
+                                env.LoadFolder(path, true);
+                                env.SaveState();
                                 h.Record();
                                 break;
                             }
@@ -363,7 +371,8 @@ namespace Transgenesis {
                                 } else {
                                     loading = Task.Run(() => {
                                         try {
-                                            LoadFolder(path);
+                                            env.LoadFolder(path);
+                                            env.SaveState();
                                         } catch(Exception e) {
                                             throw;
                                         }
@@ -383,10 +392,11 @@ namespace Transgenesis {
                                 //Don't reload the extension
                                 if (env.extensions.TryGetValue(path, out TranscendenceExtension existing)) {
                                     //env.Unload(existing);
-                                    LoadModules(existing);
+                                    env.LoadModules(existing);
                                 } else {
-                                    LoadFolder(path, true);
+                                    env.LoadFolder(path, true);
                                 }
+                                env.SaveState();
                                 h.Record();
 
                                 break;
@@ -401,7 +411,7 @@ namespace Transgenesis {
                                 if (env.extensions.TryGetValue(path, out TranscendenceExtension existing)) {
                                     //env.Unload(existing);
                                 } else {
-                                    LoadFolder(path);
+                                    env.LoadFolder(path);
                                 }
                                 if (env.extensions.TryGetValue(path, out TranscendenceExtension result)) {
                                     screens.Push(state.sessions.Initialize(result, new ElementEditor(state, screens, env, result, c)));
@@ -438,6 +448,10 @@ namespace Transgenesis {
                                 }
                                 break;
                             }
+                        case "exit": {
+                                screens.Pop();
+                                break;
+                            }
                     }
                     break;
                 //Allow Suggest/History to handle up/down arrows
@@ -452,7 +466,7 @@ namespace Transgenesis {
                     }
 
                     Dictionary<string, Func<List<string>>> autocomplete = new Dictionary<string, Func<List<string>>> {
-                        {"", () => new List<string>{ "types", "theme", "create", "bindall", "load", "unload", "edit", "open", "reload", "reloadmodules", "reloadall", "reloadallmodules", "loadmodules" } },
+                        {"", () => new List<string>{ "types", "theme", "create", "bindall", "load", "unload", "edit", "open", "reload", "reloadmodules", "reloadall", "reloadallmodules", "loadmodules", "exit" } },
                         {"theme", () => new List<string>{ "blue", "green", "pine", "orange", "default"} },
                         {"create", () => new List<string>{ "TranscendenceAdventure", "TranscendenceExtension", "TranscendenceLibrary", "TranscendenceModule" } },
                         {"load", GetFiles },
@@ -526,51 +540,7 @@ namespace Transgenesis {
 
 
 
-            void LoadFolder(string path, bool modules = false) {
-                if(Directory.Exists(path)) {
-                    var files = Directory.GetFiles(path);
-                    foreach (var subpath in files) {
-                        LoadFolder(subpath, modules);
-                    }
-
-                    var directories = Directory.GetDirectories(path);
-                    foreach (var subpath in directories) {
-                        LoadFolder(subpath, modules);
-                    }
-                }
-                if(File.Exists(path) && Path.GetExtension(path)==".xml") {
-                    Load(path, modules);
-                }
-            }
-            void Load(string path, bool modules = false) {
-
-
-                string xml = File.ReadAllText(path);
-                //Cheat the XML reader by escaping ampersands so we don't parse entities
-                xml = xml.Replace("&", "&amp;");
-
-                var removeCommentOpen = new Regex(Regex.Escape("<!--") + Regex.Escape("-") + "+");
-                var removeCommentClose = new Regex(Regex.Escape("-") + "+" + Regex.Escape("-->"));
-                xml = removeCommentOpen.Replace(xml, "<!--");
-                xml = removeCommentClose.Replace(xml, "-->");
-                XmlDocument doc = new XmlDocument();
-                doc.LoadXml(xml);
-
-                env.LoadExtension(doc, path, out TranscendenceExtension e);
-                if(modules) {
-                    LoadModules(e);
-                }
-            }
-            void LoadModules(TranscendenceExtension e) {
-                foreach (var module in e.structure.Elements()) {
-                    if (module.Tag() == "Module" || module.Tag() == "CoreLibrary" || module.Tag() == "TranscendenceAdventure") {
-                        string filename = module.Att("filename");
-                        //Use the full path when finding modules
-                        string path = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(e.path), filename));
-                        Load(path, true);
-                    }
-                }
-            }
+            
         }
         public void Update() {
         }
