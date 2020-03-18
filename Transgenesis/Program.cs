@@ -12,6 +12,8 @@ using Game = SadConsole.Game;
 using System;
 using SadConsole.Themes;
 using Keys = Microsoft.Xna.Framework.Input.Keys;
+using Newtonsoft.Json;
+
 namespace Transgenesis {
     class Program : Game {
         public static void Main(string[] args) {
@@ -19,11 +21,11 @@ namespace Transgenesis {
                 game.Run();
             }
         }
-        public Program() : base("Content/IBM_ext.font", 210, 65, null) { }
+        public Program() : base("Content/IBM_ext.font", 150, 65, null) { }
         protected override void Initialize() {
             IsMouseVisible = true;
             base.Initialize();
-            var con = new MainConsole(210, 65);
+            var con = new MainConsole(150, 65);
             //This allows trailing spaces to show up in command
             con.Cursor.DisableWordBreak = true;
 
@@ -35,17 +37,40 @@ namespace Transgenesis {
         }
     }
     class MainConsole : ControlsConsole {
-        Stack<IComponent> screens = new Stack<IComponent>();
+        Environment env = new Environment();
+        Queue<Stack<IComponent>> sessions = new Queue<Stack<IComponent>>();
+        Stack<IComponent> screens;
         public MainConsole(int width, int height) : base(width, height) {
             //screens.Push(new MainMenu(screens));
             //screens.Push(new TextEditor(screens, new ConsoleManager(new Point(0, 0)), s => { }));
-            screens.Push(new MainMenu(screens));
+
+            try {
+                env.LoadState();
+            } catch(Exception e) {
+                throw;
+            }
+            CreateSession();
+
             Theme = new WindowTheme {
                 ModalTint = Color.Black,
                 FillStyle = new Cell(Color.White, Color.Black),
             };
             DefaultBackground = Color.Black;
             DefaultForeground = Color.White;
+        }
+        public void CreateSession() {
+            if(screens != null) {
+                sessions.Enqueue(screens);
+            }
+            screens = new Stack<IComponent>();
+            screens.Push(new MainMenu(screens, env));
+        }
+        public void SwitchSession() {
+            sessions.Enqueue(screens);
+            NextSession();
+        }
+        public void NextSession() {
+            screens = sessions.Dequeue();
         }
         public override void Update(TimeSpan delta) {
             base.Update(delta);
@@ -67,7 +92,22 @@ namespace Transgenesis {
                 if(key == Keys.Back) {
                     //Global.Break();
                 }
+                if(key == Keys.Tab) {
+                    if(shift) {
+                        CreateSession();
+                    } else {
+                        SwitchSession();
+                    }
+                    break;
+                }
                 screens.Peek().Handle(new ConsoleKeyInfo(key.Character, (ConsoleKey)key.Key, shift, alt, ctrl));
+            }
+            if(screens.Count == 0) {
+                if(sessions.Count == 0) {
+                    System.Environment.Exit(0);
+                } else {
+                    screens = sessions.Dequeue();
+                }
             }
             return handle;
         }
