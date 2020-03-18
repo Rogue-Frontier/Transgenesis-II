@@ -4,6 +4,9 @@ using System.Linq;
 using static Transgenesis.Global;
 using System.Xml;
 using System.Xml.Linq;
+using System.IO;
+using System.Text.RegularExpressions;
+using Newtonsoft.Json;
 
 namespace Transgenesis {
     class Environment {
@@ -42,7 +45,8 @@ namespace Transgenesis {
         public bool CanAddElement(XElement element, XElement template, string subelement, out XElement subtemplate) {
             subtemplate = template.TryNameElement(subelement) ?? template.TryNameElement("*");
             if(subtemplate == null) {
-                return false;
+                subtemplate = unknown;
+                return allowUnknown;
             }
             subtemplate = InitializeTemplate(subtemplate);
             return CanAddElement(element, subtemplate);
@@ -147,6 +151,12 @@ namespace Transgenesis {
         }
         public void LoadWithTemplate(XElement structure, XElement template) {
             bases[structure] = template;
+            if(template == unknown) {
+                foreach(XElement subelement in structure.Elements()) {
+                    LoadWithTemplate(subelement, template);
+                }
+            }
+
             Dictionary<string, XElement> subtemplates = new Dictionary<string, XElement>();
             foreach(XElement subtemplate in template.Elements()) {
                 var initialized = InitializeTemplate(subtemplate);
@@ -160,11 +170,16 @@ namespace Transgenesis {
                     LoadWithTemplate(subelement, subtemplate);
                 } else {
                     //Otherwise this element has no base
+                    LoadWithTemplate(subelement, unknown);
                 }
             }
         }
         public XElement FromTemplate(XElement template, string name = null) {
             XElement result = new XElement(name ?? template.Att("name"));
+            if(template == unknown) {
+                goto Ready;
+            }
+
             foreach(XElement subtemplate in template.Elements("E").Where(e => e.Att("category") == "1" || e.Att("category") == "+")) {
                 var initialized = InitializeTemplate(subtemplate);
                 var subelement = FromTemplate(initialized);
@@ -179,7 +194,7 @@ namespace Transgenesis {
                     result.SetAttributeValue(attribute, value);
                 }
             }
-
+            Ready:
             bases[result] = template;
             return result;
         }
@@ -354,12 +369,70 @@ namespace Transgenesis {
             extensions[path] = extension;
             extension.Save();
         }
+        public void LoadFolder(string path, bool modules = false) {
+            if (Directory.Exists(path)) {
+                var files = Directory.GetFiles(path);
+                foreach (var subpath in files) {
+                    LoadFolder(subpath, modules);
+                }
+
+                var directories = Directory.GetDirectories(path);
+                foreach (var subpath in directories) {
+                    LoadFolder(subpath, modules);
+                }
+            }
+            if (File.Exists(path) && Path.GetExtension(path) == ".xml") {
+                Load(path, modules);
+            }
+        }
+        public void Load(string path, bool modules = false) {
+
+
+            string xml = File.ReadAllText(path);
+            //Cheat the XML reader by escaping ampersands so we don't parse entities
+            xml = xml.Replace("&", "&amp;");
+
+            var removeCommentOpen = new Regex(Regex.Escape("<!--") + Regex.Escape("-") + "+");
+            var removeCommentClose = new Regex(Regex.Escape("-") + "+" + Regex.Escape("-->"));
+            xml = removeCommentOpen.Replace(xml, "<!--");
+            xml = removeCommentClose.Replace(xml, "-->");
+            XmlDocument doc = new XmlDocument();
+            doc.LoadXml(xml);
+
+            LoadExtension(doc, path, out TranscendenceExtension e);
+            if (modules) {
+                LoadModules(e);
+            }
+        }
+        public void LoadModules(TranscendenceExtension e) {
+            foreach (var module in e.structure.Elements()) {
+                if (module.Tag() == "Module" || module.Tag() == "CoreLibrary" || module.Tag() == "TranscendenceAdventure") {
+                    string filename = module.Att("filename");
+                    //Use the full path when finding modules
+                    string path = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(e.path), filename));
+                    Load(path, true);
+                }
+            }
+        }
         public void BindAll() {
             foreach (var ext in extensions.Values) {
                 ext.updateTypeBindingsWithModules(this);
             }
             foreach (var ext in extensions.Values) {
                 ext.updateTypeBindingsWithModules(this);
+            }
+        }
+
+        public void SaveState() {
+            File.WriteAllText("Environment.json", JsonConvert.SerializeObject(extensions.Keys.ToList()));
+        }
+        public void LoadState() {
+            if(File.Exists("Environment.json")) {
+                var loaded = JsonConvert.DeserializeObject<List<string>>(File.ReadAllText("Environment.json"));
+                foreach(var file in loaded.Where(f => File.Exists(f))) {
+                    Load(file);
+                }
+                BindAll();
             }
         }
     }

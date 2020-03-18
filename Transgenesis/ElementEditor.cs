@@ -274,7 +274,7 @@ namespace Transgenesis {
                     //Make a duplicate of the element
                     var duplicate = new XElement(focused);
                     //Remember to copy the base template so that we know how to treat this element
-                    env.bases[duplicate] = env.bases[focused];
+                    env.LoadWithTemplate(duplicate, env.bases[focused]);
                     focused.AddAfterSelf(duplicate);
                     break;
                 case ConsoleKey.C when (k.Modifiers & ConsoleModifiers.Control) != 0:
@@ -349,6 +349,7 @@ namespace Transgenesis {
                                     if (env.CanAddElement(focused, env.bases[focused], elementName, out XElement subtemplate)) {
                                         var subelement = env.FromTemplate(subtemplate, elementName);
                                         focused.Add(subelement);
+                                        focused = subelement;
                                         h.Record();
                                     }
                                     break;
@@ -485,7 +486,7 @@ namespace Transgenesis {
                                     break;
                                 }
                             case "text": {
-                                    screens.Push(new TextEditor(screens, c, string.Join(" ", focused.Nodes().OfType<XText>().Select(t => t.Value)), str => {
+                                    screens.Push(new TextEditor(screens, c, string.Join(" ", focused.Nodes().OfType<XText>().Select(t => t.Value)).Replace("\t", "    "), str => {
                                         foreach (var t in focused.Nodes().OfType<XText>()) {
                                             t.Remove();
                                         }
