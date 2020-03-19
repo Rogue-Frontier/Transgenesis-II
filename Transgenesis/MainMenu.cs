@@ -492,37 +492,61 @@ namespace Transgenesis {
 
                         var path = string.Join(" ", i.Text.Split(' ').Skip(1));
                         if(path.Length > 0) {
-                            path = Path.GetFullPath(path);
-                        } else {
-                            goto Done;
-                        }
-                        if (Directory.Exists(path)) {
-                            result.Add(path);
-                            foreach (var file in Directory.GetFiles(path, "*.xml")) {
-                                result.Add(file);
+                            if (Path.IsPathRooted(path)) {
+                                path = Path.GetFullPath(path);
+                                
                             }
-                            foreach (var dir in Directory.GetDirectories(path)) {
-                                result.Add(dir + Path.DirectorySeparatorChar); //Add path separator to the end to speed up autocomplete navigation
-                            }
-                        } else if(File.Exists(path)) {
-                            /*
-                            result.Remove(path);
-                            result.Insert(0, path);
-                            */
-                            result.Add(path);
-                        } else {
-                            var dir = Path.GetDirectoryName(path);
-                            if (Directory.Exists(dir)) {
-                                result.Add(dir);
-                                foreach (var file in Directory.GetFiles(dir, "*.xml")) {
-                                    result.Add(file);
+                            var dir = new DirectoryInfo(Path.GetFullPath(path));
+
+                            if (dir.Exists) {
+                                if (!path.EndsWith(Path.DirectorySeparatorChar.ToString())) {
+                                    path += Path.DirectorySeparatorChar;
                                 }
-                                foreach (var subdir in Directory.GetDirectories(dir)) {
-                                    result.Add(subdir + Path.DirectorySeparatorChar); //Add path separator to the end to speed up autocomplete navigation
+                                result.Add(path);
+                                var up = $"..{Path.DirectorySeparatorChar}";
+                                if (path.EndsWith(up)) {
+                                    result.Add(path + up);
+                                }
+                                foreach (var file in dir.GetFiles("*.xml")) {
+                                    result.Add(path + file.Name);
+                                }
+                                foreach (var subdir in dir.GetDirectories()) {
+                                    result.Add(path + subdir.Name + Path.DirectorySeparatorChar); //Add path separator to the end to speed up autocomplete navigation
+                                }
+                            } else if (File.Exists(path)) {
+                                /*
+                                result.Remove(path);
+                                result.Insert(0, path);
+                                */
+                                result.Add(path);
+                            } else {
+                                var parent = dir.Parent;
+                               if (parent?.Exists == true) {
+                                    Action<string> addResult;
+                                    if (Path.IsPathRooted(path)) {
+                                        addResult = s => result.Add(s);
+
+                                        addResult(parent.FullName);
+                                        foreach (var file in parent.GetFiles("*.xml")) {
+                                            addResult(file.FullName);
+                                        }
+                                        foreach (var subdir in parent.GetDirectories()) {
+                                            addResult(subdir.FullName + Path.DirectorySeparatorChar); //Add path separator to the end to speed up autocomplete navigation
+                                        }
+                                    } else {
+                                        addResult = s => result.Add(Path.GetDirectoryName(path) + Path.DirectorySeparatorChar + s);
+                                        foreach (var file in parent.GetFiles("*.xml")) {
+                                            addResult(file.Name);
+                                        }
+                                        foreach (var subdir in parent.GetDirectories()) {
+                                            addResult(subdir.Name + Path.DirectorySeparatorChar); //Add path separator to the end to speed up autocomplete navigation
+                                        }
+                                    }
                                 }
                             }
+
+
                         }
-                    Done:
                         result.Add(extensionsFolder + Path.DirectorySeparatorChar);
                         result.AddRange(Directory.GetFiles(extensionsFolder, "*.xml").ToList());
 
@@ -531,7 +555,8 @@ namespace Transgenesis {
                         result.Add(Directory.GetCurrentDirectory() + Path.DirectorySeparatorChar);
                         result.AddRange(Directory.GetFiles(Directory.GetCurrentDirectory(), "*.xml").ToList());
                         */
-                        return result;
+                        
+                        return result.Distinct().ToList();
                     }
 
                     break;
