@@ -160,7 +160,10 @@ namespace Transgenesis {
 
                 string unsaved = e.isUnsaved() ? "[S] " : "    ";
                 string unbound = e.isUnbound() ? "[B] " : "    ";
-                buffer.Add(c.CreateString($"{unsaved}{unbound}{tag}{e.unid?.ToUNID() ?? "Unknown",-12}{e.name,-48}{e.path}"));
+                buffer.Add(c.CreateString($"{unsaved}{unbound}{tag}{e.unid?.ToUNID() ?? e.parent?.unid?.ToUNID() ?? "Unknown",-12}{e.name,-48}{e.path.TruncatePath()}"));
+                if(buffer.Last().Count > c.width) {
+                    buffer.Add(c.CreateString(""));
+                }
 
                 if (moduleMode != ModuleMode.HideNone && modulesByExtension.ContainsKey(e)) {
                     buffer.Add(c.CreateString($"        Modules: {modulesByExtension[e].Count}"));
@@ -280,6 +283,16 @@ namespace Transgenesis {
                                     i.Clear();
                                 }
                                 env.SaveState();
+                                h.Record();
+                                break;
+                            }
+                        case "unloadall": {
+                                var extensions = new List<TranscendenceExtension>(env.extensions.Values);
+                                foreach (var e in extensions) {
+                                    env.Unload(e);
+                                }
+                                env.SaveState();
+                                h.Record();
                                 break;
                             }
                         case "reloadall": {
@@ -291,22 +304,6 @@ namespace Transgenesis {
                                     env.Load(e.path);
                                 }
                                 env.SaveState(); 
-                                h.Record();
-                                break;
-                            }
-                        case "reloadallmodules": {
-                                var extensions = env.extensions.Values;
-                                foreach (var e in extensions) {
-                                    env.Unload(e);
-                                }
-                                foreach(var e in extensions) {
-                                    //If this extension was already reloaded due to a parent extension, skip it
-                                    if(env.extensions.ContainsKey(e.path)) {
-                                        continue;
-                                    }
-                                    env.Load(e.path, true);
-                                }
-                                env.SaveState();
                                 h.Record();
                                 break;
                             }
@@ -399,24 +396,6 @@ namespace Transgenesis {
                                 env.SaveState();
                                 h.Record();
 
-                                break;
-                            }
-                        case "open": {
-                                if(parts.Length == 1) {
-                                    break;
-                                }
-
-                                string path = Path.GetFullPath(string.Join(" ", parts.Skip(1)).Trim());
-                                //Don't reload the extension
-                                if (env.extensions.TryGetValue(path, out TranscendenceExtension existing)) {
-                                    //env.Unload(existing);
-                                } else {
-                                    env.LoadFolder(path);
-                                }
-                                if (env.extensions.TryGetValue(path, out TranscendenceExtension result)) {
-                                    screens.Push(state.sessions.Initialize(result, new ElementEditor(state, screens, env, result, c)));
-                                }
-                                h.Record();
                                 break;
                             }
                         case "edit": {

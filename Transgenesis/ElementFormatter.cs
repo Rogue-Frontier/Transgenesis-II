@@ -104,10 +104,14 @@ namespace Transgenesis {
                         writeTag = s => AddLine(s);
                     }
                     if (expandedCheck) {
-                        //show all attributes and children
-                        writeTag($"{box}{Tab()}{tagStart}{ShowAllAttributes(element)}>");
-                        ShowChildren();
-                        writeTag($"{box}{Tab()}</{element.Tag()}>");
+                        if(element.Nodes().Count() == 1 && element.FirstNode is XText text) {
+                            writeTag($"{box}{Tab()}{tagStart}{ShowAllAttributes(element)}>{text.Value.Replace("\t", "    ")}</{element.Tag()}>");
+                        } else {
+                            //show all attributes and children
+                            writeTag($"{box}{Tab()}{tagStart}{ShowAllAttributes(element)}>");
+                            ShowChildren();
+                            writeTag($"{box}{Tab()}</{element.Tag()}>");
+                        }
                     } else {
                         //show only the important attributes and (semi)expanded children
 
@@ -296,10 +300,8 @@ namespace Transgenesis {
                                 }
                                 break;
                                 */
-                            case var c when char.IsLetterOrDigit(c):
-                                if (type.Any() && type.Peek() == Syntax.Tag) {
-                                    type.Push(Syntax.Attribute);
-                                }
+                            case var c when char.IsLetterOrDigit(c) && type.Any() && type.Peek() == Syntax.Tag:
+                                type.Push(Syntax.Attribute);
                                 break;
                             case '"':
                                 //Since we pop upon seeing the opening quote
@@ -314,7 +316,7 @@ namespace Transgenesis {
                                 break;
                             default:
                                 type.Push(Syntax.Text);
-                                continue;
+                                break;
                         }
                     }
 

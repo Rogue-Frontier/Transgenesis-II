@@ -66,7 +66,10 @@ namespace Transgenesis {
                     return false;
             }
         }
-        public static bool CanRemoveElement(XElement element, XElement subtemplate) {
+        public bool CanRemoveElement(XElement element, XElement subtemplate) {
+            if(subtemplate == unknown) {
+                return true;
+            }
             switch (subtemplate.Att("category")) {
                 case "*":
                 case "?":

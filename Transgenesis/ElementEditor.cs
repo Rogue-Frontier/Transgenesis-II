@@ -2,6 +2,7 @@
 using SadConsole;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -288,7 +289,7 @@ namespace Transgenesis {
                     if (state.copied != null) {
                         var copy = new XElement(state.copied);
                         //Remember to copy the base template so that we know how to treat this element
-                        env.bases[copy] = env.bases[state.copied];
+                        env.LoadWithTemplate(copy, env.bases[state.copied]);
                         focused.Add(copy);
                     }
                     break;
@@ -506,6 +507,37 @@ namespace Transgenesis {
                                     h.Record();
                                     break;
                                 }
+                            case "createmodule": {
+                                    if (parts.Length < 2) {
+                                        break;
+                                    }
+                                    //Always use full-path so that we can easily find this
+                                    var path = Path.GetDirectoryName(extension.path) + Path.DirectorySeparatorChar + parts[1];
+                                    env.CreateExtension(ExtensionTypes.TranscendenceModule, path);
+                                    env.SaveState();
+                                    h.Record();
+                                    break;
+                                }
+                            case "editmodule": {
+                                    if (parts.Length < 2) {
+                                        break;
+                                    }
+                                    //Always use full-path so that we can easily find this
+                                    var path = Path.GetDirectoryName(extension.path) + Path.DirectorySeparatorChar + parts[1];
+                                    if (env.extensions.TryGetValue(path, out var module)) {
+                                        screens.Push(state.sessions.Initialize(module, new ElementEditor(state, screens, env, module, c)));
+                                    }
+                                    h.Record();
+                                    break;
+                                }
+                            case "editparent": {
+                                    var parent = extension.parent;
+                                    if(parent != null) {
+                                        screens.Push(state.sessions.Initialize(parent, new ElementEditor(state, screens, env, parent, c)));
+                                    }
+                                    h.Record();
+                                    break;
+                                }
                             case "exit": {
                                     screens.Pop();
                                     h.Record();
@@ -553,7 +585,7 @@ namespace Transgenesis {
 
                             var empty = new List<string>();
                             Dictionary<string, Func<List<string>>> autocomplete = new Dictionary<string, Func<List<string>>> {
-                                {"", () => new List<string>{ "set", "add", "remove", "bind", "bindall", "save", "saveall", "expand", "collapse", "moveup", "movedown", "root", "parent", "next", "prev", "text", "goto", "types", "exit" } },
+                                {"", () => new List<string>{ "set", "add", "remove", "bind", "bindall", "save", "saveall", "expand", "collapse", "moveup", "movedown", "root", "parent", "next", "prev", "text", "goto", "types", "createmodule", "loadmodule", "editmodule", "editparent", "exit" } },
                                 {"set", () => env.bases[focused].GetValidAttributes() },
                                 {"add", () => env.GetAddableElements(focused, env.bases[focused]) },
                                 {"remove", () => env.GetRemovableElements(focused, env.bases[focused]) },
@@ -576,6 +608,10 @@ namespace Transgenesis {
                                 //next
                                 //prev
                                 //types
+                                //createmodule
+                                //loadmodule
+                                //editmodule
+                                //editparent
                                 //exit
                             };
                             string p = autocomplete.Keys.Last(prefix => input.StartsWith((prefix + " ").TrimStart()));
@@ -612,7 +648,7 @@ namespace Transgenesis {
             */
             void RemoveFocused() {
                 var parent = focused.Parent;
-                if (parent != null && Environment.CanRemoveElement(parent, env.bases[focused])) {
+                if (parent != null && env.CanRemoveElement(parent, env.bases[focused])) {
                     var after = focused.ElementsAfterSelf().FirstOrDefault();
                     focused.Remove();
                     //focused = parent;

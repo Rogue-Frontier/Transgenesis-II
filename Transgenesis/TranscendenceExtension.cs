@@ -163,6 +163,7 @@ namespace Transgenesis {
             types.entity2unid.Clear();
             types.unid2entity.Clear();
             types.ownedTypes.Clear();
+            types.unknownTypes.Clear();
             types.overriddenTypes.Clear();
             types.ClearDependencyTypes();
             types.ClearModuleTypes();
@@ -428,6 +429,7 @@ namespace Transgenesis {
                             bool bindUnknown = true;
                             if(bindUnknown) {
                                 userTypes.typemap[sub_type] = sub;
+                                userTypes.unknownTypes.Add(sub_type);
                                 bound.Add(sub_type);
                             }
 
@@ -484,6 +486,7 @@ namespace Transgenesis {
         public Dictionary<uint, string> unid2entity = new Dictionary<uint, string>();
         public Dictionary<string, XElement> typemap = new Dictionary<string, XElement>();    //Binds entities to designs
         public HashSet<string> ownedTypes = new HashSet<string>();         //Types that we have defined
+        public HashSet<string> unknownTypes = new HashSet<string>();            //Types that were bound but are not defined
         public HashSet<string> overriddenTypes = new HashSet<string>();         //Types that we have overridden
         //Types that we have bound to a Design in one of our dependencies
         public Dictionary<string, TranscendenceExtension> dependencyTypes = new Dictionary<string, TranscendenceExtension>();
@@ -501,6 +504,7 @@ namespace Transgenesis {
             this.unid2entity = new Dictionary<uint, string>(parent.unid2entity);
             this.typemap = new Dictionary<string, XElement>(parent.typemap);
             this.ownedTypes = new HashSet<string>(parent.ownedTypes);
+            this.unknownTypes = new HashSet<string>(parent.unknownTypes);
             this.overriddenTypes = new HashSet<string>(parent.overriddenTypes);
             this.dependencyTypes = new Dictionary<string, TranscendenceExtension>(parent.dependencyTypes);
             this.typesByDependency = new Dictionary<TranscendenceExtension, List<string>>(parent.typesByDependency);

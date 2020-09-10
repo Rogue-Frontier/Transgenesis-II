@@ -20,6 +20,8 @@ namespace Transgenesis {
         Tooltip t;
         Scroller scroller;
 
+        List<ColoredString> buffer;
+
         public TypeEditor(Stack<IComponent> screens, Environment env, TranscendenceExtension extension, ConsoleManager c, GotoHandler go) {
             this.screens = screens;
             this.env = env;
@@ -49,23 +51,38 @@ namespace Transgenesis {
                                 "Exits the Type Editor to the main menu"},
             });
             scroller = new Scroller(c, i);
+            buffer = new List<ColoredString>();
+            UpdateBuffer();
         }
-        public void Draw() {
-            c.Clear();
-            c.SetCursor(new Microsoft.Xna.Framework.Point(0, 0));
+        public void UpdateBuffer() {
 
-            List<ColoredString> buffer = new List<ColoredString>();
-
+            buffer.Clear();
             const int Entity = -32,
                 UNID = -12,
-                DesignType = -32,
-                Extension = -32,
+                DesignType = -24,
+                Extension = -24,
                 Module = -32;
-            AddLine($"<!--{"Entity", Entity}{"UNID", UNID}{"DesignType", DesignType}{"Extension", Extension}{"Module", Module}--->"); //{entry.comment}
+            AddLine($"<!--{"Entity",Entity}{"UNID",UNID}{"DesignType",DesignType}{"Extension",Extension}{"Module",Module}--->"); //{entry.comment}
 
             string extensionName = extension.name ?? extension.entity ?? "This";
 
-            if(extension.types.elements.Any()) {
+            if(extension.types.unknownTypes.Any()) {
+                AddLine("<!--Unknown types-->");
+
+
+                foreach (var unknown in extension.types.unknownTypes) {
+                    string originName = "Unknown";
+                    string moduleName = "Unknown";
+
+                    if(extension.types.moduleTypes.TryGetValue(unknown, out var origin) || extension.types.dependencyTypes.TryGetValue(unknown, out origin)) {
+                        originName = origin.firstIdentifier;
+                        moduleName = origin.types.moduleTypes[unknown].path.TruncatePath();
+                    }
+
+                    AddLine($"    {unknown,Entity}{"Unknown",UNID}{(extension.types.typemap.TryGetValue(unknown, out XElement design) ? design?.Tag() ?? "None" : "None"),DesignType}{originName,Extension}{moduleName,Module}"); //{entry.comment}
+                }
+            }
+            if (extension.types.elements.Any()) {
                 AddLine("<!--Types defined by this extension-->");
                 int index = 0;
                 foreach (TypeElement e in extension.types.elements) {
@@ -77,10 +94,10 @@ namespace Transgenesis {
                     if (e is TypeEntry entry) {
                         string moduleName = "";
                         if (extension.types.moduleTypes.TryGetValue(entry.entity, out TranscendenceExtension module)) {
-                            moduleName = Path.GetFileName(extension.types.moduleTypes[entry.entity].path);
+                            moduleName = Path.GetFileName(extension.types.moduleTypes[entry.entity].path.TruncatePath());
                         }
 
-                        addLine($"    {entry.entity, Entity}{entry.unid?.ToUNID() ?? "Auto", UNID}{(extension.types.typemap.TryGetValue(entry.entity, out XElement design) ? design?.Tag() ?? "None" : "None"),DesignType}{extensionName,Extension}{moduleName,Module}"); //{entry.comment}
+                        addLine($"    {entry.entity,Entity}{entry.unid?.ToUNID() ?? "Auto",UNID}{(extension.types.typemap.TryGetValue(entry.entity, out XElement design) ? design?.Tag() ?? "None" : "None"),DesignType}{extensionName,Extension}{moduleName,Module}"); //{entry.comment}
                     } else if (e is TypeRange group) {
                         string range = $"{group.unid_min?.ToUNID() ?? "Auto"} -- {group.unid_max?.ToUNID() ?? "Auto"}";
                         addLine($"<!--{range}-->");
@@ -89,9 +106,9 @@ namespace Transgenesis {
                         foreach (var entity in group.entities) {
                             string moduleName = "";
                             if (extension.types.moduleTypes.TryGetValue(entity, out TranscendenceExtension module)) {
-                                moduleName += Path.GetFileName(extension.types.moduleTypes[entity].path);
+                                moduleName += Path.GetFileName(extension.types.moduleTypes[entity].path.TruncatePath());
                             }
-                            addLine($"    {entity,Entity}{(group.unid_min != null ? ((uint)(group.unid_min + rangeIndex)).ToUNID() : "Auto"), UNID}{(extension.types.typemap.TryGetValue(entity, out XElement design) ? design?.Tag() ?? "None" : "None"), DesignType}{extensionName, Extension}{moduleName, Module}");
+                            addLine($"    {entity,Entity}{(group.unid_min != null ? ((uint)(group.unid_min + rangeIndex)).ToUNID() : "Auto"),UNID}{(extension.types.typemap.TryGetValue(entity, out XElement design) ? design?.Tag() ?? "None" : "None"),DesignType}{extensionName,Extension}{moduleName,Module}");
                             rangeIndex++;
                         }
                     }
@@ -99,16 +116,16 @@ namespace Transgenesis {
                 }
             }
 
-            if(extension.types.overriddenTypes.Any()) {
+            if (extension.types.overriddenTypes.Any()) {
                 AddLine("<!-- Types overridden by this extension -->");
                 foreach (var overridden in extension.types.overriddenTypes) {
                     string dependencyName = "Unknown";
                     string moduleName = "Unknown";
-                    if(extension.types.dependencyTypes.TryGetValue(overridden, out var dependency)) {
+                    if (extension.types.dependencyTypes.TryGetValue(overridden, out var dependency)) {
                         dependencyName = dependency.firstIdentifier;
-                        moduleName = dependency.types.moduleTypes[overridden].path;
+                        moduleName = dependency.types.moduleTypes[overridden].path.TruncatePath();
                     }
-                    AddLine($"    {overridden, Entity}{extension.types.entity2unid[overridden].ToUNID(),UNID}{(extension.types.typemap.TryGetValue(overridden, out XElement design) ? design?.Tag() ?? "None" : "None"),DesignType}{dependencyName,Extension}{moduleName, Module}"); //{entry.comment}
+                    AddLine($"    {overridden,Entity}{extension.types.entity2unid[overridden].ToUNID(),UNID}{(extension.types.typemap.TryGetValue(overridden, out XElement design) ? design?.Tag() ?? "None" : "None"),DesignType}{dependencyName,Extension}{moduleName,Module}"); //{entry.comment}
                 }
             }
 
@@ -122,7 +139,7 @@ namespace Transgenesis {
                     if (e is TypeEntry entry) {
                         string moduleName = "Unknown";
                         if (parent.types.moduleTypes.TryGetValue(entry.entity, out TranscendenceExtension module)) {
-                            moduleName = Path.GetFileName(parent.types.moduleTypes[entry.entity].path);
+                            moduleName = Path.GetFileName(parent.types.moduleTypes[entry.entity].path.TruncatePath());
                         }
 
                         addLine($"    {entry.entity,Entity}{entry.unid?.ToUNID() ?? "Auto",UNID}{(parent.types.typemap.TryGetValue(entry.entity, out XElement design) ? design?.Tag() ?? "None" : "None"),DesignType}{parentName,Extension}{moduleName,Module}"); //{entry.comment}
@@ -134,7 +151,7 @@ namespace Transgenesis {
                         foreach (var entity in group.entities) {
                             string moduleName = "Unknown";
                             if (parent.types.moduleTypes.TryGetValue(entity, out TranscendenceExtension module)) {
-                                moduleName += Path.GetFileName(parent.types.moduleTypes[entity].path);
+                                moduleName += Path.GetFileName(parent.types.moduleTypes[entity].path.TruncatePath());
                             }
                             addLine($"    {entity,Entity}{(group.unid_min != null ? ((uint)(group.unid_min + rangeIndex)).ToUNID() : "Auto"),UNID}{(parent.types.typemap.TryGetValue(entity, out XElement design) ? design?.Tag() ?? "None" : "None"),DesignType}{parentName,Extension}{moduleName,Module}");
                             rangeIndex++;
@@ -150,21 +167,32 @@ namespace Transgenesis {
                     string dependencyName = dependency.firstIdentifier;
                     foreach (var entity in extension.types.typesByDependency[dependency]) {
                         string moduleName = "Unknown";
-                        if(dependency.types.moduleTypes.TryGetValue(entity, out var module)) {
-                            moduleName = module.path;
+                        if (dependency.types.moduleTypes.TryGetValue(entity, out var module)) {
+                            moduleName = module.path.TruncatePath();
                         }
-                        AddLine($"    {entity,Entity}{extension.types.entity2unid[entity].ToUNID(),UNID}{(extension.types.typemap.TryGetValue(entity, out XElement design) ? design?.Tag() ?? "None" : "None"),DesignType}{dependencyName,Extension}{moduleName, Module}"); //{entry.comment}
+                        AddLine($"    {entity,Entity}{extension.types.entity2unid[entity].ToUNID(),UNID}{(extension.types.typemap.TryGetValue(entity, out XElement design) ? design?.Tag() ?? "None" : "None"),DesignType}{dependencyName,Extension}{moduleName,Module}"); //{entry.comment}
                     }
                 }
             }
-            
+
 
             void AddLine(string s) {
                 buffer.Add(c.CreateString(s));
+                if (buffer.Last().Count > c.width) {
+                    buffer.Add(c.CreateString(""));
+                }
             }
             void AddHighlightLine(string s) {
                 buffer.Add(c.CreateHighlightString(s));
+                if (buffer.Last().Count > c.width) {
+                    buffer.Add(c.CreateString(""));
+                }
             }
+        }
+        public void Draw() {
+            c.Clear();
+            c.SetCursor(new Microsoft.Xna.Framework.Point(0, 0));
+
             if (i.Text.Length == 0) {
                 scroller.Draw(buffer, scroller.screenRows + s.height);
                 i.Draw();
@@ -189,10 +217,12 @@ namespace Transgenesis {
                 case ConsoleKey.DownArrow when i.Text.Length == 0:
                     elementIndex++;
                     elementIndex = Math.Min(elementIndex, extension.types.elements.Count() - 1);
+                    UpdateBuffer();
                     break;
                 case ConsoleKey.UpArrow when i.Text.Length == 0:
                     elementIndex--;
                     elementIndex = Math.Max(0, elementIndex);
+                    UpdateBuffer();
                     break;
                 case ConsoleKey.Enter: {
                         string[] parts = input.Split(' ');
@@ -217,6 +247,7 @@ namespace Transgenesis {
                                     } else {
                                         //Expected entity
                                     }
+                                    UpdateBuffer();
                                     h.Record();
                                     break;
                                 }
@@ -247,6 +278,7 @@ namespace Transgenesis {
                                             break;
                                         }
                                     }
+                                    UpdateBuffer();
                                     h.Record();
                                     break;
                                 }
@@ -284,6 +316,7 @@ namespace Transgenesis {
                                     } else {
                                         extension.types.elements.Insert(elementIndex + 1, result);
                                     }
+                                    UpdateBuffer();
                                     h.Record();
                                     break;
                                 }
@@ -319,16 +352,19 @@ namespace Transgenesis {
                                     } else {
                                         extension.types.elements.Insert(elementIndex + 1, result);
                                     }
+                                    UpdateBuffer();
                                     h.Record();
                                     break;
                                 }
                             case "bindall": {
                                     env.BindAll();
+                                    UpdateBuffer();
                                     h.Record();
                                     break;
                                 }
                             case "bind": {
                                     extension.updateTypeBindings(env);
+                                    UpdateBuffer();
                                     h.Record();
                                     break;
                                 }
