@@ -6,6 +6,8 @@ using System;
 using Keys = SadConsole.Input.Keys;
 using SadConsole.UI;
 using SadConsole.Input;
+using SadConsole;
+using System.Diagnostics;
 
 namespace Transgenesis {
     internal class Program {

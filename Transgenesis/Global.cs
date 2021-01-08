@@ -8,6 +8,24 @@ using System.Xml.Linq;
 
 namespace Transgenesis {
     public static class Global {
+        public static List<string> SplitMulti(this string str, string separator, int length) {
+            List<string> result = new List<string>();
+            foreach(var l in str.Split(separator)) {
+                result.AddRange(l.Split(length));
+            }
+            return result;
+        }
+        public static string[] Split(this string str, int length) {
+            string[] result = new string[(str.Length + length - 1) / length];
+            int i = 0;
+            while (str.Length > length) {
+                result[i] = str.Substring(0, length);
+                str = str.Substring(length);
+                i++;
+            }
+            result[i] = str;
+            return result;
+        }
 
         public static XElement NameElement(this XElement e, string name) {
             return e.Elements("E").First(s => s.Attribute("name")?.Value == name);

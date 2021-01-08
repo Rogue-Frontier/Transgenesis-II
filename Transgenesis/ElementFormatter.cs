@@ -28,51 +28,12 @@ namespace Transgenesis {
             }
         }
         void AddLine(string line) {
-            int index = 0;
-            ColoredString s = new ColoredString(c.width);
-            foreach (var ch in line) {
-                if (ch == '\n') {
-                    buffer.Add(s.SubString(0, index));
-                    s = new ColoredString(c.width);
-                    index = 0;
-                    continue;
-                }
-                s[index] = new ColoredGlyphEffect() { Background = c.theme.back, Foreground = c.theme.front, GlyphCharacter = ch };
-                index++;
-                if (index == c.width) {
-                    buffer.Add(s);
-                    s = new ColoredString(c.width);
-                    index = 0;
-                }
-            }
-            if (index > 0) {
-                buffer.Add(s.SubString(0, index));
-            }
+            buffer.AddRange(line.SplitMulti("\n", c.width).Select(s => new ColoredString(s, c.theme.front, c.theme.back)));
         }
         void AddLineHighlight(string line) {
-            int index = 0;
-            ColoredString s = new ColoredString(c.width);
-            foreach (var ch in line) {
-                if (ch == '\n') {
-                    highlightLines.Add(buffer.Count);
-                    buffer.Add(s.SubString(0, index));
-                    s = new ColoredString(c.width);
-                    index = 0;
-                    continue;
-                }
-                s[index] = new ColoredGlyphEffect() { Foreground = c.theme.highlight, Background = c.theme.back, GlyphCharacter = ch };
-                index++;
-                if (index == c.width) {
-                    highlightLines.Add(buffer.Count);
-                    buffer.Add(s);
-                    s = new ColoredString(c.width);
-                    index = 0;
-                }
-            }
-            if (index > 0) {
-                highlightLines.Add(buffer.Count);
-                buffer.Add(s.SubString(0, index));
-            }
+            var parts = line.SplitMulti("\n", c.width).Select(s => new ColoredString(s, c.theme.highlight, c.theme.back));
+            highlightLines.UnionWith(Enumerable.Range(buffer.Count, parts.Count()));
+            buffer.AddRange(parts);
         }
         public void ShowElementTree(XElement root, XElement focused, HashSet<XElement> expanded = null, HashSet<XElement> semiexpanded = null, HashSet<XElement> collapsed = null) {
             bool expandAll = expanded == null;
