@@ -6,6 +6,7 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <RootNamespace>Transgenesis</RootNamespace>
     <AssemblyName>Transgenesis</AssemblyName>
+    <LangVersion>preview</LangVersion>
   </PropertyGroup>
   <ItemGroup>
     <None Include="Content\IBMCGA.png">
@@ -56,6 +57,7 @@
   <ItemGroup>
     <PackageReference Include="SadConsole" Version="9.0.0-beta1" />
     <PackageReference Include="SadConsole.Host.MonoGame" Version="9.0.0-beta1" />
+    <PackageReference Include="System.Collections" Version="4.3.0" />
   </ItemGroup>
 
   <ItemGroup>

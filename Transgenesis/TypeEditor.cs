@@ -178,15 +178,15 @@ namespace Transgenesis {
 
 
             void AddLine(string s) {
-                buffer.Add(c.CreateString(s));
+                buffer.Add(c.Color(s));
                 if (buffer.Last().Count > c.width) {
-                    buffer.Add(c.CreateString(""));
+                    buffer.Add(c.Color(""));
                 }
             }
             void AddHighlightLine(string s) {
-                buffer.Add(c.CreateHighlightString(s));
+                buffer.Add(c.Highlight(s));
                 if (buffer.Last().Count > c.width) {
-                    buffer.Add(c.CreateString(""));
+                    buffer.Add(c.Color(""));
                 }
             }
         }

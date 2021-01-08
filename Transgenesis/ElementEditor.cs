@@ -134,7 +134,6 @@ namespace Transgenesis {
 
                 formatter.ShowElementTree(root, focused, expanded, semiexpanded);
             }
-            formatter.SyntaxHighlight();
             List<ColoredString> buffer = formatter.buffer;
             /*
             {

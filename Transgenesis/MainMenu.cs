@@ -86,9 +86,9 @@ namespace Transgenesis {
             c.Clear();
             c.SetCursor(new Point(0, 0));
             List<ColoredString> buffer = new List<ColoredString>();
-            buffer.Add(c.CreateString("Transgenesis II"));
+            buffer.Add(c.Color("Transgenesis II"));
 
-            buffer.Add(c.CreateString($"Extensions Loaded: {env.extensions.Count}"));
+            buffer.Add(c.Color($"Extensions Loaded: {env.extensions.Count}"));
             var ext = new List<TranscendenceExtension>(env.extensions.Values);
 
             Comparison<TranscendenceExtension> modulesUnderParent = (TranscendenceExtension t1, TranscendenceExtension t2) => {
@@ -159,13 +159,13 @@ namespace Transgenesis {
 
                 string unsaved = e.isUnsaved() ? "[S] " : "    ";
                 string unbound = e.isUnbound() ? "[B] " : "    ";
-                buffer.Add(c.CreateString($"{unsaved}{unbound}{tag}{e.unid?.ToUNID() ?? e.parent?.unid?.ToUNID() ?? "Unknown",-12}{e.name,-48}{e.path.TruncatePath()}"));
+                buffer.Add(c.Color($"{unsaved}{unbound}{tag}{e.unid?.ToUNID() ?? e.parent?.unid?.ToUNID() ?? "Unknown",-12}{e.name,-48}{e.path.TruncatePath()}"));
                 if(buffer.Last().Count > c.width) {
-                    buffer.Add(c.CreateString(""));
+                    buffer.Add(c.Color(""));
                 }
 
                 if (moduleMode != ModuleMode.HideNone && modulesByExtension.ContainsKey(e)) {
-                    buffer.Add(c.CreateString($"        Modules: {modulesByExtension[e].Count}"));
+                    buffer.Add(c.Color($"        Modules: {modulesByExtension[e].Count}"));
                 }
             }
 

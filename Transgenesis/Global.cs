@@ -8,6 +8,14 @@ using System.Xml.Linq;
 
 namespace Transgenesis {
     public static class Global {
+
+        public static void Add<U, T>(this Dictionary<U, HashSet<T>> dict, U key, T item) {
+            if(dict.TryGetValue(key, out var v)) {
+                v.Add(item);
+            } else {
+                dict[key] = new HashSet<T>();
+            }
+        }
         public static List<string> SplitMulti(this string str, string separator, int length) {
             List<string> result = new List<string>();
             foreach(var l in str.Split(separator)) {

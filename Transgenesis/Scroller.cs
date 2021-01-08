@@ -38,10 +38,10 @@ namespace Transgenesis {
 
             //Let user know that there's more text
             if(scrolling > 0) {
-                lines[0] = c.CreateString("...");
+                lines[0] = c.Color("...");
             }
             if (scrolling + count < buffer.Count) {
-                lines[lines.Count - 1] = c.CreateString("...");
+                lines[lines.Count - 1] = c.Color("...");
             }
             int printed = 0;
             foreach (var line in lines) {

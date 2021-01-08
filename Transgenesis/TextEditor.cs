@@ -251,7 +251,7 @@ namespace Transgenesis {
                     line = new ColoredString(width);
                     length = 0;
                     if(cursor == index) {
-                        buffer[buffer.Count - 1] += new ColoredString(c.CreateCharInvert(' '));
+                        buffer[buffer.Count - 1] += new ColoredString(c.ColorInvert(' '));
                         //cursorAfterNewline = true;
                     }
                     index++;
@@ -259,9 +259,9 @@ namespace Transgenesis {
                 }
                 if(index == cursor || cursorAfterNewline) {
                     cursorAfterNewline = false;
-                    line[length] = (ColoredGlyphEffect) c.CreateCharInvert(ch);
+                    line[length] = (ColoredGlyphEffect) c.ColorInvert(ch);
                 } else {
-                    line[length] = (ColoredGlyphEffect) c.CreateChar(ch);
+                    line[length] = (ColoredGlyphEffect) c.Color(ch);
                 }
                 index++;
                 length++;
@@ -275,12 +275,12 @@ namespace Transgenesis {
                 buffer.Add(line.SubString(0, length));
             }
             if (cursorAfterNewline) {
-                buffer.Add(new ColoredString(c.CreateCharInvert(' ')));
+                buffer.Add(new ColoredString(c.ColorInvert(' ')));
             } else if(index == cursor) {
                 if(length == 0) {
-                    buffer.Add(new ColoredString(c.CreateCharInvert(' ')));
+                    buffer.Add(new ColoredString(c.ColorInvert(' ')));
                 } else {
-                    buffer[buffer.Count - 1] += new ColoredString(c.CreateCharInvert(' '));
+                    buffer[buffer.Count - 1] += new ColoredString(c.ColorInvert(' '));
                 }
             } 
 

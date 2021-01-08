@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using static SadConsole.ColoredString;
 using SadRogue.Primitives;
+using ArchConsole;
 
 namespace Transgenesis {
     class ElementFormatter {
@@ -16,6 +17,7 @@ namespace Transgenesis {
         string noBox = "    ";
 
         public List<ColoredString> buffer = new List<ColoredString>();
+        public Dictionary<int, HashSet<LabelButton>> buttonBuffer = new();
         public HashSet<int> highlightLines = new HashSet<int>();
 
         ConsoleManager c;
@@ -154,7 +156,7 @@ namespace Transgenesis {
         }
 
         string Tab() => new string(' ', tabs * 4);
-        string ShowContextAttributes(XElement element) {
+        string ShowContextAttributes(XElement element, Dictionary<int, HashSet<LabelButton>> buttons = null) {
             Dictionary<string, string> attributes = new Dictionary<string, string>();
 
             //If we have a few attributes, just show all of them inline
@@ -183,17 +185,17 @@ namespace Transgenesis {
 
             bool inline = attributes.Count < 4;
             bool more = attributes.Count < element.Attributes().Count();
-            return AttributesToString(attributes, inline, more);
+            return AttributesToString(attributes, inline, more, buttons);
         }
-        string ShowAllAttributes(XElement element) {
+        string ShowAllAttributes(XElement element, Dictionary<int, HashSet<LabelButton>> buttons = null) {
             Dictionary<string, string> attributes = new Dictionary<string, string>();
             foreach (var attribute in element.Attributes()) {
                 attributes[attribute.Name.LocalName] = attribute.Value;
             }
             bool inline = attributes.Count < 4;
-            return AttributesToString(attributes, inline, false);
+            return AttributesToString(attributes, inline, false, buttons);
         }
-        string AttributesToString(Dictionary<string, string> attributes, bool inline, bool more) {
+        string AttributesToString(Dictionary<string, string> attributes, bool inline, bool more, Dictionary<int, HashSet<LabelButton>> buttons = null) {
             if (attributes.Count == 0) {
                 return more ? " ..." : "";
             } else if (inline) {
@@ -242,105 +244,17 @@ namespace Transgenesis {
                 return result.ToString();
             }
         }
+    }
 
-        public void SyntaxHighlight() {
-            Stack<Syntax> type = new Stack<Syntax>();
-            foreach (var line in buffer) {
-                foreach (var glyph in line) {
-                    if (type.Count == 0 || type.Peek() == Syntax.Space) {
-                        if (char.IsWhiteSpace(glyph.GlyphCharacter)) {
-                            continue;
-                        } else if (type.Count > 0 && type.Peek() == Syntax.Space) {
-                            type.Pop();
-                        }
-                        PushGlyph:
-                        switch (glyph.GlyphCharacter) {
-                            /*
-                            case var c when char.IsLetterOrDigit(c):
-                                if(type.Any() && (type.Peek() == Syntax.Tag || type.Peek() == Syntax.FocusedTag)) {
-                                    type.Push(Syntax.Attribute);
-                                } else {
-                                    type.Push(Syntax.Text);
-                                }
-                                break;
-                                */
-                            case var c when char.IsLetterOrDigit(c) && type.Any() && type.Peek() == Syntax.Tag:
-                                type.Push(Syntax.Attribute);
-                                break;
-                            case '"':
-                                //Since we pop upon seeing the opening quote
-                                type.Push(Syntax.Quotes);
-                                type.Push(Syntax.Quotes);
-                                break;
-                            case '<':
-                                type.Push(Syntax.Tag);
-                                break;
-                            case '&':
-                                type.Push(Syntax.Entity);
-                                break;
-                            default:
-                                type.Push(Syntax.Text);
-                                break;
-                        }
-                    }
+    class SyntaxColors {
+        public static SyntaxColors std = new SyntaxColors() {
+            attribute = Color.Salmon,
+            text = Color.White,
+            entity = Color.SkyBlue,
+            quotes = Color.MediumSlateBlue,
+            tag = Color.LightGoldenrodYellow,
+        };
+        public Color attribute, text, entity, quotes, tag, tagHighlight;
 
-                CheckType:
-                    switch (type.Peek()) {
-                        case Syntax.Attribute:
-                            glyph.Foreground = Color.Salmon;
-                            if (glyph.GlyphCharacter == '=') {
-                                //If we've found the end of the attribute name, add a space so that we can catch if the value is immediately in front of it.
-                                type.Pop();
-                                type.Push(Syntax.Space);
-                            }
-                            break;
-                        case Syntax.Text:
-                            glyph.Foreground = Color.White;
-                            switch (glyph.GlyphCharacter) {
-                                case '"':
-                                    //Since we pop upon seeing the opening quote
-                                    type.Push(Syntax.Quotes);
-                                    type.Push(Syntax.Quotes);
-                                    goto CheckType;
-                                case '<':
-                                    type.Pop();
-                                    type.Push(Syntax.Tag);
-                                    goto CheckType;
-                                case '&':
-                                    type.Push(Syntax.Entity);
-                                    goto CheckType;
-                            }
-                            break;
-                        case Syntax.Entity:
-                            glyph.Foreground = Color.SkyBlue;
-                            if (glyph.GlyphCharacter == ';') {
-                                type.Pop();
-                            }
-                            break;
-                        case Syntax.Quotes:
-                            //If we encounter a space within quotes, we treat it as part of the quotes
-                            glyph.Foreground = Color.MediumSlateBlue;
-
-                            if (glyph.GlyphCharacter == '&') {
-                                type.Push(Syntax.Entity);
-                                goto CheckType;
-                            } else if (glyph.GlyphCharacter == '"') {
-                                type.Pop();
-                            }
-                            break;
-                        case Syntax.Tag:
-                            if(glyph.Foreground != c.theme.highlight) {
-                                glyph.Foreground = Color.LightGoldenrodYellow;
-                            }
-                            if (glyph.GlyphCharacter == '>') {
-                                type.Pop();
-                            } else if (char.IsWhiteSpace(glyph.GlyphCharacter)) {
-                                type.Push(Syntax.Space);
-                            }
-                            break;
-                    }
-                }
-            }
-        }
     }
 }

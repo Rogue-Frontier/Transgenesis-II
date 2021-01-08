@@ -53,33 +53,33 @@ namespace Transgenesis {
             cursor.Print(new ColoredString(c.ToString(), back ?? theme.back, front ?? theme.front));
         }
         public void WriteHighlight(string s, Color? front = null, Color? back = null) {
-            cursor.Print(CreateString(s, front, back));
+            cursor.Print(Color(s, front, back));
         }
         public void WriteLineHighlight(string s, Color? front = null, Color? back = null) {
-            cursor.Print(CreateHighlightString(s));
+            cursor.Print(Highlight(s));
             NextLine();
         }
         public void WriteLineInvert(string s, Color? front = null, Color? back = null) {
-            cursor.Print(CreateInvertString(s, front, back));
+            cursor.Print(ColorInvert(s, front, back));
             NextLine();
         }
-        public ColoredGlyph CreateCharInvert(char c, Color? back = null, Color? front = null) {
+        public ColoredGlyph ColorInvert(char c, Color? back = null, Color? front = null) {
             return new ColoredGlyph(front ?? theme.front, back ?? theme.back, c);
         }
-        public ColoredGlyph CreateChar(char c, Color? front = null, Color? back = null) {
+        public ColoredGlyph Color(char c, Color? front = null, Color? back = null) {
             return new ColoredGlyph(back ?? theme.back, front ?? theme.front, c);
         }
-        public ColoredString ColorString(string s, Color front, Color back) {
-            return new ColoredString(s.Select(c => new ColoredGlyph(front, back, c)).ToArray());
+        public ColoredString Color(string s, Color front, Color back) {
+            return new ColoredString(s, front, back);
         }
-        public ColoredString CreateString(string s, Color? front = null, Color? back = null) {
-            return ColorString(s, front ?? theme.front, back ?? theme.back);
+        public ColoredString Color(string s, Color? front = null, Color? back = null) {
+            return Color(s, front ?? theme.front, back ?? theme.back);
         }
-        public ColoredString CreateHighlightString(string s, Color? front = null, Color? back = null) {
-            return ColorString(s, front ?? theme.highlight, back ?? theme.back);
+        public ColoredString Highlight(string s, Color? front = null, Color? back = null) {
+            return Color(s, front ?? theme.highlight, back ?? theme.back);
         }
-        public ColoredString CreateInvertString(string s, Color? front = null, Color? back = null) {
-            return ColorString(s, back ?? theme.back, front ?? theme.front);
+        public ColoredString ColorInvert(string s, Color? front = null, Color? back = null) {
+            return Color(s, back ?? theme.back, front ?? theme.front);
         }
         public void WriteLine(string s, Color? front = null, Color? back = null) {
             Write(s, front, back);
