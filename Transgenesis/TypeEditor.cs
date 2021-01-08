@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using SadRogue.Primitives;
 using System.Xml.Linq;
 namespace Transgenesis {
     class TypeEditor : IComponent {
@@ -191,7 +192,7 @@ namespace Transgenesis {
         }
         public void Draw() {
             c.Clear();
-            c.SetCursor(new Microsoft.Xna.Framework.Point(0, 0));
+            c.SetCursor(new Point(0, 0));
 
             if (i.Text.Length == 0) {
                 scroller.Draw(buffer, scroller.screenRows + s.height);

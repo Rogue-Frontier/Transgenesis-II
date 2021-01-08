@@ -1,11 +1,12 @@
-﻿using Microsoft.Xna.Framework;
-using SadConsole;
+﻿using SadConsole;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using static SadConsole.ColoredString;
+using SadRogue.Primitives;
 
 namespace Transgenesis {
     class ElementFormatter {
@@ -36,7 +37,7 @@ namespace Transgenesis {
                     index = 0;
                     continue;
                 }
-                s[index] = new SadConsole.ColoredGlyph(ch, c.theme.front, c.theme.back);
+                s[index] = new ColoredGlyphEffect() { Background = c.theme.back, Foreground = c.theme.front, GlyphCharacter = ch };
                 index++;
                 if (index == c.width) {
                     buffer.Add(s);
@@ -59,7 +60,7 @@ namespace Transgenesis {
                     index = 0;
                     continue;
                 }
-                s[index] = new SadConsole.ColoredGlyph(ch, c.theme.highlight, c.theme.back);
+                s[index] = new ColoredGlyphEffect() { Foreground = c.theme.highlight, Background = c.theme.back, GlyphCharacter = ch };
                 index++;
                 if (index == c.width) {
                     highlightLines.Add(buffer.Count);
@@ -86,8 +87,10 @@ namespace Transgenesis {
                 string box;
                 if (expandedCheck) {
                     box = expandedBox;
-                } else {
+                } else if(element.Nodes().Any()) {
                     box = collapsedBox;
+                } else {
+                    box = noBox;
                 }
 
                 string tagStart = $"<{element.Tag()}";

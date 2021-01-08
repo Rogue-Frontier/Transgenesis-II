@@ -1,4 +1,4 @@
-﻿using Microsoft.Xna.Framework;
+﻿using SadRogue.Primitives;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -198,7 +198,7 @@ namespace Transgenesis {
         public void Draw() {
             //c.SetCursor(pos);
             c.NextLine();
-            c.margin.Y = c.cursor.Row;
+            c.margin = new Point(c.margin.X, c.cursor.Row);
             //int columnHeight = 8;
 
             if(items.Count == 0) {
@@ -270,7 +270,8 @@ namespace Transgenesis {
                     c.NextLine();
                 }
 
-                c.margin.X += columnSizes[columnIndex];
+                c.margin += new Point(columnSizes[columnIndex], 0);
+
                 c.ResetCursor();
             }
             //Reset the margin after we're done printing

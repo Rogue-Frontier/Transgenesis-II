@@ -248,7 +248,7 @@ namespace Transgenesis {
                 String subName = sub.Name.LocalName;
                 switch (subName) {
                     case "Library":
-                        var library_entity = sub.Att("unid").Replace("&", "").Replace(";", "");
+                        var library_entity = (sub.Att("unid") ?? sub.Att("UNID")).Replace("&", "").Replace(";", "");
                         if(!types.entity2unid.ContainsKey(library_entity)) {
                             //Error: Unknown library UNID
                             break;

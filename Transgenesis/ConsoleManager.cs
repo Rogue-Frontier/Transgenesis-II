@@ -1,9 +1,9 @@
-﻿using Microsoft.Xna.Framework;
-using SadConsole;
+﻿using SadConsole;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using static Transgenesis.Global;
+using SadRogue.Primitives;
+using SadConsole.Components;
 
 namespace Transgenesis {
     class Theme {
@@ -11,13 +11,14 @@ namespace Transgenesis {
         //public Color back = Color.Multiply(Color.Turquoise, 0.25f).FillAlpha();
         public Color back = new Color(0, (int) (51 * 0.75), (int) (102 * 0.75), 255);
         public Color highlight = Color.LimeGreen;
+
         public void Deconstruct(out Color front, out Color back) {
             (front, back) = (this.front, this.back);
         }
     }
     class ConsoleManager {
-        public SadConsole.Console console => SadConsole.Global.CurrentScreen;
-        public SadConsole.Cursor cursor => SadConsole.Global.CurrentScreen.Cursor;
+        public Console console => SadConsole.Game.Instance.Screen;
+        public Cursor cursor => console.Cursor;
         public int width => console.Width;
         public ConsoleManager(Point p) {
             this.margin = p;
@@ -63,13 +64,13 @@ namespace Transgenesis {
             NextLine();
         }
         public ColoredGlyph CreateCharInvert(char c, Color? back = null, Color? front = null) {
-            return new ColoredGlyph(c, back ?? theme.back, front ?? theme.front);
+            return new ColoredGlyph(front ?? theme.front, back ?? theme.back, c);
         }
         public ColoredGlyph CreateChar(char c, Color? front = null, Color? back = null) {
-            return new ColoredGlyph(c, front ?? theme.front, back ?? theme.back);
+            return new ColoredGlyph(back ?? theme.back, front ?? theme.front, c);
         }
         public ColoredString ColorString(string s, Color front, Color back) {
-            return new ColoredString(s.Select(c => new ColoredGlyph(c, front, back)).ToArray());
+            return new ColoredString(s.Select(c => new ColoredGlyph(front, back, c)).ToArray());
         }
         public ColoredString CreateString(string s, Color? front = null, Color? back = null) {
             return ColorString(s, front ?? theme.front, back ?? theme.back);

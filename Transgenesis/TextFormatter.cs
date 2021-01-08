@@ -1,10 +1,11 @@
-﻿using Microsoft.Xna.Framework;
+﻿using SadRogue.Primitives;
 using SadConsole;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static SadConsole.ColoredString;
 
 namespace Transgenesis {
     class TextFormatter {
@@ -44,7 +45,7 @@ namespace Transgenesis {
                     lineIndex++;
                 }
                 var line = buffer[lineIndex];
-                line[index] = value;
+                line[index] = (ColoredGlyphEffect)value;
             }
         }
         public void AddChar(ColoredGlyph c) {
@@ -71,7 +72,7 @@ namespace Transgenesis {
                 } else {
                     newline = false;
                 }
-                s[index] = new SadConsole.ColoredGlyph(ch, front, back);
+                s[index] = (ColoredGlyphEffect) new ColoredGlyph(back, front, ch);
                 index++;
                 if (index == width) {
                     buffer.Add(s);
@@ -98,7 +99,7 @@ namespace Transgenesis {
                 } else {
                     newline = false;
                 }
-                s[index] = new SadConsole.ColoredGlyph(ch, highlight, back);
+                s[index] = (ColoredGlyphEffect) new ColoredGlyph(back, highlight, ch);
                 index++;
                 if (index == width) {
                     highlightLines.Add(buffer.Count);

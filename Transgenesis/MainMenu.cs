@@ -1,14 +1,13 @@
-﻿using Microsoft.Xna.Framework;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using SadConsole;
-using System;
+using System.Linq;
+using System.Threading.Tasks;
+using SadRogue.Primitives;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using System.Xml;
+using System;
+using System.Diagnostics;
+
 namespace Transgenesis {
     class MainMenu : IComponent {
         ProgramState state;
@@ -192,7 +191,7 @@ namespace Transgenesis {
             //h.Draw();
 
             c.SetCursor(pos);
-            c.margin.X = 0;
+            c.margin = new Point(0, c.margin.Y);
             if (loading != null) {
                 c.NextLine();
                 c.WriteLine("Loading extensions...");
@@ -216,7 +215,8 @@ namespace Transgenesis {
                     string[] parts = command.Split(' ');
                     switch (parts.First().ToLower()) {
                         case "theme": {
-                                var theme = c.theme;
+                                ref var theme = ref c.theme;
+
                                 if (parts.Length == 1) {
                                     h.Record();
                                     Reset();
@@ -224,34 +224,44 @@ namespace Transgenesis {
                                 }
                                 switch (parts[1]) {
                                     case "blue":
-                                        theme.front = new Color(0x00, 0x69, 0xE7);
-                                        theme.back = Color.Black;
-                                        theme.highlight = Color.White;
+                                        theme = new Theme() {
+                                            front = new Color(0x00, 0x69, 0xE7),
+                                            back = Color.Black,
+                                            highlight = Color.LightBlue,
+                                        };
                                         h.Record();
                                         break;
                                     case "green":
-                                        theme.front = new Color(0xA8, 0xB7, 0x0E);
-                                        theme.back = Color.Black;
-                                        theme.highlight = Color.LightBlue;
+                                        theme = new Theme() {
+                                            front = new Color(0xA8, 0xB7, 0x0E),
+                                            back = Color.Black,
+                                            highlight = Color.LightBlue,
+                                        };
                                         h.Record();
                                         break;
                                     case "pine":
-                                        theme.front = new Color(0x00, 0x76, 0x6B);
-                                        theme.back = Color.Black;
-                                        theme.highlight = Color.Magenta;
+                                        theme = new Theme() {
+                                            front = new Color(0x00, 0x76, 0x6B),
+                                            back = Color.Black,
+                                            highlight = Color.Magenta,
+                                        };
                                         h.Record();
                                         break;
                                     case "orange":
-                                        theme.front = new Color(0xFF, 0x92, 0x07);
-                                        theme.back = Color.Black;
-                                        theme.highlight = Color.White;
+                                        theme = new Theme() {
+                                            front = new Color(0xFF, 0x92, 0x07),
+                                            back = Color.Black,
+                                            highlight = Color.White
+                                        };
+                                        h.Record();
+                                        break;
+                                    case "default":
+                                        Reset();
                                         h.Record();
                                         break;
                                 }
                                 void Reset() {
-                                    theme.front = Color.White;
-                                    theme.back = Color.Black;
-                                    theme.highlight = Color.Green;
+                                    c.theme = new Theme();
                                 }
                                 break;
                             }
@@ -369,12 +379,13 @@ namespace Transgenesis {
                                     loading = Task.Run(() => {
                                         try {
                                             env.LoadFolder(path);
-                                            env.SaveState();
                                         } catch(Exception e) {
+                                            Debug.Print(e.StackTrace);
                                             throw;
+                                        } finally {
+                                            env.SaveState();
+                                            loading = null;
                                         }
-                                        
-                                        loading = null;
                                     });
                                 }
                                 h.Record();

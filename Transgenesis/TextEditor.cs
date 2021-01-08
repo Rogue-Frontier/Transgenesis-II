@@ -1,10 +1,11 @@
-﻿using Microsoft.Xna.Framework;
-using SadConsole;
+﻿using SadConsole;
+using SadRogue.Primitives;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static SadConsole.ColoredString;
 
 namespace Transgenesis {
     class TextEditor : IComponent {
@@ -258,9 +259,9 @@ namespace Transgenesis {
                 }
                 if(index == cursor || cursorAfterNewline) {
                     cursorAfterNewline = false;
-                    line[length] = c.CreateCharInvert(ch);
+                    line[length] = (ColoredGlyphEffect) c.CreateCharInvert(ch);
                 } else {
-                    line[length] = c.CreateChar(ch);
+                    line[length] = (ColoredGlyphEffect) c.CreateChar(ch);
                 }
                 index++;
                 length++;

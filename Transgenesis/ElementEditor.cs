@@ -1,4 +1,4 @@
-﻿using Microsoft.Xna.Framework;
+﻿using SadRogue.Primitives;
 using SadConsole;
 using System;
 using System.Collections.Generic;
@@ -336,7 +336,7 @@ namespace Transgenesis {
                         if(input.Length == 0) {
                             if(keepExpanded.Contains(focused)) {
                                 keepExpanded.Remove(focused);
-                            } else {
+                            } else if(focused.Nodes().Any()) {
                                 keepExpanded.Add(focused);
                             }
 

@@ -1,39 +1,40 @@
-﻿using SadConsole;
+﻿
 using System.Collections.Generic;
-using System.Text;
-using System.Drawing;
-using System.IO;
-using System.Diagnostics;
-using SadConsole.Components;
-using SadConsole.Input;
-using MonoGame;
-using Microsoft.Xna.Framework;
+using SadRogue.Primitives;
 using Game = SadConsole.Game;
 using System;
-using SadConsole.Themes;
-using Keys = Microsoft.Xna.Framework.Input.Keys;
-using Newtonsoft.Json;
+using Keys = SadConsole.Input.Keys;
+using SadConsole.UI;
+using SadConsole.Input;
 
 namespace Transgenesis {
-    class Program : Game {
-        public static void Main(string[] args) {
-            using (var game = new Program()) {
-                game.Run();
-            }
-        }
-        public Program() : base("Content/IBM_ext.font", 150, 65, null) { }
-        protected override void Initialize() {
-            IsMouseVisible = true;
-            base.Initialize();
-            var con = new MainConsole(150, 65);
-            //This allows trailing spaces to show up in command
-            con.Cursor.DisableWordBreak = true;
+    internal class Program {
+        static int width = 108;
+        static int height = 90;
+        private static void Main(string[] args) {
+            SadConsole.UI.Themes.Library.Default.Colors.ControlHostBack = Color.Black;
+            SadConsole.UI.Themes.Library.Default.Colors.ControlBack = Color.Gray;
 
-            SadConsole.Global.CurrentScreen = con;
-            con.IsVisible = true;
-            con.IsFocused = true;
-            con.Font = con.Font.Master.GetFont(Font.FontSizes.One);
-            GraphicsDeviceManager.IsFullScreen = true;
+            //SadConsole.Settings.UnlimitedFPS = true;
+            SadConsole.Settings.UseDefaultExtendedFont = true;
+            SadConsole.Game.Create(width, height, "Content/IBMCGA.font", g => {
+            });
+            SadConsole.Game.Instance.OnStart = Init;
+            SadConsole.Game.Instance.Run();
+            SadConsole.Game.Instance.Dispose();
+
+
+        }
+
+        private static void Init() {
+            // Create your console
+            var firstConsole = new MainConsole(width, height);
+
+            //This allows trailing spaces to show up in command
+            firstConsole.Cursor.DisableWordBreak = true;
+
+            SadConsole.Game.Instance.Screen = firstConsole;
+            firstConsole.FocusOnMouseClick = true;
         }
     }
     class MainConsole : ControlsConsole {
@@ -50,11 +51,6 @@ namespace Transgenesis {
                 throw;
             }
             CreateSession();
-
-            Theme = new WindowTheme {
-                ModalTint = Color.Black,
-                FillStyle = new Cell(Color.White, Color.Black),
-            };
             DefaultBackground = Color.Black;
             DefaultForeground = Color.White;
         }
@@ -76,8 +72,8 @@ namespace Transgenesis {
             base.Update(delta);
             screens.Peek().Update();
         }
-        public override void Draw(TimeSpan delta) {
-            base.Draw(delta);
+        public override void Render(TimeSpan delta) {
+            base.Render(delta);
             screens.Peek().Draw();
         }
         public override bool ProcessKeyboard(Keyboard info) {
