@@ -1,4 +1,5 @@
 ﻿using SadConsole;
+using SadConsole.Input;
 using SadRogue.Primitives;
 using System;
 using System.Collections.Generic;
@@ -26,6 +27,12 @@ namespace Transgenesis {
                 case ConsoleKey.PageDown when i == null || i.Text.Length == 0:
                     scrolling++;
                     break;
+            }
+        }
+        public void Handle(MouseScreenObjectState mouse) {
+            var delta = mouse.Mouse.ScrollWheelValueChange;
+            if (delta != 0 && (i == null || i.Text.Length == 0)) {
+                scrolling += delta / 120;
             }
         }
         public void Draw(List<ColoredString> buffer) => Draw(buffer, screenRows);

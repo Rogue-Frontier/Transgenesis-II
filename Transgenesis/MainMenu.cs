@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System;
 using System.Diagnostics;
+using SadConsole.Input;
 
 namespace Transgenesis {
     class MainMenu : IComponent {
@@ -180,7 +181,7 @@ namespace Transgenesis {
             */
             if (i.Text.Length == 0) {
                 scroller.Draw(buffer, scroller.screenRows + s.height);
-                i.Draw();
+                //i.Draw();
             } else {
                 scroller.Draw(buffer);
                 i.Draw();
@@ -556,6 +557,9 @@ namespace Transgenesis {
 
 
             
+        }
+        public void Handle(MouseScreenObjectState mouse) {
+            scroller.Handle(mouse);
         }
         public void Update() {
         }

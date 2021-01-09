@@ -9,6 +9,8 @@ using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using static Transgenesis.Global;
 using ColoredString = SadConsole.ColoredString;
+using SadConsole.Input;
+
 namespace Transgenesis {
     class ElementEditor : IComponent {
         ProgramState state;
@@ -134,6 +136,7 @@ namespace Transgenesis {
 
                 formatter.ShowElementTree(root, focused, expanded, semiexpanded);
             }
+            formatter.SyntaxHighlight();
             List<ColoredString> buffer = formatter.buffer;
             /*
             {
@@ -194,7 +197,7 @@ namespace Transgenesis {
             }
             if (i.Text.Length == 0) {
                 scroller.Draw(buffer, scroller.screenRows + s.height);
-                i.Draw();
+                //i.Draw();
             } else {
                 scroller.Draw(buffer);
                 i.Draw();
@@ -668,6 +671,9 @@ namespace Transgenesis {
                     after.AddAfterSelf(focused);
                 }
             }
+        }
+        public void Handle(MouseScreenObjectState mouse) {
+            scroller.Handle(mouse);
         }
 
         public void Update() {

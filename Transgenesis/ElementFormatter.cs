@@ -244,6 +244,95 @@ namespace Transgenesis {
                 return result.ToString();
             }
         }
+
+        public void SyntaxHighlight() {
+            Stack<Syntax> type = new Stack<Syntax>();
+            type.Push(Syntax.Space);
+            foreach (var line in buffer) {
+                foreach (var glyph in line) {
+                    switch (glyph.GlyphCharacter) {
+                        case ';' when type.Peek() == Syntax.Entity:
+                            glyph.Foreground = SyntaxColors.std.entity;
+                            type.Pop();
+                            break;
+                        case '"':
+                            if (type.Peek() == Syntax.Quotes) {
+                                type.Pop();
+                            } else {
+                                type.Push(Syntax.Quotes);
+                            }
+                            glyph.Foreground = SyntaxColors.std.quotes;
+                            break;
+                        case '=' when type.Peek() == Syntax.Attribute:
+                            glyph.Foreground = SyntaxColors.std.attribute;
+                            type.Pop();
+                            break;
+                        case '+' when type.Peek() != Syntax.Quotes:
+                        case '-' when type.Peek() != Syntax.Quotes:
+                            break;
+                        case '<':
+                            if (type.Peek() != Syntax.Tag) {
+                                type.Push(Syntax.Tag);
+                                if (glyph.Foreground != c.theme.highlight) {
+                                    glyph.Foreground = SyntaxColors.std.tag;
+                                }
+                            }
+                            break;
+                        case '/' when type.Peek() == Syntax.Tag:
+                            if (glyph.Foreground != c.theme.highlight) {
+                                glyph.Foreground = SyntaxColors.std.tag;
+                            }
+                            break;
+                        case '/' when type.Peek() == Syntax.Attribute:
+                            type.Pop();
+                            if (glyph.Foreground != c.theme.highlight) {
+                                glyph.Foreground = SyntaxColors.std.tag;
+                            }
+                            break;
+                        case '>' when type.Peek() == Syntax.Tag:
+                            type.Pop();
+                            if (glyph.Foreground != c.theme.highlight) {
+                                glyph.Foreground = SyntaxColors.std.tag;
+                            }
+                            break;
+                        case '>' when type.Peek() == Syntax.Attribute:
+                            type.Pop();
+                            if (glyph.Foreground != c.theme.highlight) {
+                                glyph.Foreground = SyntaxColors.std.tag;
+                            }
+                            break;
+                        case '&':
+                            type.Push(Syntax.Entity);
+                            glyph.Foreground = SyntaxColors.std.entity;
+                            break;
+                        case var c when char.IsWhiteSpace(c) && type.Peek() == Syntax.Tag:
+                            type.Push(Syntax.Attribute);
+                            break;
+                        case var c when char.IsWhiteSpace(c) && type.Peek() == Syntax.Attribute:
+                            //type.Pop();
+                            break;
+                        default:
+                            switch (type.Peek()) {
+                                case Syntax.Tag:
+                                    if (glyph.Foreground != c.theme.highlight) {
+                                        glyph.Foreground = SyntaxColors.std.tag;
+                                    }
+                                    break;
+                                case Syntax.Attribute:
+                                    glyph.Foreground = SyntaxColors.std.attribute;
+                                    break;
+                                case Syntax.Entity:
+                                    glyph.Foreground = SyntaxColors.std.entity;
+                                    break;
+                                case Syntax.Quotes:
+                                    glyph.Foreground = SyntaxColors.std.quotes;
+                                    break;
+                            }
+                            break;
+                    }
+                }
+            }
+        }
     }
 
     class SyntaxColors {

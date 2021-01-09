@@ -11,7 +11,7 @@ using System.Diagnostics;
 
 namespace Transgenesis {
     internal class Program {
-        static int width = 108;
+        static int width = 120;
         static int height = 90;
         private static void Main(string[] args) {
             SadConsole.UI.Themes.Library.Default.Colors.ControlHostBack = Color.Black;
@@ -108,6 +108,10 @@ namespace Transgenesis {
                 }
             }
             return handle;
+        }
+        public override bool ProcessMouse(MouseScreenObjectState state) {
+            screens.Peek().Handle(state);
+            return base.ProcessMouse(state);
         }
     }
 }

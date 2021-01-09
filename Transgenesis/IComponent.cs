@@ -1,4 +1,5 @@
-﻿using SadRogue.Primitives;
+﻿using SadConsole.Input;
+using SadRogue.Primitives;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,6 +8,7 @@ namespace Transgenesis {
     interface IComponent {
         void Update();
         void Handle(ConsoleKeyInfo k);
+        void Handle(MouseScreenObjectState mouse) { }
         void Draw();
     }
     class Input {
