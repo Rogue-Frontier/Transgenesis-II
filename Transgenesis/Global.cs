@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using SadConsole;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -9,9 +10,9 @@ using System.Xml.Linq;
 namespace Transgenesis {
     public static class Global {
 
-        public static void Add<U, T>(this Dictionary<U, HashSet<T>> dict, U key, T item) {
+        public static void Add<U, T>(this Dictionary<U, HashSet<T>> dict, U key, params T[] item) {
             if(dict.TryGetValue(key, out var v)) {
-                v.Add(item);
+                v.UnionWith(item);
             } else {
                 dict[key] = new HashSet<T>();
             }
@@ -19,6 +20,14 @@ namespace Transgenesis {
         public static List<string> SplitMulti(this string str, string separator, int length) {
             List<string> result = new List<string>();
             foreach(var l in str.Split(separator)) {
+                result.AddRange(l.Split(length));
+            }
+            return result;
+        }
+        public static List<ColoredString> SplitMulti(this ColoredString str, char separator, int length) {
+            List<ColoredString> result = new List<ColoredString>();
+            foreach (var l in str.Split(separator)) {
+                
                 result.AddRange(l.Split(length));
             }
             return result;
@@ -32,6 +41,31 @@ namespace Transgenesis {
                 i++;
             }
             result[i] = str;
+            return result;
+        }
+        public static ColoredString[] Split(this ColoredString str, int length) {
+            ColoredString[] result = new ColoredString[(str.Count + length - 1) / length];
+            int i = 0;
+            while (str.Count > length) {
+                result[i] = str.SubString(0, length);
+                str = str.SubString(length);
+                i++;
+            }
+            result[i] = str;
+            return result;
+        }
+
+        public static List<ColoredString> Split(this ColoredString str, char s) {
+            List<ColoredString> result = new List<ColoredString>();
+            result.Add(new ColoredString());
+            foreach(var cg in str) {
+                if(cg.GlyphCharacter == s) {
+                    result.Add(new ColoredString());
+                } else {
+                    result[result.Count - 1] += str.SubString(0, 1);
+                }
+            }
+            result.RemoveAll(s => s.Count == 0);
             return result;
         }
 

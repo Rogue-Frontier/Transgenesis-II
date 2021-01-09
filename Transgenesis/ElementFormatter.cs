@@ -56,10 +56,10 @@ namespace Transgenesis {
                     box = noBox;
                 }
 
-                string tagStart = $"<{element.Tag()}";
+                string tag = $"<{element.Tag()}";
                 //If we have no attributes, then do not pad any space for attributes
                 if (element.Attributes().Count() > 0) {
-                    tagStart = tagStart.PadRightTab();
+                    tag = tag.PadRightTab();
                 }
 
                 if (element.Nodes().Count() > 0) {
@@ -71,10 +71,10 @@ namespace Transgenesis {
                     }
                     if (expandedCheck) {
                         if(element.Nodes().Count() == 1 && element.FirstNode is XText text) {
-                            writeTag($"{box}{Tab()}{tagStart}{ShowAllAttributes(element)}>{text.Value.Replace("\t", "    ")}</{element.Tag()}>");
+                            writeTag($"{box}{Tab()}{tag}{ShowAllAttributes(element)}>{text.Value.Replace("\t", "    ")}</{element.Tag()}>");
                         } else {
                             //show all attributes and children
-                            writeTag($"{box}{Tab()}{tagStart}{ShowAllAttributes(element)}>");
+                            writeTag($"{box}{Tab()}{tag}{ShowAllAttributes(element)}>");
                             ShowChildren();
                             writeTag($"{box}{Tab()}</{element.Tag()}>");
                         }
@@ -83,10 +83,10 @@ namespace Transgenesis {
 
                         if (!semiexpandAll && !element.Elements().Any(c => semiexpanded.Contains(c))) {
                             //We have no important children to show, so just put our whole tag on one line
-                            writeTag($"{box}{Tab()}{tagStart}{ShowContextAttributes(element)}>...</{element.Tag()}>");
+                            writeTag($"{box}{Tab()}{tag}{ShowContextAttributes(element)}>...</{element.Tag()}>");
                         } else {
                             //Show any important children and attributes
-                            writeTag($"{box}{Tab()}{tagStart}{ShowContextAttributes(element)}>");
+                            writeTag($"{box}{Tab()}{tag}{ShowContextAttributes(element)}>");
                             tabs++;
                             int skipped = 0;
 
@@ -143,11 +143,11 @@ namespace Transgenesis {
                     }
                     if (expandedCheck) {
                         //show all attributes
-                        writeTag($"{box}{Tab()}{tagStart}{ShowAllAttributes(element)}/>");
+                        writeTag($"{box}{Tab()}{tag}{ShowAllAttributes(element)}/>");
 
                     } else {
                         //show only the important attributes
-                        writeTag($"{box}{Tab()}{tagStart}{ShowContextAttributes(element)}/>");
+                        writeTag($"{box}{Tab()}{tag}{ShowContextAttributes(element)}/>");
                     }
                     return;
                 }
