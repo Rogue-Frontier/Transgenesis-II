@@ -75,13 +75,14 @@ namespace Transgenesis {
                             "Exits the current session"}
             });
 
-            if(File.Exists("Settings.json")) {
-                var f = File.ReadAllText("Settings.json");
-                var settings = JsonConvert.DeserializeObject<Dictionary<string,string>>(f);
-                extensionsFolder = settings["ExtensionsFolder"];
-            } else {
-                extensionsFolder = @"C:\Users\alexm\OneDrive\Documents\Transcendence";
+            if (!File.Exists("Settings.json")) {
+                File.WriteAllText("Settings.json", JsonConvert.SerializeObject(new Dictionary<string, string> {
+                    { "ExtensionsFolder", AppDomain.CurrentDomain.BaseDirectory }
+                }));
             }
+            var f = File.ReadAllText("Settings.json");
+            var settings = JsonConvert.DeserializeObject<Dictionary<string, string>>(f);
+            extensionsFolder = settings["ExtensionsFolder"];
         }
         public void Draw() {
             c.Clear();
@@ -245,14 +246,6 @@ namespace Transgenesis {
                                             front = new Color(0x00, 0x76, 0x6B),
                                             back = Color.Black,
                                             highlight = Color.Magenta,
-                                        };
-                                        h.Record();
-                                        break;
-                                    case "orange":
-                                        theme = new Theme() {
-                                            front = new Color(0xFF, 0x92, 0x07),
-                                            back = Color.Black,
-                                            highlight = Color.White
                                         };
                                         h.Record();
                                         break;

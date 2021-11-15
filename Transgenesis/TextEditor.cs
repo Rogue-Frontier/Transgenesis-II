@@ -261,7 +261,7 @@ namespace Transgenesis {
                     cursorAfterNewline = false;
                     line[length] = (ColoredGlyphEffect) c.ColorInvert(ch);
                 } else {
-                    line[length] = (ColoredGlyphEffect) c.Color(ch);
+                    line[length] = (ColoredGlyphEffect)c.Color(ch);
                 }
                 index++;
                 length++;

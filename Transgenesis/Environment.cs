@@ -30,8 +30,8 @@ namespace Transgenesis {
             hierarchy = XElement.Parse(doc.OuterXml);
             baseStructures["Hierarchy"] = hierarchy;
             foreach (var coreStructure in hierarchy.Elements("E").Where(e => (string)e.Attribute("category") != "virtual")) {
-                coreStructures[(string)coreStructure.Attribute("name")] = coreStructure;
-                baseStructures[(string)coreStructure.Attribute("name")] = coreStructure;
+                var name = (string)coreStructure.Attribute("name");
+                coreStructures[name] = baseStructures[name] = coreStructure;
             }
             foreach (var baseStructure in hierarchy.Elements("E").Where(e => (string)e.Attribute("category") == "virtual")) {
                 baseStructures[(string)baseStructure.Attribute("id")] = baseStructure;

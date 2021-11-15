@@ -10,6 +10,14 @@ using SadRogue.Primitives;
 using ArchConsole;
 
 namespace Transgenesis {
+    interface UIData {
+
+    }
+    public static class UIDataHelper {
+        public static void AddRepeat<U>(this List<U> list, U item, int count) {
+            list.AddRange(Enumerable.Repeat(item, count));
+        }
+    }
     class ElementFormatter {
         int tabs = 0;
         string expandedBox = "-   ";
@@ -69,9 +77,18 @@ namespace Transgenesis {
                     } else {
                         writeTag = s => AddLine(s);
                     }
+
                     if (expandedCheck) {
                         if(element.Nodes().Count() == 1 && element.FirstNode is XText text) {
-                            writeTag($"{box}{Tab()}{tag}{ShowAllAttributes(element)}>{text.Value.Replace("\t", "    ")}</{element.Tag()}>");
+                            //To do: Generate an equivalent string of metadata objects
+
+                            var tab = Tab();
+                            writeTag($"{box}{tab}{tag}{ShowAllAttributes(element)}>{text.Value.Replace("\t", "    ")}</{element.Tag()}>");
+
+                            List<UIData> line = new List<UIData>();
+                            line.AddRepeat(null, box.Length);
+                            
+
                         } else {
                             //show all attributes and children
                             writeTag($"{box}{Tab()}{tag}{ShowAllAttributes(element)}>");
@@ -156,7 +173,7 @@ namespace Transgenesis {
         }
 
         string Tab() => new string(' ', tabs * 4);
-        string ShowContextAttributes(XElement element, Dictionary<int, HashSet<LabelButton>> buttons = null) {
+        string ShowContextAttributes(XElement element) {
             Dictionary<string, string> attributes = new Dictionary<string, string>();
 
             //If we have a few attributes, just show all of them inline
@@ -185,17 +202,17 @@ namespace Transgenesis {
 
             bool inline = attributes.Count < 4;
             bool more = attributes.Count < element.Attributes().Count();
-            return AttributesToString(attributes, inline, more, buttons);
+            return AttributesToString(attributes, inline, more);
         }
-        string ShowAllAttributes(XElement element, Dictionary<int, HashSet<LabelButton>> buttons = null) {
+        string ShowAllAttributes(XElement element) {
             Dictionary<string, string> attributes = new Dictionary<string, string>();
             foreach (var attribute in element.Attributes()) {
                 attributes[attribute.Name.LocalName] = attribute.Value;
             }
             bool inline = attributes.Count < 4;
-            return AttributesToString(attributes, inline, false, buttons);
+            return AttributesToString(attributes, inline, false);
         }
-        string AttributesToString(Dictionary<string, string> attributes, bool inline, bool more, Dictionary<int, HashSet<LabelButton>> buttons = null) {
+        string AttributesToString(Dictionary<string, string> attributes, bool inline, bool more) {
             if (attributes.Count == 0) {
                 return more ? " ..." : "";
             } else if (inline) {

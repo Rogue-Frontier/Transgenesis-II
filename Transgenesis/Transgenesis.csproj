@@ -3,7 +3,7 @@
   <PropertyGroup>
 	<ApplicationManifest>app.manifest</ApplicationManifest>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <RootNamespace>Transgenesis</RootNamespace>
     <AssemblyName>Transgenesis</AssemblyName>
     <LangVersion>preview</LangVersion>
@@ -55,7 +55,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="SadConsole" Version="9.0.0-beta1" />
     <PackageReference Include="SadConsole.Host.MonoGame" Version="9.0.0-beta1" />
     <PackageReference Include="System.Collections" Version="4.3.0" />
   </ItemGroup>
@@ -68,6 +67,9 @@
 
   <ItemGroup>
     <None Update="Content\IBMCGA.font">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Transcendence.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
