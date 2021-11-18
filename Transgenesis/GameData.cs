@@ -7,12 +7,12 @@ using System.IO;
 using System.Xml;
 
 namespace Transgenesis {
-    class TranscendenceExtension {
-        public TranscendenceExtension parent;
+    class GameData {
+        public GameData parent;
         public string path;
         public TypeInfo types;
-        HashSet<TranscendenceExtension> dependencies;
-        HashSet<TranscendenceExtension> modules;
+        HashSet<GameData> dependencies;
+        HashSet<GameData> modules;
         public XElement structure;
 
         private int lastSaveCode;
@@ -21,16 +21,8 @@ namespace Transgenesis {
         public int bindCode => (types, dependencies, modules).GetHashCode();
         public int saveCode => (types, structure).GetHashCode();
 
-        public ExtensionTypes? type {
-            get {
-                if (Enum.TryParse(structure?.Tag(), out ExtensionTypes type)) {
-                    return type;
-                } else {
-                    return null;
-                }
-
-            }
-        }
+        public bool isModule => tag?.EndsWith("Module") ?? false;
+        public string tag => structure?.Tag();
         public string firstIdentifier => name ?? entity ?? path ?? structure.Tag();
         public string name {
             get {
@@ -79,13 +71,13 @@ namespace Transgenesis {
                 return null;
             }
         }
-        public TranscendenceExtension(string path, XElement structure) {
+        public GameData(string path, XElement structure) {
             parent = null;
             this.path = path;
             types = new TypeInfo();
             
-            dependencies = new HashSet<TranscendenceExtension>();
-            modules = new HashSet<TranscendenceExtension>();
+            dependencies = new HashSet<GameData>();
+            modules = new HashSet<GameData>();
             this.structure = structure;
         }
         public void Save() {
@@ -125,10 +117,10 @@ namespace Transgenesis {
         }
 
         //Get a set of all the modules in this extension
-        public HashSet<TranscendenceExtension> collapseModuleChain() {
-            HashSet<TranscendenceExtension> allModules = new HashSet<TranscendenceExtension>();
+        public HashSet<GameData> collapseModuleChain() {
+            HashSet<GameData> allModules = new HashSet<GameData>();
             allModules.Add(this);
-            foreach (TranscendenceExtension module in modules) {
+            foreach (GameData module in modules) {
                 allModules.UnionWith(module.collapseModuleChain());
             }
             return allModules;
@@ -138,7 +130,7 @@ namespace Transgenesis {
         //If we're a TranscendenceModule, then have our parent extension bind types for us
         public void updateTypeBindingsWithModules(Environment e) {
             updateTypeBindings(e);
-            foreach (TranscendenceExtension module in modules) {
+            foreach (GameData module in modules) {
                 module.updateTypeBindingsWithModules(types.typemap, e);
             }
         }
@@ -146,7 +138,7 @@ namespace Transgenesis {
         public void updateTypeBindingsWithModules(Dictionary<string, XElement> parentMap, Environment e) {
             types.typemap = new Dictionary<string, XElement>(parentMap);
             bindAccessibleTypes(e);
-            foreach (TranscendenceExtension module in modules) {
+            foreach (GameData module in modules) {
                 module.updateTypeBindingsWithModules(types.typemap, e);
             }
         }
@@ -258,7 +250,7 @@ namespace Transgenesis {
 				        //out.println(getConsoleMessage("[General] Looking for " + subName + " " + library_unid));
                         //Make sure that Library Types are defined in our TypeManager so that they always work in-game
                         bool found = false;
-                        foreach (TranscendenceExtension m in e.extensions.Values) {
+                        foreach (GameData m in e.extensions.Values) {
                             if (
                                     (m.structure.Name.LocalName.Equals("TranscendenceLibrary") ||
                                     m.structure.Name.LocalName.Equals("CoreLibrary")) &&
@@ -280,7 +272,7 @@ namespace Transgenesis {
                         String libraryPath = Path.Combine(Path.Combine(path, ".."), sub.Att("filename"));
 				//out.println(getConsoleMessage("[General] Looking for " + subName + " " + libraryPath));
                         //Make sure that Library Types are defined in our TypeManager so that they always work in-game
-                        if(e.extensions.TryGetValue(libraryPath, out TranscendenceExtension library)) {
+                        if(e.extensions.TryGetValue(libraryPath, out GameData library)) {
                             dependencies.Add(library);
                         }
                         break;
@@ -290,7 +282,7 @@ namespace Transgenesis {
         public void bindDependencyTypes() {
             //Avoid going into a circular dependency binding loop by binding only the internal types from each dependency
             //Note: Circular dependencies are not supported
-            foreach (TranscendenceExtension dependency in dependencies) {
+            foreach (GameData dependency in dependencies) {
                 dependency.bindAsDependency(types);
             }
         }
@@ -322,7 +314,7 @@ namespace Transgenesis {
             //var boundTypes = bindInternalTypes(userTypes);
             bindInternalTypes(userTypes);
             //Bind types in our modules
-            foreach (TranscendenceExtension module in modules) {
+            foreach (GameData module in modules) {
                 module.bindAsDependency(userTypes);
             }
             /*
@@ -353,7 +345,7 @@ namespace Transgenesis {
 
                             //Look for our module in the Extensions list
                             //out.println(getConsoleMessage("[General] Looking for Module " + modulePath + "."));
-                            if (env.extensions.TryGetValue(modulePath, out TranscendenceExtension e)) {
+                            if (env.extensions.TryGetValue(modulePath, out GameData e)) {
                                 //Do not set the parent of the module, since we want to sort modules below their parents but not below everything else
 
                                 modules.Add(e);
@@ -366,7 +358,7 @@ namespace Transgenesis {
 
                             //Look for our module in the Extensions list
                             //out.println(getConsoleMessage("[General] Looking for Module " + modulePath + "."));
-                            if (env.extensions.TryGetValue(modulePath, out TranscendenceExtension e)) {
+                            if (env.extensions.TryGetValue(modulePath, out GameData e)) {
                                 e.parent = this;
                                 modules.Add(e);
                             }
@@ -442,10 +434,10 @@ namespace Transgenesis {
             }
             return bound;
         }
-        private Dictionary<TranscendenceExtension, List<string>> bindModuleTypes(TypeInfo userTypes, Environment e) {
-            Dictionary<TranscendenceExtension, List<string>> boundTypesByModule = new Dictionary<TranscendenceExtension, List<string>>();
+        private Dictionary<GameData, List<string>> bindModuleTypes(TypeInfo userTypes, Environment e) {
+            Dictionary<GameData, List<string>> boundTypesByModule = new Dictionary<GameData, List<string>>();
 
-            foreach (TranscendenceExtension module in modules) {
+            foreach (GameData module in modules) {
                 boundTypesByModule[module] = module.bindInternalTypes(userTypes);
                 //Let sub-modules bind Types for us too
                 module.updateModules(e);
@@ -489,11 +481,11 @@ namespace Transgenesis {
         public HashSet<string> unknownTypes = new HashSet<string>();            //Types that were bound but are not defined
         public HashSet<string> overriddenTypes = new HashSet<string>();         //Types that we have overridden
         //Types that we have bound to a Design in one of our dependencies
-        public Dictionary<string, TranscendenceExtension> dependencyTypes = new Dictionary<string, TranscendenceExtension>();
-        public Dictionary<TranscendenceExtension, List<string>> typesByDependency = new Dictionary<TranscendenceExtension, List<string>>();
+        public Dictionary<string, GameData> dependencyTypes = new Dictionary<string, GameData>();
+        public Dictionary<GameData, List<string>> typesByDependency = new Dictionary<GameData, List<string>>();
         //Types that we have bound to a Design in one of our files
-        public Dictionary<string, TranscendenceExtension> moduleTypes = new Dictionary<string, TranscendenceExtension>();
-        public Dictionary<TranscendenceExtension, List<string>> typesByModule = new Dictionary<TranscendenceExtension, List<string>>();
+        public Dictionary<string, GameData> moduleTypes = new Dictionary<string, GameData>();
+        public Dictionary<GameData, List<string>> typesByModule = new Dictionary<GameData, List<string>>();
 
         public List<string> entities => elements.SelectMany(element =>
         element is TypeEntry e ? new List<string>() { e.entity } :
@@ -506,10 +498,10 @@ namespace Transgenesis {
             this.ownedTypes = new HashSet<string>(parent.ownedTypes);
             this.unknownTypes = new HashSet<string>(parent.unknownTypes);
             this.overriddenTypes = new HashSet<string>(parent.overriddenTypes);
-            this.dependencyTypes = new Dictionary<string, TranscendenceExtension>(parent.dependencyTypes);
-            this.typesByDependency = new Dictionary<TranscendenceExtension, List<string>>(parent.typesByDependency);
-            this.moduleTypes = new Dictionary<string, TranscendenceExtension>(parent.moduleTypes);
-            this.typesByModule = new Dictionary<TranscendenceExtension, List<string>>(parent.typesByModule);
+            this.dependencyTypes = new Dictionary<string, GameData>(parent.dependencyTypes);
+            this.typesByDependency = new Dictionary<GameData, List<string>>(parent.typesByDependency);
+            this.moduleTypes = new Dictionary<string, GameData>(parent.moduleTypes);
+            this.typesByModule = new Dictionary<GameData, List<string>>(parent.typesByModule);
         }
         public Dictionary<string, uint> BindAll() {
             BindContext context = new BindContext();
@@ -525,7 +517,7 @@ namespace Transgenesis {
             dependencyTypes.Clear();
             typesByDependency.Clear();
         }
-        public void AddDependencyType(TranscendenceExtension dependency, string entity) {
+        public void AddDependencyType(GameData dependency, string entity) {
             dependencyTypes[entity] = dependency;
             if(typesByDependency.ContainsKey(dependency)) {
                 typesByDependency[dependency].Add(entity);
@@ -537,7 +529,7 @@ namespace Transgenesis {
             moduleTypes.Clear();
             typesByModule.Clear();
         }
-        public void AddModuleType(TranscendenceExtension module, string entity) {
+        public void AddModuleType(GameData module, string entity) {
             moduleTypes[entity] = module;
             if (typesByModule.ContainsKey(module)) {
                 typesByModule[module].Add(entity);

@@ -16,7 +16,7 @@ namespace Transgenesis {
         ProgramState state;
         Stack<IComponent> screens;
         Environment env;
-        TranscendenceExtension extension;
+        GameData extension;
         ConsoleManager c;
 
         bool scrollToFocused;
@@ -31,7 +31,7 @@ namespace Transgenesis {
         Tooltip t;
         Scroller scroller;
 
-        public ElementEditor(ProgramState state, Stack<IComponent> screens, Environment env, TranscendenceExtension extension, ConsoleManager c, XElement focused = null) {
+        public ElementEditor(ProgramState state, Stack<IComponent> screens, Environment env, GameData extension, ConsoleManager c, XElement focused = null) {
             this.state = state;
             this.screens = screens;
             this.env = env;
@@ -345,13 +345,25 @@ namespace Transgenesis {
                             break;
                         }
 
+
                         string[] parts = input.Split(' ');
                         switch (parts[0]) {
                             case "add": {
+
+
+
+
+
                                     string elementName = parts[1];
                                     if (env.CanAddElement(focused, env.bases[focused], elementName, out XElement subtemplate)) {
                                         var subelement = env.FromTemplate(subtemplate, elementName);
                                         focused.Add(subelement);
+                                        foreach(Match mat in new Regex("([a-zA-Z0-9]+)=\"([^\"]+)\"").Matches(input)) {
+                                            Func<int, string> g = index => mat.Groups[index].Value;
+                                            string key = g(1);
+                                            string value = g(2);
+                                            subelement.SetAttributeValue(key, value);
+                                        }
                                         focused = subelement;
                                         h.Record();
                                     }
@@ -515,7 +527,7 @@ namespace Transgenesis {
                                     }
                                     //Always use full-path so that we can easily find this
                                     var path = Path.GetDirectoryName(extension.path) + Path.DirectorySeparatorChar + parts[1];
-                                    env.CreateExtension(ExtensionTypes.TranscendenceModule, path);
+                                    env.CreateExtension("TranscendenceModule", path);
                                     env.SaveState();
                                     h.Record();
                                     break;
@@ -552,78 +564,7 @@ namespace Transgenesis {
                 case ConsoleKey.UpArrow:
                 case ConsoleKey.DownArrow:
                     break;
-                default: {
-
-                        string[] parts = input.Split(' ');
-                        if (parts.Length > 2) {
-                            switch (parts[0]) {
-                                case "set": {
-                                        //Suggest values for the attribute
-                                        string attribute = parts[1];
-                                        string attributeType = env.bases[focused].Elements("A").FirstOrDefault(e => e.Att("name") == attribute)?.Att("valueType");
-                                        if (attributeType == null) {
-                                            s.Clear();
-                                            break;
-                                        }
-                                        var all = env.GetAttributeValues(extension, attributeType);
-                                        if (focused.Att(attribute, out string value)) {
-                                            //Remove duplicate
-                                            all.Remove(value);
-                                            //Insert at the front
-                                            all.Insert(0, value);
-                                        }
-                                        string rest = string.Join(" ", parts.Skip(2));
-                                        var items = Global.GetSuggestions(rest, all);
-                                        s.SetItems(items);
-                                        break;
-                                    }
-                            }
-                        } else {
-                            //Disable suggest when input is completely empty so that we can navigate aroung the UI with arrow keys
-                            if (input.Length == 0) {
-                                s.SetItems(new List<HighlightEntry>());
-                                break;
-                            }
-
-                            var empty = new List<string>();
-                            Dictionary<string, Func<List<string>>> autocomplete = new Dictionary<string, Func<List<string>>> {
-                                {"", () => new List<string>{ "set", "add", "remove", "bind", "bindall", "save", "saveall", "expand", "collapse", "moveup", "movedown", "root", "parent", "next", "prev", "text", "goto", "types", "createmodule", "loadmodule", "editmodule", "editparent", "exit" } },
-                                {"set", () => env.bases[focused].GetValidAttributes() },
-                                {"add", () => env.GetAddableElements(focused, env.bases[focused]) },
-                                {"remove", () => env.GetRemovableElements(focused, env.bases[focused]) },
-                                {"goto", () => new GotoHandler() {
-                                        state = state,
-                                        screens = screens,
-                                        env = env,
-                                        extension = extension,
-                                        c = c,
-                                        focused = focused
-                                    }.SuggestGoto(parts[1]) }
-                                //bind
-                                //bindall
-                                //save
-                                //saveall
-                                //moveup
-                                //movedown
-                                //root
-                                //parent
-                                //next
-                                //prev
-                                //types
-                                //createmodule
-                                //loadmodule
-                                //editmodule
-                                //editparent
-                                //exit
-                            };
-                            string p = autocomplete.Keys.Last(prefix => input.StartsWith((prefix + " ").TrimStart()));
-                            List<string> all = autocomplete[p]();
-
-                            var items = Global.GetSuggestions(input.Substring(p.Length).TrimStart(), all);
-                            s.SetItems(items);
-                        }
-                        break;
-                    }
+                default: UpdateSuggest(); break;
             }
             t.Handle(k);
 
@@ -677,6 +618,146 @@ namespace Transgenesis {
         }
 
         public void Update() {
+        }
+        public static bool TryMatch(string input, Regex r, out Match m) {
+            return (m = r.Match(input)).Success;
+        }
+        public void UpdateSuggest() {
+            var input = i.Text;
+            //Disable suggest when input is completely empty so that we can navigate aroung the UI with arrow keys
+            
+            List<HighlightEntry> Suggest(string text, List<string> choices) => Global.GetSuggestions(text, choices);
+
+            List<HighlightEntry> result = new List<HighlightEntry>();
+            int replaceStart = 0, replaceLength = -1;
+            if (input.Length == 0) {
+                goto Done;
+            }
+
+            if (!TryMatch(input, new Regex("^(?<cmd>[a-zA-Z0-9]+)"), out Match m)) {
+                goto Done;
+            }
+            var cmd = m.Groups["cmd"].Value;
+            switch (cmd) {
+                case "add":
+                    if (TryMatch(input, new Regex("^add\\s+(?<element>[a-zA-Z0-9_]*)$"), out m)) {
+                        var g = m.Groups["element"];
+                        replaceStart = g.Index;
+                        replaceLength = g.Length;
+                        result = Suggest(g.Value, env.GetAddableElements(focused, env.bases[focused]));
+                    } else if (
+                        TryMatch(input, new Regex("^add\\s+(?<element>[a-zA-Z0-9_]+)\\s+([a-zA-Z0-9_]+=\"[a-zA-Z0-9_]+\"\\s+)*(?<attribute>[a-zA-Z0-9_]*)$"), out m)) {
+                        //Suggest values for the attribute
+                        var sub = m.Groups["element"].Value;
+                        var g = m.Groups["attribute"];
+                        replaceStart = g.Index;
+                        replaceLength = g.Length;
+                        var e = env.bases[focused];
+                        e = e.NameElement(sub);
+                        result = Suggest(g.Value, e.GetValidAttributes());
+                    } else if (
+                        TryMatch(input, new Regex("^add\\s+(?<element>[a-zA-Z0-9_]+)\\s+([a-zA-Z0-9_]+=\"[a-zA-Z0-9_]+\")*\\s+(?<attribute>[a-zA-Z0-9_]+)=\"(?<value>[a-zA-Z0-9_]*)\"$"), out m)) {
+                        //Suggest values for the attribute
+                        var sub = m.Groups["element"].Value;
+                        string attribute = m.Groups["attribute"].Value;
+                        string attributeType = env.bases[focused].Element(sub).Elements("A").FirstOrDefault(e => e.Att("name") == attribute)?.Att("valueType");
+                        if (attributeType == null) {
+                            s.Clear();
+                            break;
+                        }
+                        var all = env.GetAttributeValues(extension, attributeType);
+                        if (focused.Att(attribute, out string value)) {
+                            //Remove duplicate
+                            all.Remove(value);
+                            //Insert at the front
+                            all.Insert(0, value);
+                        }
+                        var g = m.Groups["value"];
+                        var v = g.Value;
+                        replaceStart = g.Index;
+                        replaceLength = g.Length;
+                        result = Suggest(v, all);
+                    }
+                    break;
+                case "set":
+                    if (TryMatch(input, new Regex("^set\\s+(?<attribute>[a-zA-Z0-9_]*)$"), out m)) {
+                        var g = m.Groups["attribute"];
+                        replaceStart = g.Index;
+                        replaceLength = g.Length;
+                        var choices = env.bases[focused].GetValidAttributes();
+                        result = Suggest(g.Value, choices);
+                    } else if(TryMatch(input, new Regex("^set\\s+(?<attribute>[a-zA-Z0-9_]+)\\s(?<value>[a-zA-Z0-9_]*)$"), out m)) {
+                        string attribute = m.Groups["attribute"].Value;
+                        string attributeType = env.bases[focused].Elements("A").FirstOrDefault(e => e.Att("name") == attribute)?.Att("valueType");
+                        if (attributeType == null) {
+                            s.Clear();
+                            break;
+                        }
+                        var all = env.GetAttributeValues(extension, attributeType);
+                        if (focused.Att(attribute, out string value)) {
+                            //Remove duplicate
+                            all.Remove(value);
+                            //Insert at the front
+                            all.Insert(0, value);
+                        }
+                        var g = m.Groups["value"];
+                        var v = g.Value;
+                        replaceStart = g.Index;
+                        replaceLength = g.Length;
+                        result = Suggest(v, all);
+                    }
+                    break;
+                default:
+                    result = Suggest(cmd, new List<string> { "set", "add", "remove",
+                            "bind", "bindall", "save", "saveall", "expand", "collapse",
+                            "moveup", "movedown", "root", "parent", "next", "prev",
+                            "text", "goto", "types", "createmodule", "loadmodule",
+                            "editmodule", "editparent", "exit"
+                        });
+                    break;
+            }
+            /*
+            var empty = new List<string>();
+            Dictionary<string, Func<List<string>>> autocomplete = new Dictionary<string, Func<List<string>>> {
+                                {"", () => },
+                                {"set", () => env.bases[focused].GetValidAttributes() },
+                                {"add", () => env.GetAddableElements(focused, env.bases[focused]) },
+                                {"remove", () => env.GetRemovableElements(focused, env.bases[focused]) },
+                                {"goto", () => new GotoHandler() {
+                                        state = state,
+                                        screens = screens,
+                                        env = env,
+                                        extension = extension,
+                                        c = c,
+                                        focused = focused
+                                    }.SuggestGoto(parts[1]) }
+                                //bind
+                                //bindall
+                                //save
+                                //saveall
+                                //moveup
+                                //movedown
+                                //root
+                                //parent
+                                //next
+                                //prev
+                                //types
+                                //createmodule
+                                //loadmodule
+                                //editmodule
+                                //editparent
+                                //exit
+                            };
+            //string p = autocomplete.Keys.Last(prefix => input.StartsWith((prefix + " ").TrimStart()));
+            //List<string> all = autocomplete[p]();
+
+            //var items = Global.GetSuggestions(input.Substring(p.Length).TrimStart(), all);
+            //s.SetItems(items);
+            */
+
+        Done:
+            s.SetItems(result, replaceStart, replaceLength);
+
         }
     }
 }

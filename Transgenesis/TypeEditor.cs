@@ -10,7 +10,7 @@ namespace Transgenesis {
         ProgramState state;
         Stack<IComponent> screens;
         Environment env;
-        TranscendenceExtension extension;
+        GameData extension;
         ConsoleManager c;
         GotoHandler go;
         int elementIndex = 0;
@@ -23,7 +23,7 @@ namespace Transgenesis {
 
         List<ColoredString> buffer;
 
-        public TypeEditor(Stack<IComponent> screens, Environment env, TranscendenceExtension extension, ConsoleManager c, GotoHandler go) {
+        public TypeEditor(Stack<IComponent> screens, Environment env, GameData extension, ConsoleManager c, GotoHandler go) {
             this.screens = screens;
             this.env = env;
             this.extension = extension;
@@ -94,7 +94,7 @@ namespace Transgenesis {
 
                     if (e is TypeEntry entry) {
                         string moduleName = "";
-                        if (extension.types.moduleTypes.TryGetValue(entry.entity, out TranscendenceExtension module)) {
+                        if (extension.types.moduleTypes.TryGetValue(entry.entity, out GameData module)) {
                             moduleName = Path.GetFileName(extension.types.moduleTypes[entry.entity].path.TruncatePath());
                         }
 
@@ -106,7 +106,7 @@ namespace Transgenesis {
                         int rangeIndex = 0;
                         foreach (var entity in group.entities) {
                             string moduleName = "";
-                            if (extension.types.moduleTypes.TryGetValue(entity, out TranscendenceExtension module)) {
+                            if (extension.types.moduleTypes.TryGetValue(entity, out GameData module)) {
                                 moduleName += Path.GetFileName(extension.types.moduleTypes[entity].path.TruncatePath());
                             }
                             addLine($"    {entity,Entity}{(group.unid_min != null ? ((uint)(group.unid_min + rangeIndex)).ToUNID() : "Auto"),UNID}{(extension.types.typemap.TryGetValue(entity, out XElement design) ? design?.Tag() ?? "None" : "None"),DesignType}{extensionName,Extension}{moduleName,Module}");
@@ -131,7 +131,7 @@ namespace Transgenesis {
             }
 
             var parent = extension.parent;
-            if (extension.type == ExtensionTypes.TranscendenceModule && parent?.types.elements.Any() == true) {
+            if (extension.isModule && parent?.types.elements.Any() == true) {
                 AddLine("<!--Types defined by the parent--->");
                 string parentName = parent.firstIdentifier;
                 foreach (TypeElement e in parent.types.elements) {
@@ -139,7 +139,7 @@ namespace Transgenesis {
 
                     if (e is TypeEntry entry) {
                         string moduleName = "Unknown";
-                        if (parent.types.moduleTypes.TryGetValue(entry.entity, out TranscendenceExtension module)) {
+                        if (parent.types.moduleTypes.TryGetValue(entry.entity, out GameData module)) {
                             moduleName = Path.GetFileName(parent.types.moduleTypes[entry.entity].path.TruncatePath());
                         }
 
@@ -151,7 +151,7 @@ namespace Transgenesis {
                         int rangeIndex = 0;
                         foreach (var entity in group.entities) {
                             string moduleName = "Unknown";
-                            if (parent.types.moduleTypes.TryGetValue(entity, out TranscendenceExtension module)) {
+                            if (parent.types.moduleTypes.TryGetValue(entity, out GameData module)) {
                                 moduleName += Path.GetFileName(parent.types.moduleTypes[entity].path.TruncatePath());
                             }
                             addLine($"    {entity,Entity}{(group.unid_min != null ? ((uint)(group.unid_min + rangeIndex)).ToUNID() : "Auto"),UNID}{(parent.types.typemap.TryGetValue(entity, out XElement design) ? design?.Tag() ?? "None" : "None"),DesignType}{parentName,Extension}{moduleName,Module}");

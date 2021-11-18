@@ -11,7 +11,7 @@ namespace Transgenesis {
         public ProgramState state;
         public Stack<IComponent> screens;
         public Environment env;
-        public TranscendenceExtension extension;
+        public GameData extension;
         public ConsoleManager c;
         public XElement focused;
 
@@ -25,8 +25,8 @@ namespace Transgenesis {
             //We start with a UNID.
             //This can either be an extension UNID, in which case we jump to the extension first
             //Otherwise it is a type UNID, either in this extension or in some dependency
-            TranscendenceExtension destExtension;
-            TranscendenceExtension destModule;
+            GameData destExtension;
+            GameData destModule;
             XElement destElement;
             List<string> suggest = new List<string>();
 
@@ -76,7 +76,7 @@ namespace Transgenesis {
                         //We have no arguments left, so we just show the Design
                         goto ElementShow;
                     }
-                } else if (destExtension.types.dependencyTypes.TryGetValue(arg, out TranscendenceExtension destDependency)) {
+                } else if (destExtension.types.dependencyTypes.TryGetValue(arg, out GameData destDependency)) {
                     //Otherwise, we are looking at a UNID defined in a dependency
 
                     //Convert this to an entity in the local extension and convert that back to an entity in the destination extension
@@ -185,8 +185,8 @@ namespace Transgenesis {
             //We start with a UNID.
             //This can either be an extension UNID, in which case we jump to the extension first
             //Otherwise it is a type UNID, either in this extension or in some dependency
-            TranscendenceExtension destExtension;
-            TranscendenceExtension destModule;
+            GameData destExtension;
+            GameData destModule;
             XElement destElement;
             if (extension.types.entity2unid.TryGetValue(arg, out uint unid)) {
                 destExtension = env.extensions.Values.ToList().Find(e => e.unid == unid);
@@ -229,7 +229,7 @@ namespace Transgenesis {
                         //We have no arguments left, so we just show the Design
                         goto ElementShow;
                     }
-                } else if (destExtension.types.dependencyTypes.TryGetValue(arg, out TranscendenceExtension destDependency)) {
+                } else if (destExtension.types.dependencyTypes.TryGetValue(arg, out GameData destDependency)) {
                     //Otherwise, we are looking at a UNID defined in a dependency
 
                     //Convert this to an entity in the local extension and convert that back to an entity in the destination extension

@@ -8,6 +8,7 @@ using System.IO;
 using System;
 using System.Diagnostics;
 using SadConsole.Input;
+using System.Text.RegularExpressions;
 
 namespace Transgenesis {
     class MainMenu : IComponent {
@@ -91,9 +92,9 @@ namespace Transgenesis {
             buffer.Add(c.Color("Transgenesis II"));
 
             buffer.Add(c.Color($"Extensions Loaded: {env.extensions.Count}"));
-            var ext = new List<TranscendenceExtension>(env.extensions.Values);
+            var ext = new List<GameData>(env.extensions.Values);
 
-            Comparison<TranscendenceExtension> modulesUnderParent = (TranscendenceExtension t1, TranscendenceExtension t2) => {
+            Comparison<GameData> modulesUnderParent = (GameData t1, GameData t2) => {
                 if (t1 == t2.parent) {
                     return -1;
                 } else if (t1.parent == t2) {
@@ -112,7 +113,7 @@ namespace Transgenesis {
                     return Compare(t1, t2);
                 }
             };
-            Comparison<TranscendenceExtension> modulesLast = (TranscendenceExtension t1, TranscendenceExtension t2) => {
+            Comparison<GameData> modulesLast = (GameData t1, GameData t2) => {
                 if (t1.parent != null && t2.parent != null) {
                     if (t1.parent == t2.parent) {
                         return Compare(t1, t2);
@@ -131,24 +132,24 @@ namespace Transgenesis {
                     return Compare(t1, t2);
                 }
             };
-            int Compare(TranscendenceExtension e1, TranscendenceExtension e2) {
+            int Compare(GameData e1, GameData e2) {
 
                 var unid =     (e1.unid != null) && (e2.unid != null) && (e1.unid != e2.unid);
                 var name =     (e1.name != null) && (e2.name != null) && (e1.name != e2.name);
-                var category = (e1.type != null) && (e2.type != null) && (e1.type != e2.type);
+                var category = (e1.tag != null) && (e2.tag != null) && (e1.tag != e2.tag);
                 return unid ? ((uint)e1.unid).CompareTo((uint)e2.unid) :
                         name ? e1.name.CompareTo(e2.name) :
-                        category ? ((ExtensionTypes)e1.type).CompareTo((ExtensionTypes)e2.type) :
+                        category ? (e1.tag).CompareTo(e2.tag) :
                         e1.path.CompareTo(e2.path);
             }
             ext.Sort(modulesUnderParent);
 
-            var orphans = new TranscendenceExtension(null, null);
+            var orphans = new GameData(null, null);
             var modulesByExtension = (from mod in ext group mod by mod.parent into groups select groups).ToDictionary(group => group.ToList()[0].parent ?? orphans, gdc => gdc.ToList());
 
             ModuleMode moduleMode = ModuleMode.HideBaseGame;
             foreach(var e in ext) {
-                if(e.type == ExtensionTypes.TranscendenceModule && e.parent != null &&
+                if(e.isModule && e.parent != null &&
                     (moduleMode == ModuleMode.HideParentedModules ||
                         (moduleMode == ModuleMode.HideBaseGame && IsBaseGame(e)))
                     ) {
@@ -171,7 +172,7 @@ namespace Transgenesis {
                 }
             }
 
-            bool IsBaseGame(TranscendenceExtension e) {
+            bool IsBaseGame(GameData e) {
                 var unid = e.unid ?? e.parent?.unid;
                 return unid != null && unid < 0xA0000000;
             }
@@ -263,11 +264,11 @@ namespace Transgenesis {
                                 if (parts.Length < 3) {
                                     break;
                                 }
-                                if (Enum.TryParse(parts[1], out ExtensionTypes ex)) {
-                                    //Always use full-path so that we can easily find this
-                                    env.CreateExtension(ex, Path.GetFullPath(parts[2]));
-                                }
+                                h.Record();
+                                //Always use full-path so that we can easily find this
+                                env.CreateExtension(parts[1], Path.GetFullPath(parts[2]));
                                 env.SaveState();
+                                
                                 break;
                             }
                         case "bindall": {
@@ -280,7 +281,7 @@ namespace Transgenesis {
                                     break;
                                 }
                                 string path = Path.GetFullPath(string.Join(" ", parts.Skip(1)).Trim());
-                                if (env.extensions.TryGetValue(path, out TranscendenceExtension existing)) {
+                                if (env.extensions.TryGetValue(path, out GameData existing)) {
                                     env.Unload(existing);
                                     h.Record();
                                 } else {
@@ -291,7 +292,7 @@ namespace Transgenesis {
                                 break;
                             }
                         case "unloadall": {
-                                var extensions = new List<TranscendenceExtension>(env.extensions.Values);
+                                var extensions = new List<GameData>(env.extensions.Values);
                                 foreach (var e in extensions) {
                                     env.Unload(e);
                                 }
@@ -300,7 +301,7 @@ namespace Transgenesis {
                                 break;
                             }
                         case "reloadall": {
-                                var extensions = new List<TranscendenceExtension>(env.extensions.Values);
+                                var extensions = new List<GameData>(env.extensions.Values);
                                 foreach (var e in extensions) {
                                     env.Unload(e);
                                 }
@@ -316,7 +317,7 @@ namespace Transgenesis {
                                     break;
                                 }
                                 string path = Path.GetFullPath(string.Join(" ", parts.Skip(1)).Trim());
-                                if (env.extensions.TryGetValue(path, out TranscendenceExtension existing)) {
+                                if (env.extensions.TryGetValue(path, out GameData existing)) {
                                     env.Unload(existing);
                                 }
                                 env.Load(path);
@@ -329,7 +330,7 @@ namespace Transgenesis {
                                     break;
                                 }
                                 string path = Path.GetFullPath(string.Join(" ", parts.Skip(1)).Trim());
-                                if (env.extensions.TryGetValue(path, out TranscendenceExtension existing)) {
+                                if (env.extensions.TryGetValue(path, out GameData existing)) {
                                     env.Unload(existing);
                                     var modules = env.extensions.Values.Where(e => e.parent == existing);
                                     foreach (var module in modules) {
@@ -367,7 +368,7 @@ namespace Transgenesis {
                                 */
                                 path = Path.GetFullPath(string.Join(" ", parts.Skip(1)).Trim());
                                 //Don't reload the extension
-                                if (env.extensions.TryGetValue(path, out TranscendenceExtension existing)) {
+                                if (env.extensions.TryGetValue(path, out GameData existing)) {
                                     //env.Unload(existing);
                                 } else {
                                     loading = Task.Run(() => {
@@ -392,7 +393,7 @@ namespace Transgenesis {
                                 }
                                 string path = Path.GetFullPath(string.Join(" ", parts.Skip(1)).Trim());
                                 //Don't reload the extension
-                                if (env.extensions.TryGetValue(path, out TranscendenceExtension existing)) {
+                                if (env.extensions.TryGetValue(path, out GameData existing)) {
                                     //env.Unload(existing);
                                     env.LoadModules(existing);
                                 } else {
@@ -409,8 +410,8 @@ namespace Transgenesis {
                                 }
                                 string path = Path.GetFullPath(string.Join(" ", parts.Skip(1)).Trim());
                                 //Global.Break();
-                                if (env.extensions.TryGetValue(path, out TranscendenceExtension result)) {
-                                    screens.Push(state.sessions.Initialize(result, new ElementEditor(state, screens, env, result, c)));
+                                if (env.extensions.TryGetValue(path, out GameData gd)) {
+                                    screens.Push(state.sessions.Initialize(gd, new ElementEditor(state, screens, env, gd, c)));
                                     h.Record();
                                 }
                                 break;
@@ -420,12 +421,12 @@ namespace Transgenesis {
                                     break;
                                 }
                                 string path = Path.GetFullPath(string.Join(" ", parts.Skip(1)).Trim());
-                                if (env.extensions.TryGetValue(path, out TranscendenceExtension result)) {
-                                    screens.Push(new TypeEditor(screens, env, result, c, new GotoHandler() {
+                                if (env.extensions.TryGetValue(path, out GameData gd)) {
+                                    screens.Push(new TypeEditor(screens, env, gd, c, new GotoHandler() {
                                         state = state,
                                         screens = screens,
                                         env = env,
-                                        extension = result,
+                                        extension = gd,
                                         c = c
                                     }));
                                     h.Record();
@@ -445,6 +446,9 @@ namespace Transgenesis {
                 default:
                     //Disable suggest when input is completely empty so that we can navigate aroung the UI with arrow keys
                     if (input.Length == 0) {
+                    }
+
+                    if(!ElementEditor.TryMatch(input, new Regex("(?<cmd>.+)\\s*(?<arg>.*)"), out var m)) {
                         s.SetItems(new List<HighlightEntry>());
                         break;
                     }
@@ -452,7 +456,7 @@ namespace Transgenesis {
                     Dictionary<string, Func<List<string>>> autocomplete = new Dictionary<string, Func<List<string>>> {
                         {"", () => new List<string>{ "types", "theme", "create", "bindall", "load", "unload", "edit", "open", "reload", "reloadmodules", "reloadall", "reloadallmodules", "loadmodules", "exit" } },
                         {"theme", () => new List<string>{ "blue", "green", "pine", "orange", "default"} },
-                        {"create", () => new List<string>{ "TranscendenceAdventure", "TranscendenceExtension", "TranscendenceLibrary", "TranscendenceModule" } },
+                        {"create", () => env.coreStructures.Keys.ToList()},
                         {"load", GetFiles },
                         {"loadmodules", GetFiles },
                         {"unload", GetExtensions },
@@ -462,11 +466,21 @@ namespace Transgenesis {
                         {"reload", GetExtensions },
                         {"reloadmodules", GetExtensions },
                     };
-                    string str = autocomplete.Keys.Last(prefix => input.StartsWith((prefix + " ").TrimStart()));
-                    List<string> all = autocomplete[str]();
+                    var cmd = m.Groups["cmd"].Value;
+                    var arg = m.Groups["arg"].Value;
+                    int replaceStart = m.Groups["arg"].Index;
+                    if (autocomplete.TryGetValue(cmd, out var result)) {
+                        List<string> all = result();
+                        var items = Global.GetSuggestions(arg, all);
+                        s.SetItems(items, replaceStart + 1);
+                    } else {
+                        replaceStart = 0;
+                        result = autocomplete[""];
+                        List<string> all = result();
+                        var items = Global.GetSuggestions(cmd, all);
+                        s.SetItems(items, replaceStart);
 
-                    var items = Global.GetSuggestions(input.Substring(str.Length).TrimStart(), all);
-                    s.SetItems(items);
+                    }
 
                     List<string> GetExtensions() {
                         return env.extensions.Keys.ToList();

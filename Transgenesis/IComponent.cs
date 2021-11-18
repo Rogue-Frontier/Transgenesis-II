@@ -127,8 +127,10 @@ namespace Transgenesis {
     }
     class Suggest {
         Input i;
-        public int index = -1;
+        public int currentEntry = -1;
         public List<HighlightEntry> items;
+        public int replaceStart = 0, replaceLength = -1;
+
         public Point pos = new Point(0, 45);
         public int height = 8;
         ConsoleManager c;
@@ -143,32 +145,37 @@ namespace Transgenesis {
 
             this.c = c;
         }
-        public void SetItems(List<HighlightEntry> items) {
+        public void SetItems(List<HighlightEntry> items, int replaceStart = 0, int replaceLength = -1) {
             this.items = items;
-            index = Math.Min(index, items.Count - 1);
-            if (index == -1 && items.Count > 0) {
-                index = 0;
+            currentEntry = Math.Min(currentEntry, items.Count - 1);
+            if (currentEntry == -1 && items.Count > 0) {
+                currentEntry = 0;
             }
+            SetReplace(replaceStart, replaceLength);
+        }
+        public void SetReplace(int replaceStart, int replaceLength = -1) {
+            this.replaceStart = replaceStart;
+            this.replaceLength = replaceLength;
         }
         public void Clear() {
             items.Clear();
-            index = -1;
+            currentEntry = -1;
         }
         public void Handle(ConsoleKeyInfo k) {
             switch (k.Key) {
                 case ConsoleKey.UpArrow when (k.Modifiers & ConsoleModifiers.Shift) == 0:
-                    if (index > -1)
-                        index--;
+                    if (currentEntry > -1)
+                        currentEntry--;
                     else
                         //Wrap around
-                        index = items.Count - 1;
+                        currentEntry = items.Count - 1;
                     break;
                 case ConsoleKey.DownArrow when (k.Modifiers & ConsoleModifiers.Shift) == 0:
-                    if (index + 1 < items.Count)
-                        index++;
+                    if (currentEntry + 1 < items.Count)
+                        currentEntry++;
                     else
                         //Wrap around
-                        index = -1;
+                        currentEntry = -1;
                     break;
                 case ConsoleKey.Spacebar when (k.Modifiers & ConsoleModifiers.Shift) == 0:
                     //If we're holding shift down, then do not insert the entry
@@ -180,16 +187,17 @@ namespace Transgenesis {
                         Clear();
                     }
                     */
-                    if (index == -1)
+                    if (currentEntry == -1)
                         break;
-                    var item = items[index];
+                    var item = items[currentEntry];
                     if (item.highlightLength == item.str.Length) {
                         break;
                     }
 
                     string input = i.Text;
                     string itemStr = item.str;
-                    i.Text = input.Substring(0, input.Length - item.highlightLength - 1) + itemStr;
+                    //i.Text = input.Substring(0, input.Length - item.highlightLength - 1) + itemStr;
+                    i.Text = $"{input.Substring(0, replaceStart)}{itemStr}{(replaceLength == -1 ? "" : input.Substring(replaceStart + replaceLength))}";
                     Clear();
                     break;
                 case ConsoleKey.Enter:
@@ -222,7 +230,7 @@ namespace Transgenesis {
             }
 
 
-            int lastColumn = index / 8;
+            int lastColumn = currentEntry / 8;
             int width = c.width - c.margin.X;
             int widthLeft = width;
             int columnCount = 0;
@@ -262,7 +270,7 @@ namespace Transgenesis {
 
                 for(int i = columnIndex * 8; i < (columnIndex + 1) * 8 && i < items.Count; i++) {
                     var o = items[i];
-                    if (index == i) {
+                    if (currentEntry == i) {
                         c.DrawSelected(o);
                     } else {
                         c.Draw(o);
@@ -296,7 +304,7 @@ namespace Transgenesis {
         }
         public void Draw() {
             //Note that if the input already has a match, then highlighting another option in the Suggest menu will not do anything
-            if (s.index > -1 && help.TryGetValue(s.items[s.index].str, out string helptext)) {
+            if (s.currentEntry > -1 && help.TryGetValue(s.items[s.currentEntry].str, out string helptext)) {
                 c.SetCursor(pos);
                 c.Write(helptext);
             } else if (help.TryGetValue(i.Text.TrimStart().Split()[0], out helptext)) {

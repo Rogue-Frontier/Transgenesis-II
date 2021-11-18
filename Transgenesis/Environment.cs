@@ -14,7 +14,7 @@ namespace Transgenesis {
         public Dictionary<string, XElement> coreStructures = new Dictionary<string, XElement>();
         public Dictionary<string, XElement> baseStructures = new Dictionary<string, XElement>();
         public Dictionary<XElement, XElement> bases = new Dictionary<XElement, XElement>();
-        public Dictionary<string, TranscendenceExtension> extensions = new Dictionary<string, TranscendenceExtension>();
+        public Dictionary<string, GameData> extensions = new Dictionary<string, GameData>();
         public Dictionary<string, List<string>> customAttributeValues;
         public XElement unknown = new XElement("Unknown");
         public bool allowUnknown = true;
@@ -23,9 +23,9 @@ namespace Transgenesis {
 
             XmlDocument doc = new XmlDocument();
             try {
-                doc.Load("Transcendence.xml");
+                doc.Load("RogueFrontier.xml");
             } catch {
-                doc.Load("../../../Transcendence.xml");
+                doc.Load("../../../RogueFrontier.xml");
             }
             hierarchy = XElement.Parse(doc.OuterXml);
             baseStructures["Hierarchy"] = hierarchy;
@@ -88,7 +88,7 @@ namespace Transgenesis {
         public List<string> GetRemovableElements(XElement element, XElement template) {
             return template.Elements("E").Select(subtemplate => InitializeTemplate(subtemplate)).Where(subtemplate => CanRemoveElement(element, subtemplate)).Select(subtemplate => subtemplate.Att("name")).ToList();
         }
-        public void Unload(TranscendenceExtension e) {
+        public void Unload(GameData e) {
             extensions.Remove(e.path);
             //TO DO
             //Clear data from bases
@@ -101,52 +101,26 @@ namespace Transgenesis {
                 }
             }
         }
-        public bool LoadExtension(XmlDocument doc, string path, out TranscendenceExtension e) {
+        public bool LoadExtension(XmlDocument doc, string path, out GameData e) {
             var structure = XElement.Parse(doc.OuterXml);
-            if (Enum.TryParse(structure.Tag(), out ExtensionTypes ex)) {
-                XElement template;
-                switch (ex) {
-                    case ExtensionTypes.TranscendenceUniverse:
-                        template = coreStructures["TranscendenceUniverse"];
-                        break;
-                    case ExtensionTypes.CoreLibrary:
-                        template = coreStructures["CoreLibrary"];
-                        break;
-
-                    case ExtensionTypes.TranscendenceAdventure:
-                        template = coreStructures["TranscendenceAdventure"];
-                        break;
-                    case ExtensionTypes.TranscendenceExtension:
-                        template = coreStructures["TranscendenceExtension"];
-                        break;
-                    case ExtensionTypes.TranscendenceLibrary:
-                        template = coreStructures["TranscendenceLibrary"];
-                        break;
-                    case ExtensionTypes.TranscendenceModule:
-                        template = coreStructures["TranscendenceModule"];
-                        break;
-                    default:
-                        e = null;
-                        return false;
-                }
+            if (coreStructures.TryGetValue(structure.Tag(), out var template)) {
                 template = InitializeTemplate(template);
-                var extension = new TranscendenceExtension(path, structure);
+                e = new GameData(path, structure);
 
-                if(extensions.TryGetValue(path, out TranscendenceExtension existing)) {
+                if(extensions.TryGetValue(path, out GameData existing)) {
                     Unload(existing);
                 }
 
-                extensions[path] = extension;
+                extensions[path] = e;
                 LoadWithTemplate(structure, template);
 
                 //Load entities
                 if(doc?.DocumentType?.Entities != null) {
                     foreach (XmlEntity entity in doc.DocumentType.Entities) {
-                        extension.types.elements.Add(new TypeEntry(entity.Name, uint.Parse(entity.InnerText.Replace("0x", ""), System.Globalization.NumberStyles.HexNumber)));
+                        e.types.elements.Add(new TypeEntry(entity.Name, uint.Parse(entity.InnerText.Replace("0x", ""), System.Globalization.NumberStyles.HexNumber)));
                     }
                 }
-                extension.UpdateSaveCode();
-                e = extension;
+                e.UpdateSaveCode();
                 return true;
             }
             e = null;
@@ -266,10 +240,10 @@ namespace Transgenesis {
             */
             return result;
         }
-        public List<string> GetAttributeValues(TranscendenceExtension extension, string attributeType) {
+        public List<string> GetAttributeValues(GameData extension, string attributeType) {
             if(customAttributeValues.TryGetValue(attributeType, out List<string> values)) {
                 return values;
-            } else if(Enum.TryParse<AttributeTypes>(attributeType, out AttributeTypes attributeTypeEnum)) {
+            } else if(Enum.TryParse(attributeType, out AttributeTypes attributeTypeEnum)) {
                 IEnumerable<string> result;
                 switch(attributeTypeEnum) {
                     case AttributeTypes.UNID:
@@ -341,36 +315,21 @@ namespace Transgenesis {
                 }
             }
         }
-        public void CreateExtension(ExtensionTypes e, string path) {
+        public void CreateExtension(string templateType, string path) {
             XElement structure;
             XElement template;
-            TranscendenceExtension extension;
+            GameData extension;
+            if(coreStructures.TryGetValue(templateType, out template)) {
+                template = InitializeTemplate(template);
+                structure = FromTemplate(template);
 
-            switch (e) {
-                case ExtensionTypes.TranscendenceAdventure:
-                    template = coreStructures["TranscendenceAdventure"];
-                    break;
-                case ExtensionTypes.TranscendenceExtension:
-                    template = coreStructures["TranscendenceExtension"];
-                    break;
-                case ExtensionTypes.TranscendenceLibrary:
-                    template = coreStructures["TranscendenceLibrary"];
-                    break;
-                case ExtensionTypes.TranscendenceModule:
-                    template = coreStructures["TranscendenceModule"];
-                    break;
-                default:
-                    return;
+                extension = new GameData(
+                    path: path,
+                    structure: structure
+                );
+                extensions[path] = extension;
+                extension.Save();
             }
-            template = InitializeTemplate(template);
-            structure = FromTemplate(template);
-
-            extension = new TranscendenceExtension(
-                path: path,
-                structure: structure
-            );
-            extensions[path] = extension;
-            extension.Save();
         }
         public void LoadFolder(string path, bool modules = false) {
             if (Directory.Exists(path)) {
@@ -402,12 +361,12 @@ namespace Transgenesis {
             XmlDocument doc = new XmlDocument();
             doc.LoadXml(xml);
 
-            LoadExtension(doc, path, out TranscendenceExtension e);
+            LoadExtension(doc, path, out GameData e);
             if (modules) {
                 LoadModules(e);
             }
         }
-        public void LoadModules(TranscendenceExtension e) {
+        public void LoadModules(GameData e) {
             foreach (var module in e.structure.Elements()) {
                 if (module.Tag() == "Module" || module.Tag() == "CoreLibrary" || module.Tag() == "TranscendenceAdventure") {
                     string filename = module.Att("filename");
@@ -438,13 +397,5 @@ namespace Transgenesis {
                 BindAll();
             }
         }
-    }
-    enum ExtensionTypes {
-        TranscendenceUniverse,
-        CoreLibrary,
-        TranscendenceAdventure,
-        TranscendenceExtension,
-        TranscendenceLibrary,
-        TranscendenceModule
     }
 }

@@ -9,7 +9,7 @@ using System.Xml.Linq;
 
 namespace Transgenesis {
     class ProgramState {
-        public Dictionary<TranscendenceExtension, ElementEditor> sessions = new Dictionary<TranscendenceExtension, ElementEditor>();
+        public Dictionary<GameData, ElementEditor> sessions = new Dictionary<GameData, ElementEditor>();
         public XElement copied;
     }
 }

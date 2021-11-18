@@ -29,10 +29,14 @@
     <None Remove="Content\Square.png" />
     <None Remove="Icon.bmp" />
     <None Remove="Icon.ico" />
+    <None Remove="RogueFrontier.xml" />
   </ItemGroup>
 
   <ItemGroup>
     <Content Include="Content\IBMCGA.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="RogueFrontier.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
