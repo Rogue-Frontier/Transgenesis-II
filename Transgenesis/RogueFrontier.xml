@@ -53,7 +53,7 @@ installWeapon
 			  </E>
 		  </E>
 		  <E category="?" name="LayeredArmorSystem">
-			  <E category="Armor">
+			  <E category="+" name="Armor">
 				  <A name="CODENAME" valueType="STRING"/>
 			  </E>
 		  </E>

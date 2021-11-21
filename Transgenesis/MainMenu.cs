@@ -446,40 +446,37 @@ namespace Transgenesis {
                 default:
                     //Disable suggest when input is completely empty so that we can navigate aroung the UI with arrow keys
                     if (input.Length == 0) {
-                    }
-
-                    if(!ElementEditor.TryMatch(input, new Regex("(?<cmd>.+)\\s*(?<arg>.*)"), out var m)) {
                         s.SetItems(new List<HighlightEntry>());
                         break;
                     }
 
-                    Dictionary<string, Func<List<string>>> autocomplete = new Dictionary<string, Func<List<string>>> {
-                        {"", () => new List<string>{ "types", "theme", "create", "bindall", "load", "unload", "edit", "open", "reload", "reloadmodules", "reloadall", "reloadallmodules", "loadmodules", "exit" } },
-                        {"theme", () => new List<string>{ "blue", "green", "pine", "orange", "default"} },
-                        {"create", () => env.coreStructures.Keys.ToList()},
-                        {"load", GetFiles },
-                        {"loadmodules", GetFiles },
-                        {"unload", GetExtensions },
-                        {"edit", GetExtensions },
-                        {"types", GetExtensions },
-                        {"open", GetFiles },
-                        {"reload", GetExtensions },
-                        {"reloadmodules", GetExtensions },
-                    };
-                    var cmd = m.Groups["cmd"].Value;
-                    var arg = m.Groups["arg"].Value;
-                    int replaceStart = m.Groups["arg"].Index;
-                    if (autocomplete.TryGetValue(cmd, out var result)) {
-                        List<string> all = result();
-                        var items = Global.GetSuggestions(arg, all);
-                        s.SetItems(items, replaceStart + 1);
-                    } else {
-                        replaceStart = 0;
-                        result = autocomplete[""];
-                        List<string> all = result();
-                        var items = Global.GetSuggestions(cmd, all);
-                        s.SetItems(items, replaceStart);
+                    if (ElementEditor.TryMatch(input, new Regex("^(?<cmd>[a-zA-Z0-9]+)$"), out Match m)) {
+                        var cmd = m.Groups["cmd"].Value;
+                        var list = new List<string> { "types", "theme", "create", "bindall", "load", "unload", "edit", "open", "reload", "reloadmodules", "reloadall", "reloadallmodules", "loadmodules", "exit" };
+                        s.SetItems(Global.GetSuggestions(cmd, list));
+                        break;
+                    } else if (ElementEditor.TryMatch(input, new Regex("^(?<cmd>[a-zA-Z0-9]+)\\s+(?<arg>.*)$"), out m)) {
 
+                        var cmd = m.Groups["cmd"].Value;
+                        var arg = m.Groups["arg"].Value;
+
+                        var autocomplete = new Dictionary<string, Func<List<string>>>{
+                            { "theme", () => new List<string> { "blue", "green", "pine", "orange", "default" } },
+                            { "create", () => env.coreStructures.Keys.ToList()},
+                            { "load", GetFiles },
+                            { "loadmodules", GetFiles },
+                            { "unload", GetExtensions },
+                            { "edit", GetExtensions },
+                            { "types", GetExtensions },
+                            { "open", GetFiles },
+                            { "reload", GetExtensions },
+                            { "reloadmodules", GetExtensions },
+                        };
+                        if (autocomplete.TryGetValue(cmd, out var result)) {
+                            List<string> all = result();
+                            var items = Global.GetSuggestions(arg, all);
+                            s.SetItems(items, m.Groups["arg"].Index);
+                        }
                     }
 
                     List<string> GetExtensions() {

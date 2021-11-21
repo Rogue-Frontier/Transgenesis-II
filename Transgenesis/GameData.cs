@@ -353,7 +353,7 @@ namespace Transgenesis {
                             break;
                         }
                     case "Module": {
-                            var moduleFilename = sub.Att("filename");
+                            var moduleFilename = sub.Att("filename") ?? sub.Att("file") ?? sub.Att("path");
                             var modulePath = Path.GetFullPath(Path.Combine(path, "..", moduleFilename));
 
                             //Look for our module in the Extensions list

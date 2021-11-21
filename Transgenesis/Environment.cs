@@ -43,13 +43,13 @@ namespace Transgenesis {
             }
         }
         public bool CanAddElement(XElement element, XElement template, string subelement, out XElement subtemplate) {
-            subtemplate = template.TryNameElement(subelement) ?? template.TryNameElement("*");
-            if(subtemplate == null) {
+            if(template.TryNameElement(subelement, out subtemplate) || template.TryNameElement("*", out subtemplate)) {
+                subtemplate = InitializeTemplate(subtemplate);
+                return CanAddElement(element, subtemplate);
+            } else {
                 subtemplate = unknown;
                 return allowUnknown;
             }
-            subtemplate = InitializeTemplate(subtemplate);
-            return CanAddElement(element, subtemplate);
         }
         public bool CanRemoveElement(XElement element, XElement template, string subelement) {
             return CanRemoveElement(element, template.Elements("E").First(e => e.Att("name") == subelement));
@@ -164,11 +164,11 @@ namespace Transgenesis {
                 result.Add(subelement);
             }
             //Initialize attributes to default values
-            foreach (XElement attributeType in template.Elements("A")) {
-                string attribute = attributeType.Att("name");
-                string value = attributeType.Att("value");
+            foreach (XElement attributeSpec in template.Elements("A")) {
+                string key = attributeSpec.Att("name");
+                string value = attributeSpec.Att("value");
                 if(value != null) {
-                    result.SetAttributeValue(attribute, value);
+                    result.SetAttributeValue(key, value);
                 }
             }
             Ready:
@@ -369,7 +369,7 @@ namespace Transgenesis {
         public void LoadModules(GameData e) {
             foreach (var module in e.structure.Elements()) {
                 if (module.Tag() == "Module" || module.Tag() == "CoreLibrary" || module.Tag() == "TranscendenceAdventure") {
-                    string filename = module.Att("filename");
+                    string filename = module.Att("filename") ?? module.Att("file");
                     //Use the full path when finding modules
                     string path = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(e.path), filename));
                     Load(path, true);

@@ -1,4 +1,5 @@
-﻿using SadConsole.Input;
+﻿using SadConsole;
+using SadConsole.Input;
 using SadRogue.Primitives;
 using System;
 using System.Collections.Generic;
@@ -177,29 +178,46 @@ namespace Transgenesis {
                         //Wrap around
                         currentEntry = -1;
                     break;
-                case ConsoleKey.Spacebar when (k.Modifiers & ConsoleModifiers.Shift) == 0:
-                    //If we're holding shift down, then do not insert the entry
+                case ConsoleKey.Tab: {
+                        if (currentEntry == -1)
+                            break;
+                        var item = items[currentEntry];
+                        if (item.highlightLength == item.str.Length) {
+                            break;
+                        }
 
-                    /*
-                    if (index != -1) {
-                        i.Text = options[index].str + " ";
-                        i.cursor = i.Text.Length;
+                        string input = i.Text;
+                        string itemStr = item.str;
+                        //i.Text = input.Substring(0, input.Length - item.highlightLength - 1) + itemStr;
+                        i.Text = $"{input.Substring(0, replaceStart)}{itemStr}{(replaceLength == -1 ? "" : input.Substring(replaceStart + replaceLength))}";
                         Clear();
-                    }
-                    */
-                    if (currentEntry == -1)
-                        break;
-                    var item = items[currentEntry];
-                    if (item.highlightLength == item.str.Length) {
                         break;
                     }
 
-                    string input = i.Text;
-                    string itemStr = item.str;
-                    //i.Text = input.Substring(0, input.Length - item.highlightLength - 1) + itemStr;
-                    i.Text = $"{input.Substring(0, replaceStart)}{itemStr}{(replaceLength == -1 ? "" : input.Substring(replaceStart + replaceLength))}";
-                    Clear();
-                    break;
+                case ConsoleKey.Spacebar when (k.Modifiers & ConsoleModifiers.Shift) == 0: {
+                        //If we're holding shift down, then do not insert the entry
+
+                        /*
+                        if (index != -1) {
+                            i.Text = options[index].str + " ";
+                            i.cursor = i.Text.Length;
+                            Clear();
+                        }
+                        */
+                        if (currentEntry == -1)
+                            break;
+                        var item = items[currentEntry];
+                        if (item.highlightLength == item.str.Length) {
+                            break;
+                        }
+
+                        string input = i.Text;
+                        string itemStr = item.str;
+                        //i.Text = input.Substring(0, input.Length - item.highlightLength - 1) + itemStr;
+                        i.Text = $"{input.Substring(0, replaceStart)}{itemStr}{(replaceLength == -1 ? "" : input.Substring(replaceStart + replaceLength))}";
+                        Clear();
+                        break;
+                    }
                 case ConsoleKey.Enter:
                     Clear();
                     break;
@@ -296,6 +314,8 @@ namespace Transgenesis {
         Dictionary<string, string> help;
         Point pos = new Point(0, 53);
         ConsoleManager c;
+        public string text;
+        public ColoredString warning;
         public Tooltip(Input i, Suggest s, ConsoleManager c, Dictionary<string, string> help) {
             this.i = i;
             this.s = s;
@@ -304,15 +324,21 @@ namespace Transgenesis {
         }
         public void Draw() {
             //Note that if the input already has a match, then highlighting another option in the Suggest menu will not do anything
-            if (s.currentEntry > -1 && help.TryGetValue(s.items[s.currentEntry].str, out string helptext)) {
-                c.SetCursor(pos);
-                c.Write(helptext);
-            } else if (help.TryGetValue(i.Text.TrimStart().Split()[0], out helptext)) {
-                c.SetCursor(pos);
-                c.Write(helptext);
+            c.SetCursor(pos);
+            if (text != null) {
+                c.Write(text);
+                c.NextLine();
+            }
+            if (warning != null) {
+                c.Write(warning);
             }
         }
         public void Handle(ConsoleKeyInfo k) {
+            string str;
+            if (s.currentEntry > -1 && help.TryGetValue(s.items[s.currentEntry].str, out str)
+                || help.TryGetValue(i.Text.TrimStart().Split()[0], out str)) {
+                text = str;
+            }
         }
     }
     class History {

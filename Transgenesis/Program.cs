@@ -47,8 +47,8 @@ namespace Transgenesis {
             //screens.Push(new MainMenu(screens));
             //screens.Push(new TextEditor(screens, new ConsoleManager(new Point(0, 0)), s => { }));
 
+            env.LoadState();
             try {
-                env.LoadState();
             } catch(Exception e) {
                 throw;
             }

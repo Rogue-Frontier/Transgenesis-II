@@ -52,11 +52,11 @@ namespace Transgenesis {
                         "-Right       First child element" + "\r\n" +
                         "-Return      Expand/collapse element" + "\r\n" +
                         "-Typing      Enter a command" + "\r\n"},
-                {"add", "add <subelement>\r\n" +
+                {"add", "add {subelement} {attribute}=\"{value}\"...\r\n" +
                         "Adds the named subelement to the current element, if allowed"},
-                {"reorder", "reorder <attribute...>\r\n" +
+                {"reorder", "reorder {attribute...}\r\n" +
                             "Reorders the attributes in the current element in the specified order" },
-                {"set",     "set <attribute> [value]\r\n" +
+                {"set",     "set {attribute}=\"[value]\"\r\n" +
                             "Sets the named attribute to the specified value on the current element.\r\n" +
                             "If [value] is empty, then deletes the attribute from the element" },
 
@@ -251,7 +251,7 @@ namespace Transgenesis {
             h.Handle(k);
             s.Handle(k);
             scroller.Handle(k);
-
+            t.warning = null;
             string input = i.Text;
             switch (k.Key) {
                 /*
@@ -349,19 +349,13 @@ namespace Transgenesis {
                         string[] parts = input.Split(' ');
                         switch (parts[0]) {
                             case "add": {
-
-
-
-
-
                                     string elementName = parts[1];
                                     if (env.CanAddElement(focused, env.bases[focused], elementName, out XElement subtemplate)) {
                                         var subelement = env.FromTemplate(subtemplate, elementName);
                                         focused.Add(subelement);
-                                        foreach(Match mat in new Regex("([a-zA-Z0-9]+)=\"([^\"]+)\"").Matches(input)) {
-                                            Func<int, string> g = index => mat.Groups[index].Value;
-                                            string key = g(1);
-                                            string value = g(2);
+                                        foreach(Match m in new Regex("(?<attribute>[a-zA-Z0-9]+)=\"(?<value>[^\"]*)\"").Matches(input)) {
+                                            string key = m.Groups["attribute"].Value;
+                                            string value = m.Groups["value"].Value;
                                             subelement.SetAttributeValue(key, value);
                                         }
                                         focused = subelement;
@@ -372,17 +366,16 @@ namespace Transgenesis {
                             case "set": {
                                     if (parts.Length == 1)
                                         break;
-                                    string attribute = parts[1];
-                                    string value = string.Join(" ", parts.Skip(2));
-                                    if (value.Length > 0) {
-                                        //Set the value
-                                        focused.SetAttributeValue(attribute, value);
-                                        h.Record();
-                                    } else if (!string.IsNullOrEmpty(attribute)) {
-                                        //Delete the attribute if we enter no value
-                                        focused.Attribute(attribute)?.Remove();
-                                        h.Record();
+                                    foreach (Match m in new Regex("(?<attribute>[a-zA-Z0-9]+)=\"(?<value>[^\"]*)\"").Matches(input)) {
+                                        string key = m.Groups["attribute"].Value;
+                                        string value = m.Groups["value"].Value;
+                                        if (value.Length > 0) {
+                                            focused.SetAttributeValue(key, value);
+                                        } else {
+                                            focused.Attribute(key)?.Remove();
+                                        }
                                     }
+                                    h.Record();
                                     break;
                                 }
                             case "reorder": {
@@ -626,7 +619,7 @@ namespace Transgenesis {
             var input = i.Text;
             //Disable suggest when input is completely empty so that we can navigate aroung the UI with arrow keys
             
-            List<HighlightEntry> Suggest(string text, List<string> choices) => Global.GetSuggestions(text, choices);
+            List<HighlightEntry> Suggest(string text, IEnumerable<string> choices) => Global.GetSuggestions(text, choices);
 
             List<HighlightEntry> result = new List<HighlightEntry>();
             int replaceStart = 0, replaceLength = -1;
@@ -643,29 +636,44 @@ namespace Transgenesis {
                     if (TryMatch(input, new Regex("^add\\s+(?<element>[a-zA-Z0-9_]*)$"), out m)) {
                         var g = m.Groups["element"];
                         replaceStart = g.Index;
-                        replaceLength = g.Length;
+                        //replaceLength = g.Length;
                         result = Suggest(g.Value, env.GetAddableElements(focused, env.bases[focused]));
                     } else if (
-                        TryMatch(input, new Regex("^add\\s+(?<element>[a-zA-Z0-9_]+)\\s+([a-zA-Z0-9_]+=\"[a-zA-Z0-9_]+\"\\s+)*(?<attribute>[a-zA-Z0-9_]*)$"), out m)) {
-                        //Suggest values for the attribute
+                        TryMatch(input, new Regex("^add\\s+(?<element>[a-zA-Z0-9_]+)\\s+(?<attributes>([a-zA-Z0-9_]+=\"[a-zA-Z0-9_]*\"\\s*)*)(?<attribute>[a-zA-Z0-9_]*)$"), out m)) {
+                        //Suggest attribute
                         var sub = m.Groups["element"].Value;
                         var g = m.Groups["attribute"];
                         replaceStart = g.Index;
-                        replaceLength = g.Length;
+                        //replaceLength = g.Length;
                         var e = env.bases[focused];
-                        e = e.NameElement(sub);
-                        result = Suggest(g.Value, e.GetValidAttributes());
-                    } else if (
-                        TryMatch(input, new Regex("^add\\s+(?<element>[a-zA-Z0-9_]+)\\s+([a-zA-Z0-9_]+=\"[a-zA-Z0-9_]+\")*\\s+(?<attribute>[a-zA-Z0-9_]+)=\"(?<value>[a-zA-Z0-9_]*)\"$"), out m)) {
-                        //Suggest values for the attribute
-                        var sub = m.Groups["element"].Value;
-                        string attribute = m.Groups["attribute"].Value;
-                        string attributeType = env.bases[focused].Element(sub).Elements("A").FirstOrDefault(e => e.Att("name") == attribute)?.Att("valueType");
-                        if (attributeType == null) {
+                        if (!e.TryNameElement(sub, out e)) {
+                            t.warning = (new ColoredString($"Unknown subelement {sub}"));
                             s.Clear();
                             break;
                         }
-                        var all = env.GetAttributeValues(extension, attributeType);
+
+                        var existing = new Regex("(?<key>[a-zA-Z0-9_]+)=\"[a-zA-Z0-9_]*\"").Matches(m.Groups["attributes"].Value).Select(m => m.Groups["key"].Value);
+                        result = Suggest(g.Value, e.GetValidAttributes().Except(existing));
+                    } else if (
+                        TryMatch(input, new Regex("^add\\s+(?<element>[a-zA-Z0-9_]+)\\s+([a-zA-Z0-9_]+=\"[a-zA-Z0-9_]+\"\\s*)*(?<attribute>[a-zA-Z0-9_]+)=\"(?<value>[a-zA-Z0-9_]*)$"), out m)) {
+                        //Suggest values for the attribute
+                        var sub = m.Groups["element"].Value;
+                        string attribute = m.Groups["attribute"].Value;
+                        var e = env.bases[focused];
+                        if(!e.TryNameElement(sub, out e)) {
+                            t.warning = (new ColoredString($"Unknown subelement {sub}"));
+                            s.Clear();
+                            break;
+                        }
+                        if(!e.TryGetValueType(attribute, out string valueType)) {
+                            t.warning = (new ColoredString($"Unknown attribute {attribute}"));
+                            s.Clear();
+                            break;
+                        }
+
+                        t.warning = new ColoredString($"{attribute}=\"{{{valueType}}}\"");
+
+                        var all = env.GetAttributeValues(extension, valueType);
                         if (focused.Att(attribute, out string value)) {
                             //Remove duplicate
                             all.Remove(value);
@@ -675,25 +683,37 @@ namespace Transgenesis {
                         var g = m.Groups["value"];
                         var v = g.Value;
                         replaceStart = g.Index;
-                        replaceLength = g.Length;
+                        //replaceLength = g.Length;
                         result = Suggest(v, all);
+                    } else if(TryMatch(input, new Regex("^add\\s+(?<element>[a-zA-Z0-9_]*)"), out m)) {
+                        var sub = m.Groups["element"].Value;
+                        var e = env.bases[focused];
+                        if (!e.TryNameElement(sub, out e)) {
+                            t.warning = (new ColoredString($"Unknown subelement {sub}"));
+                            s.Clear();
+                            break;
+                        }
                     }
                     break;
                 case "set":
-                    if (TryMatch(input, new Regex("^set\\s+(?<attribute>[a-zA-Z0-9_]*)$"), out m)) {
+                    if (TryMatch(input, new Regex("^set\\s+(?<attributes>([a-zA-Z0-9_]+=\"[a-zA-Z0-9_]*\"\\s*)*)(?<attribute>[a-zA-Z0-9_]*)$"), out m)) {
                         var g = m.Groups["attribute"];
                         replaceStart = g.Index;
-                        replaceLength = g.Length;
-                        var choices = env.bases[focused].GetValidAttributes();
+                        //replaceLength = g.Length;
+
+
+                        var existing = new Regex("(?<key>[a-zA-Z0-9_])+=\"[a-zA-Z0-9_]*\"").Matches(m.Groups["attributes"].Value).Select(m => m.Groups["key"].Value);
+
+                        var choices = env.bases[focused].GetValidAttributes().Except(existing);
                         result = Suggest(g.Value, choices);
-                    } else if(TryMatch(input, new Regex("^set\\s+(?<attribute>[a-zA-Z0-9_]+)\\s(?<value>[a-zA-Z0-9_]*)$"), out m)) {
+                    } else if(TryMatch(input, new Regex("^set\\s+([a-zA-Z0-9_]+=\"[a-zA-Z0-9_]+\"\\s*)*(?<attribute>[a-zA-Z0-9_]+)=\"(?<value>[a-zA-Z0-9_]*)$"), out m)) {
                         string attribute = m.Groups["attribute"].Value;
-                        string attributeType = env.bases[focused].Elements("A").FirstOrDefault(e => e.Att("name") == attribute)?.Att("valueType");
-                        if (attributeType == null) {
+                        if (env.bases[focused].TryGetValueType(attribute, out string valueType)) {
+                            t.warning = (new ColoredString($"Unknown valueType {valueType}"));
                             s.Clear();
                             break;
                         }
-                        var all = env.GetAttributeValues(extension, attributeType);
+                        var all = env.GetAttributeValues(extension, valueType);
                         if (focused.Att(attribute, out string value)) {
                             //Remove duplicate
                             all.Remove(value);
@@ -703,7 +723,7 @@ namespace Transgenesis {
                         var g = m.Groups["value"];
                         var v = g.Value;
                         replaceStart = g.Index;
-                        replaceLength = g.Length;
+                        //replaceLength = g.Length;
                         result = Suggest(v, all);
                     }
                     break;

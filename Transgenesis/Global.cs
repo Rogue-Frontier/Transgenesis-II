@@ -72,8 +72,18 @@ namespace Transgenesis {
         public static XElement NameElement(this XElement e, string name) {
             return e.Elements("E").First(s => s.Attribute("name")?.Value == name);
         }
-        public static XElement TryNameElement(this XElement e, string name) {
-            return e.Elements("E").FirstOrDefault(s => s.Attribute("name")?.Value == name);
+
+        public static bool TryNameElement(this XElement e, string name, out XElement result) {
+            return (result = e.Elements("E").FirstOrDefault(s => s.Attribute("name")?.Value == name)) != null;
+        }
+        public static XElement NameAttribute(this XElement e, string name) {
+            return e.Elements("A").First(s => s.Attribute("name")?.Value == name);
+        }
+        public static bool TryNameAttribute(this XElement e, string name, out XElement result) {
+            return (result = e.Elements("A").FirstOrDefault(s => s.Attribute("name")?.Value == name)) != null;
+        }
+        public static bool TryGetValueType(this XElement e, string name, out string result) {
+            return (result = e.Elements("A").FirstOrDefault(s => s.Attribute("name")?.Value == name)?.Att("valueType")) != null;
         }
         public static List<string> GetValidAttributes(this XElement e) {
             return e.Elements("A").Select(a => a.Att("name")).ToList();
