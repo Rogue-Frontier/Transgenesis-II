@@ -492,20 +492,20 @@ namespace Transgenesis {
         (element is TypeRange range ? range.entities :
         null)).ToList();
         public void Inherit(TypeInfo parent) {
-            this.entity2unid = new Dictionary<string, uint>(parent.entity2unid);
-            this.unid2entity = new Dictionary<uint, string>(parent.unid2entity);
-            this.typemap = new Dictionary<string, XElement>(parent.typemap);
-            this.ownedTypes = new HashSet<string>(parent.ownedTypes);
-            this.unknownTypes = new HashSet<string>(parent.unknownTypes);
-            this.overriddenTypes = new HashSet<string>(parent.overriddenTypes);
-            this.dependencyTypes = new Dictionary<string, GameData>(parent.dependencyTypes);
-            this.typesByDependency = new Dictionary<GameData, List<string>>(parent.typesByDependency);
-            this.moduleTypes = new Dictionary<string, GameData>(parent.moduleTypes);
-            this.typesByModule = new Dictionary<GameData, List<string>>(parent.typesByModule);
+            this.entity2unid = new(parent.entity2unid);
+            this.unid2entity = new(parent.unid2entity);
+            this.typemap = new(parent.typemap);
+            this.ownedTypes = new(parent.ownedTypes);
+            this.unknownTypes = new(parent.unknownTypes);
+            this.overriddenTypes = new(parent.overriddenTypes);
+            this.dependencyTypes = new(parent.dependencyTypes);
+            this.typesByDependency = new(parent.typesByDependency);
+            this.moduleTypes = new(parent.moduleTypes);
+            this.typesByModule = new(parent.typesByModule);
         }
         public Dictionary<string, uint> BindAll() {
-            BindContext context = new BindContext();
-            foreach (TypeElement e in elements) {
+            var context = new BindContext();
+            foreach (var e in elements) {
                 e.BindAll(context);
             }
             return context.entity2unid;
@@ -522,7 +522,7 @@ namespace Transgenesis {
             if(typesByDependency.ContainsKey(dependency)) {
                 typesByDependency[dependency].Add(entity);
             } else {
-                typesByDependency[dependency] = new List<string> { entity };
+                typesByDependency[dependency] = new(){ entity };
             }
         }
         public void ClearModuleTypes() {
@@ -534,7 +534,7 @@ namespace Transgenesis {
             if (typesByModule.ContainsKey(module)) {
                 typesByModule[module].Add(entity);
             } else {
-                typesByModule[module] = new List<string> { entity };
+                typesByModule[module] = new() { entity };
             }
         }
     }
@@ -583,7 +583,7 @@ namespace Transgenesis {
             Types.BindEntry(context, unid, entity);
         }
         public XElement GetXMLOutput() {
-            XElement result = new XElement("TypeEntry");
+            var result = new XElement("TypeEntry");
             //result.SetAttributeValue("comment", comment);
             result.SetAttributeValue("unid", unid);
             result.SetAttributeValue("entity", entity);
@@ -602,7 +602,7 @@ namespace Transgenesis {
             this.entities = new List<string>(entities);
         }
         public XElement GetXMLOutput() {
-            XElement result = new XElement("TypeRange");
+            var result = new XElement("TypeRange");
             result.SetAttributeValue("unid_min", unid_min);
             result.SetAttributeValue("unid_max", unid_max);
             result.SetAttributeValue("entities", string.Join(" ", entities));

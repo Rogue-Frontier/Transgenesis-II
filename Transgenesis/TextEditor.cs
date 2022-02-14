@@ -22,11 +22,11 @@ namespace Transgenesis {
         public TextEditor(Stack<IComponent> screens, ConsoleManager c, string Text = "", Action<string> OnClosed = null) {
             this.screens = screens;
             this.c = c;
-            this.scroller = new Scroller(c);
-            this.s = new StringBuilder(Text);
+            this.scroller = new(c);
+            this.s = new(Text);
             this.cursor = 0;
             this.columnMemory = 0;
-            this.pos = new Point(0, 0);
+            this.pos = new(0, 0);
             this.OnClosed = OnClosed;
         }
         public void Update() {
@@ -201,6 +201,9 @@ namespace Transgenesis {
         }
         bool FindPrevLine(out int index) {
             index = Math.Min(cursor, s.Length - 1);
+            if (index > -1) {
+                index--;
+            }
             while(index > -1 && s[index] != '\n') {
                 index--;
             }
@@ -237,18 +240,20 @@ namespace Transgenesis {
             return count;
         }
         public void Draw() {
+            c.Clear();
+
             c.SetCursor(pos);
-            List<ColoredString> buffer = new List<ColoredString>();
+            var buffer = new List<ColoredString>();
 
             int width = c.width;
-            ColoredString line = new ColoredString(width);
+            var line = new ColoredString(width);
             int index = 0;
             int length = 0;
             bool cursorAfterNewline = false;
             foreach(var ch in s.ToString()) {
                 if (ch == '\n') {
                     buffer.Add(line.SubString(0, length));
-                    line = new ColoredString(width);
+                    line = new(width);
                     length = 0;
                     if(cursor == index) {
                         buffer[buffer.Count - 1] += new ColoredString(c.ColorInvert(' '));
@@ -259,15 +264,15 @@ namespace Transgenesis {
                 }
                 if(index == cursor || cursorAfterNewline) {
                     cursorAfterNewline = false;
-                    line[length] = (ColoredGlyphEffect) c.ColorInvert(ch);
+                    line[length] = ConsoleManager.Effect(c.ColorInvert(ch));
                 } else {
-                    line[length] = (ColoredGlyphEffect)c.Color(ch);
+                    line[length] = ConsoleManager.Effect(c.Color(ch));
                 }
                 index++;
                 length++;
                 if (length == width) {
                     buffer.Add(line);
-                    line = new ColoredString(width);
+                    line = new(width);
                     length = 0;
                 }
             }
@@ -275,15 +280,14 @@ namespace Transgenesis {
                 buffer.Add(line.SubString(0, length));
             }
             if (cursorAfterNewline) {
-                buffer.Add(new ColoredString(c.ColorInvert(' ')));
+                buffer.Add(new(c.ColorInvert(' ')));
             } else if(index == cursor) {
                 if(length == 0) {
-                    buffer.Add(new ColoredString(c.ColorInvert(' ')));
+                    buffer.Add(new(c.ColorInvert(' ')));
                 } else {
                     buffer[buffer.Count - 1] += new ColoredString(c.ColorInvert(' '));
                 }
-            } 
-
+            }
             scroller.Draw(buffer, 64);
         }
     }

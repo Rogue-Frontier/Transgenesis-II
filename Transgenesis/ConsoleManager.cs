@@ -4,6 +4,7 @@ using System.Linq;
 using static Transgenesis.Global;
 using SadRogue.Primitives;
 using SadConsole.Components;
+using static SadConsole.ColoredString;
 
 namespace Transgenesis {
     class Theme {
@@ -17,7 +18,7 @@ namespace Transgenesis {
         }
     }
     class ConsoleManager {
-        public Console console => SadConsole.Game.Instance.Screen;
+        public Console console => (Console)SadConsole.Game.Instance.Screen;
         public Cursor cursor => console.Cursor;
         public int width => console.Width;
         public ConsoleManager(Point p) {
@@ -63,18 +64,18 @@ namespace Transgenesis {
             cursor.Print(ColorInvert(s, front, back));
             NextLine();
         }
-        public ColoredGlyph ColorInvert(char c, Color? back = null, Color? front = null) {
-            return new ColoredGlyph(front ?? theme.front, back ?? theme.back, c);
-        }
-        public ColoredGlyph Color(char c, Color? front = null, Color? back = null) {
-            return new ColoredGlyph(back ?? theme.back, front ?? theme.front, c);
-        }
-        public ColoredString Color(string s, Color front, Color back) {
-            return new ColoredString(s, front, back);
-        }
-        public ColoredString Color(string s, Color? front = null, Color? back = null) {
-            return Color(s, front ?? theme.front, back ?? theme.back);
-        }
+        public ColoredGlyph ColorInvert(char c, Color? back = null, Color? front = null)=>
+            new(front ?? theme.front, back ?? theme.back, c);
+        
+        public ColoredGlyph Color(char c, Color? front = null, Color? back = null) =>
+            new(back ?? theme.back, front ?? theme.front, c);
+        
+        public static ColoredGlyphEffect Effect(ColoredGlyph cg) =>
+            new() { Foreground = cg.Foreground, Background = cg.Background, Glyph = cg.Glyph };
+        public static ColoredString Color(string s, Color front, Color back) =>
+            new(s, front, back);
+        public ColoredString Color(string s, Color? front = null, Color? back = null) =>
+            Color(s, front ?? theme.front, back ?? theme.back);
         public ColoredString Highlight(string s, Color? front = null, Color? back = null) {
             return Color(s, front ?? theme.highlight, back ?? theme.back);
         }

@@ -1,96 +1,92 @@
 <E name="Hierarchy">
-  <AttributeType name="ALIGNMENT">
+    <AttributeType name="ALIGNMENT">
 DestructiveOrder
 DestructiveChaos
 ConstructiveOrder
 ConstructiveChaos
 Neutral
   </AttributeType>
-
 	<AttributeType name="INVOKE">
 installWeapon
 	</AttributeType>
-  <E category="mod" name="Module">
-    <E category="*" name="Module">
-      <A name="filename" valueType="STRING"/>
-	</E>
-	<E category="*" name="Sovereign" inherit="TypeBase">
-		<A name="alignment" valueType="ALIGNMENT"/>
-	</E>
-	<E category="*" name="ItemType" inherit="TypeBase">
-		<A name="name" valueType="STRING"/>
-		<A name="mass" valueType="INTEGER"/>
-		<A name="level" valueType="INTEGER"/>
-		<A name="invoke" valueType="INVOKE"/>
-		<A name="desc" valueType="STRING"/>
-		<E category="?" name="Weapon">
-			<A name="powerUse" valueType="INTEGER"/>
-			<A name="fireCooldown" valueType="INTEGER"/>
-			<A name="missileSpeed" valueType="INTEGER"/>
-			<A name="damageType" valueType="INTEGER"/>
-			<A name="damageHP" valueType="INTEGER"/>
-			<A name="lifetime" valueType="INTEGER"/>
-			<A name="char" valueType="INTEGER"/>
-			<A name="foreground" valueType="INTEGER"/>
-			<A name="initialCharges" valueType="INTEGER"/>
+    <E category="root" name="Module">
+		<E category="*" name="Module">
+		  <A name="filename" valueType="STRING"/>
 		</E>
-		<E category="?" name="Armor">
-			<A name="maxHP" valueType="INTEGER"/>
+		<E category="*" name="Sovereign" inherit="TypeBase">
+			<A name="alignment" valueType="ALIGNMENT"/>
 		</E>
-	</E>
-	  <E category="*" name="ShipClass" inherit="TypeBase">
-		  <A name="name" valueType="STRING"/>
-		  <A name="thrust" valueType="FLOAT"/>
-		  <A name="maxSpeed" valueType="INTEGER"/>
-		  <A name="rotationAccel" valueType="FLOAT"/>
-		  <A name="rotationDecel" valueType="FLOAT"/>
-		  <A name="rotationMaxSpeed" valueType="FLOAT"/>
-		  <A name="char" valueType="STRING"/>
-		  <A name="foreground" valueType="STRING"/>
-		  <E category="?" name="Devices">
-			  <E category="*" name="Weapon">
-				  <A name="CODENAME" valueType="STRING"/>
-			  </E>
-		  </E>
-		  <E category="?" name="LayeredArmorSystem">
-			  <E category="+" name="Armor">
-				  <A name="CODENAME" valueType="STRING"/>
-			  </E>
-		  </E>
-	  </E>
-  </E>
-	<E category="*" name="StationType" inherit="TypeBase">
-		<A name="name" valueType="STRING"/>
-		<A name="sovereign" valueType="STRING"/>
-		<A name="char" valueType="STRING"/>
-		<A name="foreground" valueType="STRING"/>
-		<A name="background" valueType="STRING"/>
-		<A name="behavior" valueType="STRING"/>
-		<E category="?" name="Segments">
-			<E category="*" name="Point">
-				<A name="offsetX" valueType="INTEGER"/>
-				<A name="offsetY" valueType="INTEGER"/>
-				<A name="char" valueType="STRING"/>
-				<A name="foreground" valueType="STRING"/>
-				<A name="background" valueType="STRING"/>
+		<E category="*" name="ItemType" inherit="TypeBase">
+			<A name="name" valueType="STRING"/>
+			<A name="mass" valueType="INTEGER"/>
+			<A name="level" valueType="INTEGER"/>
+			<A name="invoke" valueType="INVOKE"/>
+			<A name="desc" valueType="STRING"/>
+			<E category="?" name="Weapon">
+				<A name="powerUse" valueType="INTEGER"/>
+				<A name="fireCooldown" valueType="INTEGER"/>
+				<A name="missileSpeed" valueType="INTEGER"/>
+				<A name="damageType" valueType="INTEGER"/>
+				<A name="damageHP" valueType="INTEGER"/>
+				<A name="lifetime" valueType="INTEGER"/>
+				<A name="char" valueType="INTEGER"/>
+				<A name="foreground" valueType="INTEGER"/>
+				<A name="initialCharges" valueType="INTEGER"/>
+			</E>
+			<E category="?" name="Armor">
+				<A name="maxHP" valueType="INTEGER"/>
 			</E>
 		</E>
-		<E category="?" name="Guards">
-			<E category="*" name="Ship">
-				<A name="count" valueType="INTEGER"/>
-				<A name="codename" valueType="STRING"/>
+		<E category="*" name="ShipClass" inherit="TypeBase">
+			<A name="name" valueType="STRING"/>
+			<A name="thrust" valueType="FLOAT"/>
+			<A name="maxSpeed" valueType="INTEGER"/>
+			<A name="rotationAccel" valueType="FLOAT"/>
+			<A name="rotationDecel" valueType="FLOAT"/>
+			<A name="rotationMaxSpeed" valueType="FLOAT"/>
+			<A name="char" valueType="STRING"/>
+			<A name="foreground" valueType="STRING"/>
+			<E category="?" name="Devices">
+				<E category="*" name="Weapon">
+					<A name="CODENAME" valueType="STRING"/>
+				</E>
+			</E>
+			<E category="?" name="LayeredArmorSystem">
+				<E category="+" name="Armor">
+					<A name="CODENAME" valueType="STRING"/>
+				</E>
 			</E>
 		</E>
-		<E category="?" name="Weapons">
-			<E category="*" name="Weapon">
-				<A name="codename" valueType="STRING"/>
+		<E category="*" name="StationType" inherit="TypeBase">
+			<A name="name" valueType="STRING"/>
+			<A name="sovereign" valueType="STRING"/>
+			<A name="char" valueType="STRING"/>
+			<A name="foreground" valueType="STRING"/>
+			<A name="background" valueType="STRING"/>
+			<A name="behavior" valueType="STRING"/>
+			<E category="?" name="Segments">
+				<E category="*" name="Point">
+					<A name="offsetX" valueType="INTEGER"/>
+					<A name="offsetY" valueType="INTEGER"/>
+					<A name="char" valueType="STRING"/>
+					<A name="foreground" valueType="STRING"/>
+					<A name="background" valueType="STRING"/>
+				</E>
+			</E>
+			<E category="?" name="Guards">
+				<E category="*" name="Ship">
+					<A name="count" valueType="INTEGER"/>
+					<A name="codename" valueType="STRING"/>
+				</E>
+			</E>
+			<E category="?" name="Weapons">
+				<E category="*" name="Weapon">
+					<A name="codename" valueType="STRING"/>
+				</E>
 			</E>
 		</E>
 	</E>
-
-
 	<E category="virtual" id="TypeBase">
-    <A name="codename" valueType="STRING"/>
-  </E>
-
+		<A name="codename" valueType="STRING"/>
+    </E>
 </E>

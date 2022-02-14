@@ -179,13 +179,13 @@ namespace Transgenesis {
 
             void AddLine(string s) {
                 buffer.Add(c.Color(s));
-                if (buffer.Last().Count > c.width) {
+                if (buffer.Last().Length > c.width) {
                     buffer.Add(c.Color(""));
                 }
             }
             void AddHighlightLine(string s) {
                 buffer.Add(c.Highlight(s));
-                if (buffer.Last().Count > c.width) {
+                if (buffer.Last().Length > c.width) {
                     buffer.Add(c.Color(""));
                 }
             }

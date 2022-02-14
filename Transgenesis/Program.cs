@@ -14,8 +14,8 @@ namespace Transgenesis {
         static int width = 120;
         static int height = 90;
         private static void Main(string[] args) {
-            SadConsole.UI.Themes.Library.Default.Colors.ControlHostBack = Color.Black;
-            SadConsole.UI.Themes.Library.Default.Colors.ControlBack = Color.Gray;
+            //SadConsole.UI.Themes.Library.Default.Colors.ControlHostBack = Color.Black;
+            //SadConsole.UI.Themes.Library.Default.Colors.ControlBack = Color.Gray;
 
             //SadConsole.Settings.UnlimitedFPS = true;
             SadConsole.Settings.UseDefaultExtendedFont = true;

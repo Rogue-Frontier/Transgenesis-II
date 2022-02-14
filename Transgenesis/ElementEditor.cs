@@ -639,7 +639,7 @@ namespace Transgenesis {
                         //replaceLength = g.Length;
                         result = Suggest(g.Value, env.GetAddableElements(focused, env.bases[focused]));
                     } else if (
-                        TryMatch(input, new Regex("^add\\s+(?<element>[a-zA-Z0-9_]+)\\s+(?<attributes>([a-zA-Z0-9_]+=\"[a-zA-Z0-9_]*\"\\s*)*)(?<attribute>[a-zA-Z0-9_]*)$"), out m)) {
+                        TryMatch(input, new Regex("^add\\s+(?<element>[a-zA-Z0-9_]+)\\s+(?<attributes>([a-zA-Z0-9_]+=\"[^\"]*\"\\s*)*\\s)?(?<attribute>[a-zA-Z0-9_]*)$"), out m)) {
                         //Suggest attribute
                         var sub = m.Groups["element"].Value;
                         var g = m.Groups["attribute"];
@@ -652,10 +652,10 @@ namespace Transgenesis {
                             break;
                         }
 
-                        var existing = new Regex("(?<key>[a-zA-Z0-9_]+)=\"[a-zA-Z0-9_]*\"").Matches(m.Groups["attributes"].Value).Select(m => m.Groups["key"].Value);
+                        var existing = new Regex("(?<key>[a-zA-Z0-9_]+)=\"[^\"]*\"").Matches(m.Groups["attributes"].Value).Select(m => m.Groups["key"].Value);
                         result = Suggest(g.Value, e.GetValidAttributes().Except(existing));
                     } else if (
-                        TryMatch(input, new Regex("^add\\s+(?<element>[a-zA-Z0-9_]+)\\s+([a-zA-Z0-9_]+=\"[a-zA-Z0-9_]+\"\\s*)*(?<attribute>[a-zA-Z0-9_]+)=\"(?<value>[a-zA-Z0-9_]*)$"), out m)) {
+                        TryMatch(input, new Regex("^add\\s+(?<element>[a-zA-Z0-9_]+)\\s+([a-zA-Z0-9_]+=\"[^\"]+\"\\s*)*(?<attribute>[a-zA-Z0-9_]+)=\"(?<value>[^\"]*)$"), out m)) {
                         //Suggest values for the attribute
                         var sub = m.Groups["element"].Value;
                         string attribute = m.Groups["attribute"].Value;
@@ -696,24 +696,27 @@ namespace Transgenesis {
                     }
                     break;
                 case "set":
-                    if (TryMatch(input, new Regex("^set\\s+(?<attributes>([a-zA-Z0-9_]+=\"[a-zA-Z0-9_]*\"\\s*)*)(?<attribute>[a-zA-Z0-9_]*)$"), out m)) {
+                    if (TryMatch(input, new Regex("^set\\s+(?<attributes>([a-zA-Z0-9_]+=\"[^\"]*\"\\s*)*\\s)?(?<attribute>[a-zA-Z0-9_]*)$"), out m)) {
                         var g = m.Groups["attribute"];
                         replaceStart = g.Index;
                         //replaceLength = g.Length;
 
 
-                        var existing = new Regex("(?<key>[a-zA-Z0-9_])+=\"[a-zA-Z0-9_]*\"").Matches(m.Groups["attributes"].Value).Select(m => m.Groups["key"].Value);
+                        var existing = new Regex("(?<key>[a-zA-Z0-9_]+)=\"[^\"]*\"").Matches(m.Groups["attributes"].Value).Select(m => m.Groups["key"].Value).ToList();
 
                         var choices = env.bases[focused].GetValidAttributes().Except(existing);
                         result = Suggest(g.Value, choices);
-                    } else if(TryMatch(input, new Regex("^set\\s+([a-zA-Z0-9_]+=\"[a-zA-Z0-9_]+\"\\s*)*(?<attribute>[a-zA-Z0-9_]+)=\"(?<value>[a-zA-Z0-9_]*)$"), out m)) {
+                    } else if(TryMatch(input, new Regex("^set\\s+([a-zA-Z0-9_]+=\"[^\"]+\"\\s*)*(?<attribute>[a-zA-Z0-9_]+)=\"(?<value>[^\"]*)$"), out m)) {
                         string attribute = m.Groups["attribute"].Value;
+                        List<string> all;
                         if (env.bases[focused].TryGetValueType(attribute, out string valueType)) {
                             t.warning = (new ColoredString($"Unknown valueType {valueType}"));
                             s.Clear();
-                            break;
+
+                            all = new();
+                        } else {
+                            all = env.GetAttributeValues(extension, valueType);
                         }
-                        var all = env.GetAttributeValues(extension, valueType);
                         if (focused.Att(attribute, out string value)) {
                             //Remove duplicate
                             all.Remove(value);

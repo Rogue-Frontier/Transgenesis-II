@@ -11,35 +11,44 @@ using Newtonsoft.Json;
 namespace Transgenesis {
     class Environment {
         public XElement hierarchy;
-        public Dictionary<string, XElement> coreStructures = new Dictionary<string, XElement>();
-        public Dictionary<string, XElement> baseStructures = new Dictionary<string, XElement>();
+        public Dictionary<string, XElement> rootStructures = new Dictionary<string, XElement>();
+        public Dictionary<string, XElement> baseStructure = new Dictionary<string, XElement>();
         public Dictionary<XElement, XElement> bases = new Dictionary<XElement, XElement>();
         public Dictionary<string, GameData> extensions = new Dictionary<string, GameData>();
         public Dictionary<string, List<string>> customAttributeValues;
         public XElement unknown = new XElement("Unknown");
         public bool allowUnknown = true;
 
+        public static string ATT_CATEGORY = "category";
+
         public Environment() {
 
             XmlDocument doc = new XmlDocument();
+
+            var spec = "Transgenesis.xml";
             try {
-                doc.Load("RogueFrontier.xml");
+                doc.Load(spec);
             } catch {
-                doc.Load("../../../RogueFrontier.xml");
+                doc.Load("../../../"+spec);
             }
             hierarchy = XElement.Parse(doc.OuterXml);
-            baseStructures["Hierarchy"] = hierarchy;
-            foreach (var coreStructure in hierarchy.Elements("E").Where(e => (string)e.Attribute("category") != "virtual")) {
-                var name = (string)coreStructure.Attribute("name");
-                coreStructures[name] = baseStructures[name] = coreStructure;
-            }
-            foreach (var baseStructure in hierarchy.Elements("E").Where(e => (string)e.Attribute("category") == "virtual")) {
-                baseStructures[(string)baseStructure.Attribute("id")] = baseStructure;
+            baseStructure["Hierarchy"] = hierarchy;
+            foreach (var coreStructure in hierarchy.Elements("E")) {
+                switch (coreStructure.Att(ATT_CATEGORY)) {
+                    case "root":
+                        var name = coreStructure.Att("name");
+                        rootStructures[name] = baseStructure[name] = coreStructure;
+                        break;
+                    case "virtual":
+                        baseStructure[coreStructure.Att("id")] = coreStructure;
+                        break;
+                    case var s: throw new Exception($"Unknown root element category {s}");
+                }
             }
 
-            customAttributeValues = new Dictionary<string, List<string>>();
+            customAttributeValues = new();
             foreach(var attributeType in hierarchy.Elements("AttributeType")) {
-                customAttributeValues[attributeType.Att("name")] = new List<string>(attributeType.Value.Replace("\t", "").Split('\r', '\n').Where(s => !string.IsNullOrWhiteSpace(s)));
+                customAttributeValues[attributeType.Att("name")] = new(attributeType.Value.Replace("\t", "").Split('\r', '\n').Where(s => !string.IsNullOrWhiteSpace(s)));
             }
         }
         public bool CanAddElement(XElement element, XElement template, string subelement, out XElement subtemplate) {
@@ -55,7 +64,7 @@ namespace Transgenesis {
             return CanRemoveElement(element, template.Elements("E").First(e => e.Att("name") == subelement));
         }
         public static bool CanAddElement(XElement element, XElement subtemplate) {
-            switch(subtemplate.Att("category")) {
+            switch(subtemplate.Att(ATT_CATEGORY)) {
                 case "+":
                 case "*":
                     return true;
@@ -70,7 +79,7 @@ namespace Transgenesis {
             if(subtemplate == unknown) {
                 return true;
             }
-            switch (subtemplate.Att("category")) {
+            switch (subtemplate.Att(ATT_CATEGORY)) {
                 case "*":
                 case "?":
                     return true;
@@ -82,12 +91,16 @@ namespace Transgenesis {
                     return false;
             }
         }
-        public List<string> GetAddableElements(XElement element, XElement template) {
-            return template.Elements("E").Select(subtemplate => InitializeTemplate(subtemplate)).Where(subtemplate => CanAddElement(element, subtemplate)).Select(subtemplate => subtemplate.Att("name")).ToList();
-        }
-        public List<string> GetRemovableElements(XElement element, XElement template) {
-            return template.Elements("E").Select(subtemplate => InitializeTemplate(subtemplate)).Where(subtemplate => CanRemoveElement(element, subtemplate)).Select(subtemplate => subtemplate.Att("name")).ToList();
-        }
+        public List<string> GetAddableElements(XElement element, XElement template) =>
+            template.Elements("E")
+            .Select(subtemplate => InitializeTemplate(subtemplate))
+            .Where(subtemplate => CanAddElement(element, subtemplate))
+            .Select(subtemplate => subtemplate.Att("name")).ToList();
+        public List<string> GetRemovableElements(XElement element, XElement template) =>
+            template.Elements("E")
+            .Select(subtemplate => InitializeTemplate(subtemplate))
+            .Where(subtemplate => CanRemoveElement(element, subtemplate))
+            .Select(subtemplate => subtemplate.Att("name")).ToList();
         public void Unload(GameData e) {
             extensions.Remove(e.path);
             //TO DO
@@ -103,7 +116,7 @@ namespace Transgenesis {
         }
         public bool LoadExtension(XmlDocument doc, string path, out GameData e) {
             var structure = XElement.Parse(doc.OuterXml);
-            if (coreStructures.TryGetValue(structure.Tag(), out var template)) {
+            if (rootStructures.TryGetValue(structure.Tag(), out var template)) {
                 template = InitializeTemplate(template);
                 e = new GameData(path, structure);
 
@@ -152,12 +165,12 @@ namespace Transgenesis {
             }
         }
         public XElement FromTemplate(XElement template, string name = null) {
-            XElement result = new XElement(name ?? template.Att("name"));
+            var result = new XElement(name ?? template.Att("name"));
             if(template == unknown) {
                 goto Ready;
             }
 
-            foreach(XElement subtemplate in template.Elements("E").Where(e => e.Att("category") == "1" || e.Att("category") == "+")) {
+            foreach(var subtemplate in template.Elements("E").Where(e => e.Att(ATT_CATEGORY) == "1" || e.Att(ATT_CATEGORY) == "+")) {
                 var initialized = InitializeTemplate(subtemplate);
                 var subelement = FromTemplate(initialized);
                 bases[subelement] = initialized;
@@ -191,13 +204,13 @@ namespace Transgenesis {
                 */
                 //Start with the root and navigate to the base element
                 XElement inherited = unknown;
-                if(baseStructures.TryGetValue(source, out XElement templateBase)) {
+                if(baseStructure.TryGetValue(source, out XElement templateBase)) {
                     inherited = templateBase;
                 } else {
                     if(allowUnknown) {
                         goto SkipInherit;
                     } else {
-                        inherited = baseStructures[source];
+                        inherited = baseStructure[source];
                     }
                 }
 
@@ -319,7 +332,7 @@ namespace Transgenesis {
             XElement structure;
             XElement template;
             GameData extension;
-            if(coreStructures.TryGetValue(templateType, out template)) {
+            if(rootStructures.TryGetValue(templateType, out template)) {
                 template = InitializeTemplate(template);
                 structure = FromTemplate(template);
 

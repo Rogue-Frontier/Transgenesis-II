@@ -1,0 +1,24 @@
+﻿<E name="Hierarchy">
+	<AttributeType name="CATEGORY">
+		root
+		virtual
+		?
+		*
+		1
+		+
+	</AttributeType>
+	<E category="root" name="E">
+		<E category="*" name="AttributeType">
+			<A name="name" valueType="STRING"/>
+		</E>
+		<E category="*" name="E">
+			<A name="category" valueType="CATEGORY"/>
+			<A name="name" valueType="STRING"/>
+			<A name="inherit" valueType="STRING"/>
+			<E category="*" name="A">
+				<A name="name" valueType="STRING"/>
+				<A name="valueType" valueType="STRING"/>
+			</E>
+		</E>
+	</E>
+</E>

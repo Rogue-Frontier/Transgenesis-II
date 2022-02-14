@@ -31,8 +31,8 @@ namespace Transgenesis {
         public ColoredGlyph this[int index] {
             get {
                 int lineIndex = 0;
-                while (index >= buffer[lineIndex].Count) {
-                    index -= buffer[lineIndex].Count;
+                while (index >= buffer[lineIndex].Length) {
+                    index -= buffer[lineIndex].Length;
                     lineIndex++;
                 }
                 var line = buffer[lineIndex];
@@ -40,8 +40,8 @@ namespace Transgenesis {
             }
             set {
                 int lineIndex = 0;
-                while (index >= buffer[lineIndex].Count) {
-                    index -= buffer[lineIndex].Count;
+                while (index >= buffer[lineIndex].Length) {
+                    index -= buffer[lineIndex].Length;
                     lineIndex++;
                 }
                 var line = buffer[lineIndex];
@@ -50,8 +50,8 @@ namespace Transgenesis {
         }
         public void AddChar(ColoredGlyph c) {
             if(buffer.Count > 0) {
-                if (buffer.Last().Count + 1 < width) {
-                    buffer[buffer.Count - 1] = buffer.Last() + new ColoredString(c);
+                if (buffer.Last().Length + 1 < width) {
+                    buffer[buffer.Count- 1] = buffer.Last() + new ColoredString(c);
                 }
             } else {
                 buffer.Add(new ColoredString(c));

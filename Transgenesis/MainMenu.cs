@@ -163,7 +163,7 @@ namespace Transgenesis {
                 string unsaved = e.isUnsaved() ? "[S] " : "    ";
                 string unbound = e.isUnbound() ? "[B] " : "    ";
                 buffer.Add(c.Color($"{unsaved}{unbound}{tag}{e.unid?.ToUNID() ?? e.parent?.unid?.ToUNID() ?? "Unknown",-12}{e.name,-48}{e.path.TruncatePath()}"));
-                if(buffer.Last().Count > c.width) {
+                if(buffer.Last().Length > c.width) {
                     buffer.Add(c.Color(""));
                 }
 
@@ -462,7 +462,7 @@ namespace Transgenesis {
 
                         var autocomplete = new Dictionary<string, Func<List<string>>>{
                             { "theme", () => new List<string> { "blue", "green", "pine", "orange", "default" } },
-                            { "create", () => env.coreStructures.Keys.ToList()},
+                            { "create", () => env.rootStructures.Keys.ToList()},
                             { "load", GetFiles },
                             { "loadmodules", GetFiles },
                             { "unload", GetExtensions },
