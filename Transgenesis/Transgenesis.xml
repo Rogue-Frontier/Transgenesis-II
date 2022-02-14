@@ -9,8 +9,8 @@
 		1
 		+
 	</Enum>
-	<E class="root" name="E">
-		<A name="name" value="Hierarchy" desc="This is used by Transgenesis"/>
+	<E class="root" name="E" desc="Transgenesis uses this element to identify the spec root">
+		<A name="name" value="Hierarchy" desc="Transgenesis uses this attribute to identify the spec root"/>
 		<E count="*" name="Enum" desc="Defines a custom value type for attributes">
 			<A name="name" type="STRING" desc="The name of the enum type"/>
 		</E>

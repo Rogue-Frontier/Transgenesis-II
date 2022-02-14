@@ -327,7 +327,6 @@ namespace Transgenesis {
                     } else {
                         ScrollToFocusedOpenTag();
                     }
-                    
                     break;
                 case ConsoleKey.End when i.Text.Length == 0:
                     if ((k.Modifiers & ConsoleModifiers.Shift) == 0) {
@@ -562,7 +561,9 @@ namespace Transgenesis {
                 default: UpdateSuggest(); break;
             }
             t.Handle(k);
-
+            if (input == "") {
+                t.text = $"<{focused.Tag()}> {env.bases[focused].Att("desc")}\n\r{t.text}";
+            }
             /*
             if(str.Length > 0) {
                 List<string> all = null;
@@ -642,7 +643,7 @@ namespace Transgenesis {
                         replaceStart = g.Index;
                         //replaceLength = g.Length;
                         var el = env.GetAddableElements(focused, env.bases[focused]);
-                        t.help = el.ToDictionary(e => e.Att("name"), e => e.Att("desc") ?? "");
+                        t.help = el.ToDictionary(e => e.Att("name"), e => $"<{e.Att("name")}> {e.Att("desc")}");
                         result = Suggest(g.Value, el.Select(e => e.Att("name")));
                         if (!result.Any()) {
                             t.warning = (new ColoredString($"Unknown subelement {g.Value}"));
@@ -664,8 +665,8 @@ namespace Transgenesis {
 
                         var previous = new Regex("(?<key>[a-zA-Z0-9_]+)=\"[^\"]*\"").Matches(m.Groups["attributes"].Value).Select(m => m.Groups["key"].Value);
 
-                        t.help = e.Elements("A").ToDictionary(e => e.Att("name"), e =>
-                            $"{e.Att("name")}=\"{{{e.Att("type")}}}\"\n\r{e.Att("desc")}");
+                        t.help = e.Elements("A").ToDictionary(a => a.Att("name"), a =>
+                            $"<{e.Att("name")}> {e.Att("desc")}\n\r{a.Att("name")}=\"{{{a.Att("type")}}}\"\n\r{a.Att("desc")}");
                         result = Suggest(g.Value, e.GetValidAttributes().Except(previous));
                     } else if(TryMatch(input, new Regex("^add\\s+(?<element>[a-zA-Z0-9_]+)\\s+(?<attributes>([a-zA-Z0-9_]+=\"[^\"]*\"\\s*)*\\s)?(?<attribute>[a-zA-Z0-9_]+)=$"), out m)) {
                         //Show tooltip for the attribute
@@ -688,7 +689,7 @@ namespace Transgenesis {
                         }
                         var valueType = att.Att("type");
 
-                        t.text = new($"{attribute}=\"{{{valueType}}}\"\n\r{att.Att("desc") ?? ""}");
+                        t.text = new($"<{e.Att("name")}> {e.Att("desc")}\n\r{attribute}=\"{{{valueType}}}\"\n\r{att.Att("desc") ?? ""}");
                         t.help = new();
                     } else if (TryMatch(input, new Regex("^add\\s+(?<element>[a-zA-Z0-9_]+)\\s+([a-zA-Z0-9_]+=\"[^\"]+\"\\s*)*(?<attribute>[a-zA-Z0-9_]+)=\"(?<value>[^\"]*)$"), out m)) {
                         //Suggest attribute values
@@ -710,7 +711,7 @@ namespace Transgenesis {
                         }
                         var valueType = att.Att("type");
 
-                        t.text = new($"{attribute}=\"{{{valueType}}}\"\n\r{att.Att("desc")??""}");
+                        t.text = new($"<{e.Att("name")}> {e.Att("desc")}\n\r{attribute}=\"{{{valueType}}}\"\n\r{att.Att("desc")??""}");
                         t.help = new();
                         //show desc for highlighted option
 
