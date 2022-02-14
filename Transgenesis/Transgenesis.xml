@@ -1,24 +1,33 @@
 ﻿<E name="Hierarchy">
-	<AttributeType name="CATEGORY">
+	<Enum name="CLASS">
 		root
 		virtual
+	</Enum>
+	<Enum name="COUNT">
 		?
 		*
 		1
 		+
-	</AttributeType>
-	<E category="root" name="E">
-		<E category="*" name="AttributeType">
-			<A name="name" valueType="STRING"/>
+	</Enum>
+	<E class="root" name="E">
+		<A name="name" value="Hierarchy" desc="This is used by Transgenesis"/>
+		<E count="*" name="Enum" desc="Defines a custom value type for attributes">
+			<A name="name" type="STRING" desc="The name of the enum type"/>
 		</E>
-		<E category="*" name="E">
-			<A name="category" valueType="CATEGORY"/>
-			<A name="name" valueType="STRING"/>
-			<A name="inherit" valueType="STRING"/>
-			<E category="*" name="A">
-				<A name="name" valueType="STRING"/>
-				<A name="valueType" valueType="STRING"/>
+		<E count="*" name="E" inherit="_E" desc="Defines a root element">
+			<A name="class" type="CLASS" desc="&quot;root&quot; (can be instantiated) or &quot;virtual&quot; (can be inherited) but not both"/>
+			<E count="*" name="E" inherit="_E" desc="Defines a element">
+				<A name="count" type="COUNT" desc="The number of instances that you can have"/>
 			</E>
+		</E>
+	</E>
+	<E class="virtual" name="_E">
+		<A name="name" type="STRING" desc="The tag of the element"/>
+		<A name="inherit" type="E_VIRTUAL" desc="Inherit subelements and attributes from a virtual element (or one of its descendants)"/>
+		<E count="*" name="A" desc="Defines an XML attribute">
+			<A name="name" type="STRING" desc="The name of the attribute"/>
+			<A name="value" type="STRING" desc="The default value of the attribute"/>
+			<A name="type" type="STRING" desc="The value type of the attribute - can be an Enum type"/>
 		</E>
 	</E>
 </E>

@@ -31,18 +31,7 @@ namespace Transgenesis {
         Tooltip t;
         Scroller scroller;
 
-        public ElementEditor(ProgramState state, Stack<IComponent> screens, Environment env, GameData extension, ConsoleManager c, XElement focused = null) {
-            this.state = state;
-            this.screens = screens;
-            this.env = env;
-            this.extension = extension;
-            this.focused = focused ?? extension.structure;
-            this.keepExpanded = new HashSet<XElement>();
-            this.c = c;
-            i = new Input(c);
-            h = new History(i, c);
-            s = new Suggest(i, c);
-            t = new Tooltip(i, s, c, new Dictionary<string, string>() {
+        Dictionary<string, string> helpMain = new Dictionary<string, string>() {
                 {"",    "Navigate Mode" + "\r\n" +
                         "-Up          Previous element" + "\r\n" +
                         "-Down        Next element" + "\r\n" +
@@ -59,7 +48,6 @@ namespace Transgenesis {
                 {"set",     "set {attribute}=\"[value]\"\r\n" +
                             "Sets the named attribute to the specified value on the current element.\r\n" +
                             "If [value] is empty, then deletes the attribute from the element" },
-
                 //{"remove", "remove <subelement>\r\n" +
                 //        "Removes the named subelement from the current element"},
                 {"remove",  "remove\r\n" +
@@ -96,7 +84,20 @@ namespace Transgenesis {
                             "Opens the Type Editor on this extension"},
                 {"exit",    "exit\r\n" +
                             "Exits this XML Editor and returns to the main menu"},
-            });
+            };
+
+        public ElementEditor(ProgramState state, Stack<IComponent> screens, Environment env, GameData extension, ConsoleManager c, XElement focused = null) {
+            this.state = state;
+            this.screens = screens;
+            this.env = env;
+            this.extension = extension;
+            this.focused = focused ?? extension.structure;
+            this.keepExpanded = new HashSet<XElement>();
+            this.c = c;
+            i = new Input(c);
+            h = new History(i, c);
+            s = new Suggest(i, c);
+            t = new Tooltip(i, s, c, helpMain);
             scroller = new Scroller(c, i);
             //{"", () => new List<string>{ "set", "add", "remove", "bind", "bindall", "save", "saveall", "moveup", "movedown", "root", "parent", "next", "prev", "types", "exit" } },
         }
@@ -253,6 +254,7 @@ namespace Transgenesis {
             scroller.Handle(k);
             t.warning = null;
             string input = i.Text;
+
             switch (k.Key) {
                 /*
                 case ConsoleKey.LeftArrow when (k.Modifiers & ConsoleModifiers.Control) != 0:
@@ -619,6 +621,7 @@ namespace Transgenesis {
             var input = i.Text;
             //Disable suggest when input is completely empty so that we can navigate aroung the UI with arrow keys
             
+            t.help = helpMain;
             List<HighlightEntry> Suggest(string text, IEnumerable<string> choices) => Global.GetSuggestions(text, choices);
 
             List<HighlightEntry> result = new List<HighlightEntry>();
@@ -634,12 +637,17 @@ namespace Transgenesis {
             switch (cmd) {
                 case "add":
                     if (TryMatch(input, new Regex("^add\\s+(?<element>[a-zA-Z0-9_]*)$"), out m)) {
+                        //Suggest element name
                         var g = m.Groups["element"];
                         replaceStart = g.Index;
                         //replaceLength = g.Length;
-                        result = Suggest(g.Value, env.GetAddableElements(focused, env.bases[focused]));
-                    } else if (
-                        TryMatch(input, new Regex("^add\\s+(?<element>[a-zA-Z0-9_]+)\\s+(?<attributes>([a-zA-Z0-9_]+=\"[^\"]*\"\\s*)*\\s)?(?<attribute>[a-zA-Z0-9_]*)$"), out m)) {
+                        var el = env.GetAddableElements(focused, env.bases[focused]);
+                        t.help = el.ToDictionary(e => e.Att("name"), e => e.Att("desc") ?? "");
+                        result = Suggest(g.Value, el.Select(e => e.Att("name")));
+                        if (!result.Any()) {
+                            t.warning = (new ColoredString($"Unknown subelement {g.Value}"));
+                        }
+                    } else if (TryMatch(input, new Regex("^add\\s+(?<element>[a-zA-Z0-9_]+)\\s+(?<attributes>([a-zA-Z0-9_]+=\"[^\"]*\"\\s*)*\\s)?(?<attribute>[a-zA-Z0-9_]*)$"), out m)) {
                         //Suggest attribute
                         var sub = m.Groups["element"].Value;
                         var g = m.Groups["attribute"];
@@ -652,11 +660,38 @@ namespace Transgenesis {
                             break;
                         }
 
-                        var existing = new Regex("(?<key>[a-zA-Z0-9_]+)=\"[^\"]*\"").Matches(m.Groups["attributes"].Value).Select(m => m.Groups["key"].Value);
-                        result = Suggest(g.Value, e.GetValidAttributes().Except(existing));
-                    } else if (
-                        TryMatch(input, new Regex("^add\\s+(?<element>[a-zA-Z0-9_]+)\\s+([a-zA-Z0-9_]+=\"[^\"]+\"\\s*)*(?<attribute>[a-zA-Z0-9_]+)=\"(?<value>[^\"]*)$"), out m)) {
-                        //Suggest values for the attribute
+                        e = env.InitializeTemplate(e);
+
+                        var previous = new Regex("(?<key>[a-zA-Z0-9_]+)=\"[^\"]*\"").Matches(m.Groups["attributes"].Value).Select(m => m.Groups["key"].Value);
+
+                        t.help = e.Elements("A").ToDictionary(e => e.Att("name"), e =>
+                            $"{e.Att("name")}=\"{{{e.Att("type")}}}\"\n\r{e.Att("desc")}");
+                        result = Suggest(g.Value, e.GetValidAttributes().Except(previous));
+                    } else if(TryMatch(input, new Regex("^add\\s+(?<element>[a-zA-Z0-9_]+)\\s+(?<attributes>([a-zA-Z0-9_]+=\"[^\"]*\"\\s*)*\\s)?(?<attribute>[a-zA-Z0-9_]+)=$"), out m)) {
+                        //Show tooltip for the attribute
+                        var sub = m.Groups["element"].Value;
+                        string attribute = m.Groups["attribute"].Value;
+                        //replaceLength = g.Length;
+                        var e = env.bases[focused];
+                        if (!e.TryNameElement(sub, out e)) {
+                            t.warning = (new ColoredString($"Unknown subelement {sub}"));
+                            s.Clear();
+                            break;
+                        }
+
+                        e = env.InitializeTemplate(e);
+
+                        if (!e.TryNameAttribute(attribute, out var att)) {
+                            t.warning = (new ColoredString($"Unknown attribute {attribute}"));
+                            s.Clear();
+                            break;
+                        }
+                        var valueType = att.Att("type");
+
+                        t.text = new($"{attribute}=\"{{{valueType}}}\"\n\r{att.Att("desc") ?? ""}");
+                        t.help = new();
+                    } else if (TryMatch(input, new Regex("^add\\s+(?<element>[a-zA-Z0-9_]+)\\s+([a-zA-Z0-9_]+=\"[^\"]+\"\\s*)*(?<attribute>[a-zA-Z0-9_]+)=\"(?<value>[^\"]*)$"), out m)) {
+                        //Suggest attribute values
                         var sub = m.Groups["element"].Value;
                         string attribute = m.Groups["attribute"].Value;
                         var e = env.bases[focused];
@@ -665,21 +700,21 @@ namespace Transgenesis {
                             s.Clear();
                             break;
                         }
-                        if(!e.TryGetValueType(attribute, out string valueType)) {
+
+                        e = env.InitializeTemplate(e);
+
+                        if (!e.TryNameAttribute(attribute, out var att)) {
                             t.warning = (new ColoredString($"Unknown attribute {attribute}"));
                             s.Clear();
                             break;
                         }
+                        var valueType = att.Att("type");
 
-                        t.warning = new ColoredString($"{attribute}=\"{{{valueType}}}\"");
+                        t.text = new($"{attribute}=\"{{{valueType}}}\"\n\r{att.Att("desc")??""}");
+                        t.help = new();
+                        //show desc for highlighted option
 
                         var all = env.GetAttributeValues(extension, valueType);
-                        if (focused.Att(attribute, out string value)) {
-                            //Remove duplicate
-                            all.Remove(value);
-                            //Insert at the front
-                            all.Insert(0, value);
-                        }
                         var g = m.Groups["value"];
                         var v = g.Value;
                         replaceStart = g.Index;
@@ -693,6 +728,8 @@ namespace Transgenesis {
                             s.Clear();
                             break;
                         }
+                    } else {
+
                     }
                     break;
                 case "set":
@@ -708,14 +745,16 @@ namespace Transgenesis {
                         result = Suggest(g.Value, choices);
                     } else if(TryMatch(input, new Regex("^set\\s+([a-zA-Z0-9_]+=\"[^\"]+\"\\s*)*(?<attribute>[a-zA-Z0-9_]+)=\"(?<value>[^\"]*)$"), out m)) {
                         string attribute = m.Groups["attribute"].Value;
+
                         List<string> all;
-                        if (env.bases[focused].TryGetValueType(attribute, out string valueType)) {
+                        if (!env.bases[focused].TryGetValueType(attribute, out string valueType)) {
+                            t.warning = (new ColoredString($"Unknown valueType for {attribute}"));
+                            s.Clear();
+                            all = new();
+                        } else if((all = env.GetAttributeValues(extension, valueType)) == null) {
                             t.warning = (new ColoredString($"Unknown valueType {valueType}"));
                             s.Clear();
-
                             all = new();
-                        } else {
-                            all = env.GetAttributeValues(extension, valueType);
                         }
                         if (focused.Att(attribute, out string value)) {
                             //Remove duplicate

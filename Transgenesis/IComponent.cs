@@ -311,7 +311,7 @@ namespace Transgenesis {
     class Tooltip {
         Input i;
         Suggest s;
-        Dictionary<string, string> help;
+        public Dictionary<string, string> help;
         Point pos = new Point(0, 53);
         ConsoleManager c;
         public string text;

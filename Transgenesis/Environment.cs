@@ -19,7 +19,7 @@ namespace Transgenesis {
         public XElement unknown = new XElement("Unknown");
         public bool allowUnknown = true;
 
-        public static string ATT_CATEGORY = "category";
+        public static string ATT_COUNT = "count";
 
         public Environment() {
 
@@ -34,20 +34,21 @@ namespace Transgenesis {
             hierarchy = XElement.Parse(doc.OuterXml);
             baseStructure["Hierarchy"] = hierarchy;
             foreach (var coreStructure in hierarchy.Elements("E")) {
-                switch (coreStructure.Att(ATT_CATEGORY)) {
+                switch (coreStructure.Att("class")) {
                     case "root":
                         var name = coreStructure.Att("name");
                         rootStructures[name] = baseStructure[name] = coreStructure;
                         break;
                     case "virtual":
-                        baseStructure[coreStructure.Att("id")] = coreStructure;
+                        //note id=
+                        baseStructure[coreStructure.Att("name")] = coreStructure;
                         break;
-                    case var s: throw new Exception($"Unknown root element category {s}");
+                    case var s: throw new Exception($"Unknown root element class {s}");
                 }
             }
 
             customAttributeValues = new();
-            foreach(var attributeType in hierarchy.Elements("AttributeType")) {
+            foreach(var attributeType in hierarchy.Elements("Enum")) {
                 customAttributeValues[attributeType.Att("name")] = new(attributeType.Value.Replace("\t", "").Split('\r', '\n').Where(s => !string.IsNullOrWhiteSpace(s)));
             }
         }
@@ -64,7 +65,7 @@ namespace Transgenesis {
             return CanRemoveElement(element, template.Elements("E").First(e => e.Att("name") == subelement));
         }
         public static bool CanAddElement(XElement element, XElement subtemplate) {
-            switch(subtemplate.Att(ATT_CATEGORY)) {
+            switch(subtemplate.Att(ATT_COUNT)) {
                 case "+":
                 case "*":
                     return true;
@@ -79,7 +80,7 @@ namespace Transgenesis {
             if(subtemplate == unknown) {
                 return true;
             }
-            switch (subtemplate.Att(ATT_CATEGORY)) {
+            switch (subtemplate.Att(ATT_COUNT)) {
                 case "*":
                 case "?":
                     return true;
@@ -91,11 +92,10 @@ namespace Transgenesis {
                     return false;
             }
         }
-        public List<string> GetAddableElements(XElement element, XElement template) =>
+        public List<XElement> GetAddableElements(XElement element, XElement template) =>
             template.Elements("E")
             .Select(subtemplate => InitializeTemplate(subtemplate))
-            .Where(subtemplate => CanAddElement(element, subtemplate))
-            .Select(subtemplate => subtemplate.Att("name")).ToList();
+            .Where(subtemplate => CanAddElement(element, subtemplate)).ToList();
         public List<string> GetRemovableElements(XElement element, XElement template) =>
             template.Elements("E")
             .Select(subtemplate => InitializeTemplate(subtemplate))
@@ -170,7 +170,7 @@ namespace Transgenesis {
                 goto Ready;
             }
 
-            foreach(var subtemplate in template.Elements("E").Where(e => e.Att(ATT_CATEGORY) == "1" || e.Att(ATT_CATEGORY) == "+")) {
+            foreach(var subtemplate in template.Elements("E").Where(e => e.Att(ATT_COUNT) == "1" || e.Att(ATT_COUNT) == "+")) {
                 var initialized = InitializeTemplate(subtemplate);
                 var subelement = FromTemplate(initialized);
                 bases[subelement] = initialized;
@@ -254,6 +254,12 @@ namespace Transgenesis {
             return result;
         }
         public List<string> GetAttributeValues(GameData extension, string attributeType) {
+            if(attributeType == "E_VIRTUAL") {
+                return extension.structure.Elements("E")
+                    .Where(e => e.Att("class") == "virtual")
+                    .Select(e => e.Att("name")).Where(id => id != null).ToList();
+            }
+
             if(customAttributeValues.TryGetValue(attributeType, out List<string> values)) {
                 return values;
             } else if(Enum.TryParse(attributeType, out AttributeTypes attributeTypeEnum)) {
@@ -307,7 +313,7 @@ namespace Transgenesis {
             } else {
                 //Error: Unknown attribute type
 
-                return new List<string>();
+                return null;
             }
             IEnumerable<string> FindItems(string category = null) {
                 if(category != null) {
