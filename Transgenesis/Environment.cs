@@ -10,7 +10,9 @@ using Newtonsoft.Json;
 
 namespace Transgenesis {
     class Environment {
-        public XElement hierarchy;
+        public string file => $"Environment-{Path.GetFileNameWithoutExtension(path)}.json";
+        public string path;
+        public XElement schema;
         public Dictionary<string, XElement> rootStructures = new Dictionary<string, XElement>();
         public Dictionary<string, XElement> baseStructure = new Dictionary<string, XElement>();
         public Dictionary<XElement, XElement> bases = new Dictionary<XElement, XElement>();
@@ -21,19 +23,17 @@ namespace Transgenesis {
 
         public static string ATT_COUNT = "count";
 
-        public Environment() {
-
+        public Environment(string spec = "Transgenesis.xml") {
+            this.path = spec;
             XmlDocument doc = new XmlDocument();
-
-            var spec = "Transgenesis.xml";
             try {
                 doc.Load(spec);
             } catch {
                 doc.Load("../../../"+spec);
             }
-            hierarchy = XElement.Parse(doc.OuterXml);
-            baseStructure["Hierarchy"] = hierarchy;
-            foreach (var coreStructure in hierarchy.Elements("E")) {
+            schema = XElement.Parse(doc.OuterXml);
+            baseStructure["Schema"] = schema;
+            foreach (var coreStructure in schema.Elements("E")) {
                 switch (coreStructure.Att("class")) {
                     case "root":
                         var name = coreStructure.Att("name");
@@ -48,7 +48,7 @@ namespace Transgenesis {
             }
 
             customAttributeValues = new();
-            foreach(var attributeType in hierarchy.Elements("Enum")) {
+            foreach(var attributeType in schema.Elements("Enum")) {
                 customAttributeValues[attributeType.Att("name")] = new(attributeType.Value.Replace("\t", "").Split('\r', '\n').Where(s => !string.IsNullOrWhiteSpace(s)));
             }
         }
@@ -405,11 +405,11 @@ namespace Transgenesis {
         }
 
         public void SaveState() {
-            File.WriteAllText("Environment.json", JsonConvert.SerializeObject(extensions.Keys.ToList()));
+            File.WriteAllText(file, JsonConvert.SerializeObject(extensions.Keys.ToList()));
         }
         public void LoadState() {
-            if(File.Exists("Environment.json")) {
-                var loaded = JsonConvert.DeserializeObject<List<string>>(File.ReadAllText("Environment.json"));
+            if(File.Exists(file)) {
+                var loaded = JsonConvert.DeserializeObject<List<string>>(File.ReadAllText(file));
                 foreach(var file in loaded.Where(f => File.Exists(f))) {
                     Load(file);
                 }

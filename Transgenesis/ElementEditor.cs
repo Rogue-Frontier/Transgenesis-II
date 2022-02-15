@@ -116,7 +116,7 @@ namespace Transgenesis {
             bool invertExpand = true;
             if(invertExpand) {
                 MarkAncestorsSemiExpanded(focused);
-                formatter.ShowElementTree(root, focused, null, semiexpanded, keepExpanded);
+                formatter.ShowElementTree(root, focused, keepExpanded, semiexpanded);
             } else {
                 HashSet<XElement> expanded = new HashSet<XElement>(keepExpanded);
 

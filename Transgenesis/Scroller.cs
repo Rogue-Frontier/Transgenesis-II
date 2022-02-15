@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace Transgenesis {
     class Scroller {
         public int scrolling = 0;
-        public int screenRows = 42;
+        public int screenRows = 36;
         Input i;
         ConsoleManager c;
 

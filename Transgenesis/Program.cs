@@ -11,7 +11,7 @@ using System.Diagnostics;
 
 namespace Transgenesis {
     internal class Program {
-        static int width = 120;
+        static int width = 150;
         static int height = 90;
         private static void Main(string[] args) {
             //SadConsole.UI.Themes.Library.Default.Colors.ControlHostBack = Color.Black;

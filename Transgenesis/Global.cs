@@ -20,6 +20,9 @@ namespace Transgenesis {
         public static List<ColoredString> SplitMulti(this ColoredString str, char separator, int length) =>
             new(str.Split(separator).SelectMany(l => l.Split(length)));
         public static string[] Split(this string str, int length) {
+            if (str.Length < length) {
+                return new[] { str };
+            }
             string[] result = new string[(str.Length + length - 1) / length];
             int i = 0;
             while (str.Length > length) {

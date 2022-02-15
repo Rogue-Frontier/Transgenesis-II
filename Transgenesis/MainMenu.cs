@@ -72,6 +72,10 @@ namespace Transgenesis {
                             "Unloads and loads all currently loaded extensions along with all of their modules" },
                 {"loadmodules", "loadmodules <extensionFile|extensionFolder>\r\n" +
                             "Loads an extension at the specified file path along with all of its modules"},
+                {"save", "save\r\n" +
+                            "Saves the state of this menu" },
+                {"schema", "schema <schemaFile>\r\n" +
+                            "Loads a schema from file" },
                 {"exit",        "exit\r\n" +
                             "Exits the current session"}
             });
@@ -416,6 +420,37 @@ namespace Transgenesis {
                                 }
                                 break;
                             }
+                        case "save": {
+                                env.SaveState();
+                                h.Record();
+                                break;
+                            }
+                        case "schema": {
+
+                                if (parts.Length == 1) {
+                                    break;
+                                }
+                                string path;
+                                path = Path.GetFullPath(string.Join(" ", parts.Skip(1)).Trim());
+                                h.Record();
+                                /*
+                                try {
+                                    var e = new Environment(path);
+                                    e.LoadState();
+                                    env = e;
+                                    h.Record();
+                                } catch(Exception e) {
+                                    Debug.Print(e.StackTrace);
+                                }
+                                */
+                                var e = new Environment(path);
+                                e.LoadState();
+                                env = e;
+                                h.Record();
+
+
+                                break;
+                            }
                         case "types": {
                                 if (parts.Length == 1) {
                                     break;
@@ -449,29 +484,29 @@ namespace Transgenesis {
                         s.SetItems(new List<HighlightEntry>());
                         break;
                     }
-
                     if (ElementEditor.TryMatch(input, new Regex("^(?<cmd>[a-zA-Z0-9]+)$"), out Match m)) {
                         var cmd = m.Groups["cmd"].Value;
-                        var list = new List<string> { "types", "theme", "create", "bindall", "load", "unload", "edit", "open", "reload", "reloadmodules", "reloadall", "reloadallmodules", "loadmodules", "exit" };
+                        var list = new List<string> { "types", "theme", "create", "bindall", "load", "unload", "edit", "open", "reload", "reloadmodules", "reloadall", "reloadallmodules", "loadmodules", "exit", "schema" };
                         s.SetItems(Global.GetSuggestions(cmd, list));
                         break;
                     } else if (ElementEditor.TryMatch(input, new Regex("^(?<cmd>[a-zA-Z0-9]+)\\s+(?<arg>.*)$"), out m)) {
-
-                        var cmd = m.Groups["cmd"].Value;
-                        var arg = m.Groups["arg"].Value;
-
                         var autocomplete = new Dictionary<string, Func<List<string>>>{
+                            { "types", GetExtensions },
                             { "theme", () => new List<string> { "blue", "green", "pine", "orange", "default" } },
                             { "create", () => env.rootStructures.Keys.ToList()},
                             { "load", GetFiles },
                             { "loadmodules", GetFiles },
                             { "unload", GetExtensions },
                             { "edit", GetExtensions },
-                            { "types", GetExtensions },
                             { "open", GetFiles },
                             { "reload", GetExtensions },
                             { "reloadmodules", GetExtensions },
+                            { "schema", GetFiles },
                         };
+
+                        var cmd = m.Groups["cmd"].Value;
+                        var arg = m.Groups["arg"].Value;
+
                         if (autocomplete.TryGetValue(cmd, out var result)) {
                             List<string> all = result();
                             var items = Global.GetSuggestions(arg, all);

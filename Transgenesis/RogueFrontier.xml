@@ -1,4 +1,4 @@
-<E name="Hierarchy">
+<E name="Schema">
     <AttributeType name="ALIGNMENT">
 DestructiveOrder
 DestructiveChaos
@@ -9,7 +9,7 @@ Neutral
 	<AttributeType name="INVOKE">
 installWeapon
 	</AttributeType>
-    <E count="root" name="Module">
+    <E class="root" name="Module">
 		<E count="*" name="Module">
 		  <A name="filename" type="STRING"/>
 		</E>
@@ -86,7 +86,7 @@ installWeapon
 			</E>
 		</E>
 	</E>
-	<E count="virtual" name="TypeBase">
+	<E class="virtual" name="TypeBase">
 		<A name="codename" type="STRING"/>
     </E>
 </E>

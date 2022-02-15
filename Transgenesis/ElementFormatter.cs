@@ -22,7 +22,7 @@ namespace Transgenesis {
         int tabs = 0;
         string expandedBox = "-   ";
         string collapsedBox = "+   ";
-        string noBox = "    ";
+        string noBox = ".   ";
 
         public List<ColoredString> buffer = new List<ColoredString>();
         public Dictionary<int, HashSet<LabelButton>> buttonBuffer = new();
@@ -56,12 +56,12 @@ namespace Transgenesis {
 
                 bool expandedCheck = (expandAll || expanded.Contains(element) || (expandFocused && isFocused)) && (collapseNone || !collapsed.Contains(element));
                 string box;
-                if (expandedCheck) {
-                    box = expandedBox;
-                } else if(element.Nodes().Any()) {
-                    box = collapsedBox;
-                } else {
+                if (!element.Nodes().Any()) {
                     box = noBox;
+                } else if (expandedCheck) {
+                    box = expandedBox;
+                } else {
+                    box = collapsedBox;
                 }
 
                 string tag = $"<{element.Tag()}";
@@ -286,6 +286,7 @@ namespace Transgenesis {
                             break;
                         case '+' when type.Peek() != Syntax.Quotes:
                         case '-' when type.Peek() != Syntax.Quotes:
+                        case '.' when type.Peek() != Syntax.Quotes:
                             break;
                         case '<':
                             if (type.Peek() != Syntax.Tag) {
@@ -357,7 +358,7 @@ namespace Transgenesis {
             attribute = Color.Salmon,
             text = Color.White,
             entity = Color.SkyBlue,
-            quotes = Color.MediumSlateBlue,
+            quotes = Color.LightBlue,
             tag = Color.LightGoldenrodYellow,
         };
         public Color attribute, text, entity, quotes, tag, tagHighlight;

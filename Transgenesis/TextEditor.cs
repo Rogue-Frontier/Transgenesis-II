@@ -219,6 +219,10 @@ namespace Transgenesis {
             return true;
         }
         bool FindNextLine(out int index) {
+            if (s.Length == 0) {
+                index = 0;
+                return false;
+            }
             index = Math.Min(cursor, s.Length - 1);
             while(index < s.Length && s[index] != '\n') {
                 index++;
