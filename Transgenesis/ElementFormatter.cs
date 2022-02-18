@@ -83,7 +83,8 @@ namespace Transgenesis {
                             //To do: Generate an equivalent string of metadata objects
 
                             var tab = Tab();
-                            writeTag($"{box}{tab}{tag}{ShowAllAttributes(element)}>{text.Value.Replace("\t", "    ")}</{element.Tag()}>");
+                            var t = text.Value.Replace("\t", "    ");
+                            writeTag($"{box}{tab}{tag}{ShowAllAttributes(element)}>{t}{(t.Contains("\n") ? $"\n\r{box}{tab}" : "")}</{element.Tag()}>");
 
                             List<UIData> line = new List<UIData>();
                             line.AddRepeat(null, box.Length);

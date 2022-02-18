@@ -1,4 +1,4 @@
-<E name="Schema">
+<Schema name="Rogue Frontier">
     <AttributeType name="ALIGNMENT">
 DestructiveOrder
 DestructiveChaos
@@ -10,8 +10,8 @@ Neutral
 installWeapon
 	</AttributeType>
     <E class="root" name="Module">
-		<E count="*" name="Module">
-		  <A name="filename" type="STRING"/>
+		<E count="*" name="Module" module="file">
+		  <A name="file" type="STRING"/>
 		</E>
 		<E count="*" name="Sovereign" inherit="TypeBase">
 			<A name="alignment" type="ALIGNMENT"/>
@@ -89,4 +89,4 @@ installWeapon
 	<E class="virtual" name="TypeBase">
 		<A name="codename" type="STRING"/>
     </E>
-</E>
+</Schema>

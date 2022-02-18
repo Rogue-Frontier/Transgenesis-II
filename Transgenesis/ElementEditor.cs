@@ -10,6 +10,7 @@ using System.Xml.Linq;
 using static Transgenesis.Global;
 using ColoredString = SadConsole.ColoredString;
 using SadConsole.Input;
+using System.Diagnostics;
 
 namespace Transgenesis {
     class ElementEditor : IComponent {
@@ -82,6 +83,12 @@ namespace Transgenesis {
                             "Selects the specified element"},
                 {"types",   "types\r\n" +
                             "Opens the Type Editor on this extension"},
+                {"run",     "run\r\n" +
+                            "Runs the program"},
+                {"editmodule","editmodule [path]\r\n" +
+                            "Edits the module at the path relative to the current extension file. If currently focused on a Module reference, you can omit <path>"},
+                {"createmodule", "createmodule <extensionType> <path>\r\n" +
+                            "Creates a module at the path relative to the current extension file"},
                 {"exit",    "exit\r\n" +
                             "Exits this XML Editor and returns to the main menu"},
             };
@@ -339,10 +346,10 @@ namespace Transgenesis {
                         if(input.Length == 0) {
                             if(keepExpanded.Contains(focused)) {
                                 keepExpanded.Remove(focused);
-                            } else if(focused.Nodes().Any()) {
+                            } else if(focused.Nodes().Any() || focused.Attributes().Count() > 3) {
+                                
                                 keepExpanded.Add(focused);
                             }
-
                             break;
                         }
 
@@ -504,6 +511,16 @@ namespace Transgenesis {
                                     h.Record();
                                     break;
                                 }
+                            case "lisp": {
+                                    screens.Push(new LispEditor(screens, c, string.Join(" ", focused.Nodes().OfType<XText>().Select(t => t.Value)).Replace("\t", "    "), str => {
+                                        foreach (var t in focused.Nodes().OfType<XText>()) {
+                                            t.Remove();
+                                        }
+                                        focused.AddFirst(new XText(str));
+                                    }));
+                                    h.Record();
+                                    break;
+                                }
                             case "types": {
                                     screens.Push(new TypeEditor(screens, env, extension, c, new GotoHandler() {
                                         state = state,
@@ -516,24 +533,35 @@ namespace Transgenesis {
                                     break;
                                 }
                             case "createmodule": {
-                                    if (parts.Length < 2) {
+                                    if (parts.Length < 3) {
                                         break;
                                     }
                                     //Always use full-path so that we can easily find this
-                                    var path = Path.GetDirectoryName(extension.path) + Path.DirectorySeparatorChar + parts[1];
-                                    env.CreateExtension("TranscendenceModule", path);
+                                    var path = Path.GetDirectoryName(extension.path) + Path.DirectorySeparatorChar + parts[2];
+                                    env.CreateExtension(parts[1], path);
                                     env.SaveState();
                                     h.Record();
                                     break;
                                 }
                             case "editmodule": {
+
+                                    string module;
                                     if (parts.Length < 2) {
-                                        break;
+                                        var att = env.bases[focused].Att("module");
+                                        if(att == null) {
+                                            break;
+                                        }
+                                        module = focused.Att(att);
+                                        if(module == null) {
+                                            break;
+                                        }
+                                    } else {
+                                        module = parts[1];
                                     }
                                     //Always use full-path so that we can easily find this
-                                    var path = Path.GetDirectoryName(extension.path) + Path.DirectorySeparatorChar + parts[1];
-                                    if (env.extensions.TryGetValue(path, out var module)) {
-                                        screens.Push(state.sessions.Initialize(module, new ElementEditor(state, screens, env, module, c)));
+                                    var path = Path.GetDirectoryName(extension.path) + Path.DirectorySeparatorChar + module;
+                                    if (env.extensions.TryGetValue(path, out var ext)) {
+                                        screens.Push(state.sessions.Initialize(ext, new ElementEditor(state, screens, env, ext, c)));
                                     }
                                     h.Record();
                                     break;
@@ -543,6 +571,14 @@ namespace Transgenesis {
                                     if(parent != null) {
                                         screens.Push(state.sessions.Initialize(parent, new ElementEditor(state, screens, env, parent, c)));
                                     }
+                                    h.Record();
+                                    break;
+                                }
+                            case "run": {
+                                    Process.Start(new ProcessStartInfo() {
+                                        FileName = env.schema.Att("run"),
+                                        UseShellExecute = true
+                                    });
                                     h.Record();
                                     break;
                                 }
@@ -733,43 +769,110 @@ namespace Transgenesis {
 
                     }
                     break;
-                case "set":
-                    if (TryMatch(input, new Regex("^set\\s+(?<attributes>([a-zA-Z0-9_]+=\"[^\"]*\"\\s*)*\\s)?(?<attribute>[a-zA-Z0-9_]*)$"), out m)) {
-                        var g = m.Groups["attribute"];
-                        replaceStart = g.Index;
-                        //replaceLength = g.Length;
+                case "set": {
+                        if (TryMatch(input, new Regex("^set\\s+(?<attributes>([a-zA-Z0-9_]+=\"[^\"]*\"\\s*)*\\s)?(?<attribute>[a-zA-Z0-9_]*)$"), out m)) {
+                            //Suggest attribute name
+                            var g = m.Groups["attribute"];
+                            replaceStart = g.Index;
+                            //replaceLength = g.Length;
+
+                            var e = env.bases[focused];
+                            //e = env.InitializeTemplate(e);
+
+                            var previous = new Regex("(?<key>[a-zA-Z0-9_]+)=\"[^\"]*\"").Matches(m.Groups["attributes"].Value).Select(m => m.Groups["key"].Value);
+
+                            t.help = e.Elements("A").ToDictionary(a => a.Att("name"), a =>
+                                $"<{e.Att("name")}> {e.Att("desc")}\n\r{a.Att("name")}=\"{{{a.Att("type")}}}\"\n\r{a.Att("desc")}");
+
+                            var choices = env.bases[focused].GetValidAttributes().Except(previous);
+                            result = Suggest(g.Value, choices);
+                        } else if (TryMatch(input, new Regex("^set\\s+([a-zA-Z0-9_]+=\"[^\"]+\"\\s*)*(?<attribute>[a-zA-Z0-9_]+)=$"), out m)) {
 
 
-                        var existing = new Regex("(?<key>[a-zA-Z0-9_]+)=\"[^\"]*\"").Matches(m.Groups["attributes"].Value).Select(m => m.Groups["key"].Value).ToList();
+                            //Show tooltip for the attribute
+                            string attribute = m.Groups["attribute"].Value;
+                            //replaceLength = g.Length;
+                            var e = env.bases[focused];
 
-                        var choices = env.bases[focused].GetValidAttributes().Except(existing);
-                        result = Suggest(g.Value, choices);
-                    } else if(TryMatch(input, new Regex("^set\\s+([a-zA-Z0-9_]+=\"[^\"]+\"\\s*)*(?<attribute>[a-zA-Z0-9_]+)=\"(?<value>[^\"]*)$"), out m)) {
-                        string attribute = m.Groups["attribute"].Value;
+                            e = env.InitializeTemplate(e);
 
-                        List<string> all;
-                        if (!env.bases[focused].TryGetValueType(attribute, out string valueType)) {
-                            t.warning = (new ColoredString($"Unknown valueType for {attribute}"));
-                            s.Clear();
-                            all = new();
-                        } else if((all = env.GetAttributeValues(extension, valueType)) == null) {
-                            t.warning = (new ColoredString($"Unknown valueType {valueType}"));
-                            s.Clear();
-                            all = new();
+                            if (!e.TryNameAttribute(attribute, out var att)) {
+                                t.warning = (new ColoredString($"Unknown attribute {attribute}"));
+                                s.Clear();
+                                break;
+                            }
+                            var valueType = att.Att("type");
+
+                            t.text = new($"<{e.Att("name")}> {e.Att("desc")}\n\r{attribute}=\"{{{valueType}}}\"\n\r{att.Att("desc") ?? ""}");
+                            t.help = new();
+
+
+                        } else if (TryMatch(input, new Regex("^set\\s+([a-zA-Z0-9_]+=\"[^\"]+\"\\s*)*(?<attribute>[a-zA-Z0-9_]+)=\"(?<value>[^\"]*)$"), out m)) {
+                            //Suggest attribute name
+
+                            string attribute = m.Groups["attribute"].Value;
+
+                            List<string> all;
+                            var e = env.bases[focused];
+
+                            if (!e.TryNameAttribute(attribute, out var att)) {
+                                t.warning = (new ColoredString($"Unknown attribute {attribute}"));
+                                s.Clear();
+                                break;
+                            }
+                            var valueType = att.Att("type");
+
+                            if ((all = env.GetAttributeValues(extension, valueType)) == null) {
+                                t.warning = (new ColoredString($"Unknown valueType {valueType}"));
+                                s.Clear();
+                                all = new();
+                            }
+                            if (focused.Att(attribute, out string value)) {
+                                //Remove duplicate
+                                all.Remove(value);
+                                //Insert at the front
+                                all.Insert(0, value);
+                            }
+
+                            //e = env.InitializeTemplate(e);
+                            t.text = new($"<{e.Att("name")}> {e.Att("desc")}\n\r{attribute}=\"{{{valueType}}}\"\n\r{att.Att("desc") ?? ""}");
+                            t.help = new();
+
+                            var g = m.Groups["value"];
+                            var v = g.Value;
+                            replaceStart = g.Index;
+                            //replaceLength = g.Length;
+                            result = Suggest(v, all);
                         }
-                        if (focused.Att(attribute, out string value)) {
-                            //Remove duplicate
-                            all.Remove(value);
-                            //Insert at the front
-                            all.Insert(0, value);
-                        }
-                        var g = m.Groups["value"];
-                        var v = g.Value;
-                        replaceStart = g.Index;
-                        //replaceLength = g.Length;
-                        result = Suggest(v, all);
+                        break;
                     }
-                    break;
+                case "createmodule": {
+                        if (TryMatch(input, new Regex("^createmodule\\s+(?<extensionType>[a-zA-Z0-9_]*)$"), out m)) {
+                            //Suggest attribute name
+                            var g = m.Groups["extensionType"];
+                            replaceStart = g.Index;
+                            result = Suggest(g.Value, env.rootStructures.Select(r => r.Key));
+                        }
+                        break;
+                    }
+
+                case "editmodule": {
+                        if (TryMatch(input, new Regex("^editmodule\\s+(?<path>[a-zA-Z0-9_]*)$"), out m)) {
+                            //Suggest attribute name
+                            var g = m.Groups["path"];
+                            replaceStart = g.Index;
+                            //replaceLength = g.Length;
+                            var choices = focused.Elements().Select(e => {
+                                var att = env.bases[e].Att("module");
+                                if (att == null) {
+                                    return null;
+                                }
+                                return e.Att(att);
+                            }).Where(s => !string.IsNullOrWhiteSpace(s));
+                            result = Suggest(g.Value, choices);
+                        }
+                        break;
+                    }
                 default:
                     result = Suggest(cmd, new List<string> { "set", "add", "remove",
                             "bind", "bindall", "save", "saveall", "expand", "collapse",

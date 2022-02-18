@@ -49,7 +49,7 @@ namespace Transgenesis {
 
             customAttributeValues = new();
             foreach(var attributeType in schema.Elements("Enum")) {
-                customAttributeValues[attributeType.Att("name")] = new(attributeType.Value.Replace("\t", "").Split('\r', '\n').Where(s => !string.IsNullOrWhiteSpace(s)));
+                customAttributeValues[attributeType.Att("name")] = new(attributeType.Value.Replace("\t", "").Split('\r', '\n').Select(s => s.Trim()).Where(s => !string.IsNullOrWhiteSpace(s)));
             }
         }
         public bool CanAddElement(XElement element, XElement template, string subelement, out XElement subtemplate) {
@@ -204,7 +204,7 @@ namespace Transgenesis {
                 */
                 //Start with the root and navigate to the base element
                 XElement inherited = unknown;
-                if(baseStructure.TryGetValue(source, out XElement templateBase)) {
+                if(baseStructure.TryGetValue(source, out XElement templateBase) || rootStructures.TryGetValue(source, out templateBase)) {
                     inherited = templateBase;
                 } else {
                     if(allowUnknown) {
@@ -254,6 +254,9 @@ namespace Transgenesis {
             return result;
         }
         public List<string> GetAttributeValues(GameData extension, string attributeType) {
+            if(attributeType == null) {
+                return null;
+            }
             if(attributeType == "E_VIRTUAL") {
                 return extension.structure.Elements("E")
                     .Where(e => e.Att("class") == "virtual")
@@ -334,7 +337,7 @@ namespace Transgenesis {
                 }
             }
         }
-        public void CreateExtension(string templateType, string path) {
+        public bool CreateExtension(string templateType, string path) {
             XElement structure;
             XElement template;
             GameData extension;
@@ -348,7 +351,9 @@ namespace Transgenesis {
                 );
                 extensions[path] = extension;
                 extension.Save();
+                return true;
             }
+            return false;
         }
         public void LoadFolder(string path, bool modules = false) {
             if (Directory.Exists(path)) {
@@ -387,8 +392,9 @@ namespace Transgenesis {
         }
         public void LoadModules(GameData e) {
             foreach (var module in e.structure.Elements()) {
-                if (module.Tag() == "Module" || module.Tag() == "CoreLibrary" || module.Tag() == "TranscendenceAdventure") {
-                    string filename = module.Att("filename") ?? module.Att("file");
+                var template = bases[module];
+                if (template.Att("module", out var key)) {
+                    string filename = module.Att(key);
                     //Use the full path when finding modules
                     string path = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(e.path), filename));
                     Load(path, true);
@@ -406,6 +412,7 @@ namespace Transgenesis {
 
         public void SaveState() {
             File.WriteAllText(file, JsonConvert.SerializeObject(extensions.Keys.ToList()));
+            File.WriteAllText("Schema.json", path);
         }
         public void LoadState() {
             if(File.Exists(file)) {

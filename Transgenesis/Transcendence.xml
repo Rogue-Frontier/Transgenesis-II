@@ -1,4 +1,4 @@
-<E name="Schema">
+<Schema name="Transcendence" run="C:\Users\alexm\OneDrive - email.ucr.edu\Transcendence Multiverse\Transcendence.exe">
   <Enum name="BOOLEAN">
     true
     false
@@ -371,15 +371,15 @@
     gladiator
     zoanthrope
   </Enum>
-  <E class="root" name="TranscendenceUniverse" inherit="Hierarchy:TranscendenceLibrary">
-    <E count="*" name="CoreLibrary">
+  <E class="root" name="TranscendenceUniverse" inherit="Schema:TranscendenceLibrary">
+    <E count="*" name="CoreLibrary" module="filename">
       <A name="filename" type="FILENAME"/>
     </E>
-    <E count="*" name="TranscendenceAdventure">
+    <E count="*" name="TranscendenceAdventure" module="filename">
       <A name="filename" type="FILENAME"/>
     </E>
   </E>
-  <E class="root" count="1" name="TranscendenceAdventure" inherit="Hierarchy:TranscendenceExtension">
+  <E class="root" count="1" name="TranscendenceAdventure" inherit="Schema:TranscendenceExtension">
     <E count="1" name="AdventureDesc" inherit="DesignTypeBase">
       <A name="adventureUNID" type="UNID"/>
       <A name="attributes" type="STRING"/>
@@ -437,9 +437,9 @@
       </E>
     </E>
   </E>
-  <E class="root" name="TranscendenceExtension" inherit="Hierarchy:TranscendenceLibrary"/>
-  <E class="root" name="CoreLibrary" inherit="Hierarchy:TranscendenceLibrary"/>
-  <E class="root" name="TranscendenceLibrary" inherit="Hierarchy:TranscendenceModule">
+  <E class="root" name="TranscendenceExtension" inherit="Schema:TranscendenceLibrary"/>
+  <E class="root" name="CoreLibrary" inherit="Schema:TranscendenceLibrary"/>
+  <E class="root" name="TranscendenceLibrary" inherit="Schema:TranscendenceModule">
     <A name="apiVersion" type="INTEGER"/>
     <A name="autoInclude" type="BOOLEAN"/>
     <A name="autoIncludeForCompatibility" type="BOOLEAN"/>
@@ -454,7 +454,7 @@
     <A name="unid" type="UNID"/>
     <A name="usesXML" type="BOOLEAN"/>
     <A name="version" type="STRING"/>
-    <E count="*" name="Module">
+    <E count="*" name="Module" module="filename">
       <A name="filename" type="STRING"/>
     </E>
     <E count="*" name="Library">
@@ -646,12 +646,12 @@
       <A name="sortName" type="STRING"/>
       <A name="unknownType" type="TYPE_ITEM"/>
       <A name="useAsArmorSet" type="BOOLEAN"/>
-      <A name="useCompleteArmorOnly" type="BOOLEAN"/>
-      <A name="useEnabledOnly" type="BOOLEAN"/>
-      <A name="useInstalledOnly" type="BOOLEAN"/>
+      <A name="useCompleteArmorOnly" type="BOOLEAN" desc="If true, then player can Invoke only if this item is installed as a complete armor set"/>
+      <A name="useEnabledOnly" type="BOOLEAN" desc="If true, then player can Invoke only if this item is installed and enabled"/>
+      <A name="useInstalledOnly" type="BOOLEAN" desc="If true, then player can Invoke only if this item is installed"/>
       <A name="useKey" type="CHARACTER"/>
       <A name="useScreen" type="TYPE_DOCKSCREEN"/>
-      <A name="useUninstalledOnly" type="BOOLEAN"/>
+      <A name="useUninstalledOnly" type="BOOLEAN" desc="If true, then player can Invoke only if this item is in cargo hold"/>
       <A name="value" type="WHOLE"/>
       <A name="valueBonusPerCharge" type="WHOLE"/>
       <A name="valueCharges" type="BOOLEAN"/>
@@ -2613,4 +2613,4 @@
     </E>
     <E count="?" name="AttributeDesc" inherit="DesignTypes:DockScreen:DisplayAttributes"/>
   </E>
-</E>
+</Schema>

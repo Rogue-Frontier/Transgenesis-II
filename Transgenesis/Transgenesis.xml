@@ -1,4 +1,4 @@
-﻿<E name="Schema">
+﻿<Schema name="Transgenesis">
 	<Enum name="CLASS">
 		root
 		virtual
@@ -9,15 +9,17 @@
 		1
 		+
 	</Enum>
-	<E class="root" name="E" desc="Transgenesis uses this element to identify the spec root">
-		<A name="name" value="Schema" desc="Transgenesis uses this attribute to identify the spec root"/>
+	<E class="root" name="Schema" desc="Transgenesis uses this element to identify the schema root">
+		<A name="name" value="Schema" desc="The name of the schema as it appears on the main menu"/>
 		<E count="*" name="Enum" desc="Defines a custom value type for attributes">
 			<A name="name" type="STRING" desc="The name of the enum type"/>
 		</E>
-		<E count="*" name="E" inherit="_E" desc="Defines a root element">
+		<E count="*" name="E" inherit="_E" desc="Defines the root-level element of a data file">
 			<A name="class" type="CLASS" desc="&quot;root&quot; (can be instantiated) or &quot;virtual&quot; (can be inherited) but not both"/>
-			<E count="*" name="E" inherit="_E" desc="Defines a element">
-				<A name="count" type="COUNT" desc="The number of instances that you can have"/>
+			<E count="*" name="E" inherit="_Common" desc="Defines a top-level element">
+				<A name="module" type="STRING" desc="Makes this element a module reference. Specifies the attribute that contains the module path"/>
+
+				<E count="*" name="*" inherit="_Common" desc="Defines a regular element"/>
 			</E>
 		</E>
 	</E>
@@ -30,4 +32,8 @@
 			<A name="type" type="STRING" desc="The value type of the attribute - can be an Enum type"/>
 		</E>
 	</E>
-</E>
+	<E class="virtual" name="_Common" inherit="_E">
+		<A name="count" type="COUNT" desc="The number of instances that you can have"/>
+		
+	</E>
+</Schema>

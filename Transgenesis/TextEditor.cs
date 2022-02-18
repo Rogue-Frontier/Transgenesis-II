@@ -270,7 +270,9 @@ namespace Transgenesis {
                     cursorAfterNewline = false;
                     line[length] = ConsoleManager.Effect(c.ColorInvert(ch));
                 } else {
-                    line[length] = ConsoleManager.Effect(c.Color(ch));
+                    var cg = c.Color(ch);
+                    var ce = ConsoleManager.Effect(cg);
+                    line[length] = ce;
                 }
                 index++;
                 length++;

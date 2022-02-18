@@ -76,6 +76,8 @@ namespace Transgenesis {
                             "Saves the state of this menu" },
                 {"schema", "schema <schemaFile>\r\n" +
                             "Loads a schema from file" },
+                {"run",        "run\r\n" +
+                            "Runs the game"},
                 {"exit",        "exit\r\n" +
                             "Exits the current session"}
             });
@@ -94,6 +96,7 @@ namespace Transgenesis {
             c.SetCursor(new Point(0, 0));
             List<ColoredString> buffer = new List<ColoredString>();
             buffer.Add(c.Color("Transgenesis II"));
+            buffer.Add(c.Color($"Schema: {Path.GetFileName(env.path)}"));
 
             buffer.Add(c.Color($"Extensions Loaded: {env.extensions.Count}"));
             var ext = new List<GameData>(env.extensions.Values);
@@ -166,7 +169,7 @@ namespace Transgenesis {
 
                 string unsaved = e.isUnsaved() ? "[S] " : "    ";
                 string unbound = e.isUnbound() ? "[B] " : "    ";
-                buffer.Add(c.Color($"{unsaved}{unbound}{tag}{e.unid?.ToUNID() ?? e.parent?.unid?.ToUNID() ?? "Unknown",-12}{e.name,-48}{e.path.TruncatePath()}"));
+                buffer.Add(c.Color($"{unsaved}{unbound}{tag}{e.unid?.ToUNID() ?? e.parent?.unid?.ToUNID() ?? "Unknown",-12}{e.name,-36}{e.path.TruncatePath()}"));
                 if(buffer.Last().Length > c.width) {
                     buffer.Add(c.Color(""));
                 }
@@ -466,6 +469,14 @@ namespace Transgenesis {
                                     }));
                                     h.Record();
                                 }
+                                break;
+                            }
+                        case "run": {
+                                Process.Start(new ProcessStartInfo() {
+                                    FileName = env.schema.Att("run"),
+                                    UseShellExecute = true
+                                });
+                                h.Record();
                                 break;
                             }
                         case "exit": {

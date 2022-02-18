@@ -8,6 +8,7 @@ using SadConsole.UI;
 using SadConsole.Input;
 using SadConsole;
 using System.Diagnostics;
+using System.IO;
 
 namespace Transgenesis {
     internal class Program {
@@ -40,13 +41,17 @@ namespace Transgenesis {
         }
     }
     class MainConsole : ControlsConsole {
-        Environment env = new Environment();
+        Environment env = new();
         Queue<Stack<IComponent>> sessions = new Queue<Stack<IComponent>>();
         Stack<IComponent> screens;
         public MainConsole(int width, int height) : base(width, height) {
             //screens.Push(new MainMenu(screens));
             //screens.Push(new TextEditor(screens, new ConsoleManager(new Point(0, 0)), s => { }));
 
+            var s = "Schema.json";
+            if (File.Exists(s)) {
+                env = new(File.ReadAllText(s));
+            }
             env.LoadState();
             try {
             } catch(Exception e) {

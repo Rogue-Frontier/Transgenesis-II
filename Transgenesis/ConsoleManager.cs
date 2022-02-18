@@ -65,23 +65,15 @@ namespace Transgenesis {
             NextLine();
         }
         public ColoredGlyph ColorInvert(char c, Color? back = null, Color? front = null)=>
-            new(front ?? theme.front, back ?? theme.back, c);
-        
-        public ColoredGlyph Color(char c, Color? front = null, Color? back = null) =>
             new(back ?? theme.back, front ?? theme.front, c);
         
-        public static ColoredGlyphEffect Effect(ColoredGlyph cg) =>
-            new() { Foreground = cg.Foreground, Background = cg.Background, Glyph = cg.Glyph };
-        public static ColoredString Color(string s, Color front, Color back) =>
-            new(s, front, back);
-        public ColoredString Color(string s, Color? front = null, Color? back = null) =>
-            Color(s, front ?? theme.front, back ?? theme.back);
-        public ColoredString Highlight(string s, Color? front = null, Color? back = null) {
-            return Color(s, front ?? theme.highlight, back ?? theme.back);
-        }
-        public ColoredString ColorInvert(string s, Color? front = null, Color? back = null) {
-            return Color(s, back ?? theme.back, front ?? theme.front);
-        }
+        public ColoredGlyph Color(char c, Color? front = null, Color? back = null) =>
+            new(front ?? theme.front, back ?? theme.back, c);
+        public static ColoredGlyphEffect Effect(ColoredGlyph cg) => new() { Foreground = cg.Foreground, Background = cg.Background, Glyph = cg.Glyph };
+        public static ColoredString Color(string s, Color front, Color back) => new(s, front, back);
+        public ColoredString Color(string s, Color? front = null, Color? back = null) => Color(s, front ?? theme.front, back ?? theme.back);
+        public ColoredString Highlight(string s, Color? front = null, Color? back = null) => Color(s, front ?? theme.highlight, back ?? theme.back);
+        public ColoredString ColorInvert(string s, Color? front = null, Color? back = null) => Color(s, back ?? theme.back, front ?? theme.front);
         public void WriteLine(string s, Color? front = null, Color? back = null) {
             Write(s, front, back);
             NextLine();
