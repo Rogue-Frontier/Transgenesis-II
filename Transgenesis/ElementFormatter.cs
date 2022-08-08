@@ -325,6 +325,14 @@ namespace Transgenesis {
                 }
             }
         }
+
+        public string RecBox(string text) => Recolor("White", text);
+        public string RecAtt(string text) => Recolor("Salmon", text);
+        public string RecText(string text) => Recolor("White", text);
+        public string RecEntity(string text) => Recolor("SkyBlue", text);
+        public string RecQuotes(string text) => Recolor("LightBlue", text);
+        public string RecTag(string text) => Recolor("LightGoldenrodYellow", text);
+        public string Recolor(string color, string text) => $"[c:r f:{color}]{text}[c:u]";
     }
 
     class SyntaxColors {

@@ -10,26 +10,26 @@ using Newtonsoft.Json;
 
 namespace Transgenesis {
     class Environment {
-        public string file => $"Environment-{Path.GetFileNameWithoutExtension(path)}.json";
-        public string path;
+        public string stateFile => $"Environment-{Path.GetFileNameWithoutExtension(schemaFile)}.json";
+        public string schemaFile;
         public XElement schema;
-        public Dictionary<string, XElement> rootStructures = new Dictionary<string, XElement>();
-        public Dictionary<string, XElement> baseStructure = new Dictionary<string, XElement>();
-        public Dictionary<XElement, XElement> bases = new Dictionary<XElement, XElement>();
-        public Dictionary<string, GameData> extensions = new Dictionary<string, GameData>();
+        public Dictionary<string, XElement> rootStructures = new();
+        public Dictionary<string, XElement> baseStructure = new();
+        public Dictionary<XElement, XElement> bases = new();
+        public Dictionary<string, GameData> extensions = new();
         public Dictionary<string, List<string>> customAttributeValues;
-        public XElement unknown = new XElement("Unknown");
+        public XElement unknown = new("Unknown");
         public bool allowUnknown = true;
 
         public static string ATT_COUNT = "count";
 
-        public Environment(string spec = "Transgenesis.xml") {
-            this.path = spec;
-            XmlDocument doc = new XmlDocument();
+        public Environment(string schemaFile = "Transgenesis.xml") {
+            this.schemaFile = schemaFile;
+            var doc = new XmlDocument();
             try {
-                doc.Load(spec);
+                doc.Load(schemaFile);
             } catch {
-                doc.Load("../../../"+spec);
+                doc.Load("../../../"+schemaFile);
             }
             schema = XElement.Parse(doc.OuterXml);
             baseStructure["Schema"] = schema;
@@ -94,11 +94,11 @@ namespace Transgenesis {
         }
         public List<XElement> GetAddableElements(XElement element, XElement template) =>
             template.Elements("E")
-            .Select(subtemplate => InitializeTemplate(subtemplate))
+            .Select(InitializeTemplate)
             .Where(subtemplate => CanAddElement(element, subtemplate)).ToList();
         public List<string> GetRemovableElements(XElement element, XElement template) =>
             template.Elements("E")
-            .Select(subtemplate => InitializeTemplate(subtemplate))
+            .Select(InitializeTemplate)
             .Where(subtemplate => CanRemoveElement(element, subtemplate))
             .Select(subtemplate => subtemplate.Att("name")).ToList();
         public void Unload(GameData e) {
@@ -118,9 +118,9 @@ namespace Transgenesis {
             var structure = XElement.Parse(doc.OuterXml);
             if (rootStructures.TryGetValue(structure.Tag(), out var template)) {
                 template = InitializeTemplate(template);
-                e = new GameData(path, structure);
+                e = new(path, structure);
 
-                if(extensions.TryGetValue(path, out GameData existing)) {
+                if(extensions.TryGetValue(path, out var existing)) {
                     Unload(existing);
                 }
 
@@ -142,20 +142,19 @@ namespace Transgenesis {
         public void LoadWithTemplate(XElement structure, XElement template) {
             bases[structure] = template;
             if(template == unknown) {
-                foreach(XElement subelement in structure.Elements()) {
-                    LoadWithTemplate(subelement, template);
+                foreach(var sub in structure.Elements()) {
+                    LoadWithTemplate(sub, template);
                 }
             }
-
-            Dictionary<string, XElement> subtemplates = new Dictionary<string, XElement>();
-            foreach(XElement subtemplate in template.Elements()) {
+            var subtemplates = new Dictionary<string, XElement>();
+            foreach(var subtemplate in template.Elements()) {
                 var initialized = InitializeTemplate(subtemplate);
-                string name = initialized.Att("name");
+                var name = initialized.Att("name");
                 subtemplates[name] = initialized;
             }
-            foreach(XElement subelement in structure.Elements()) {
-                string name = subelement.Tag();
-                if(subtemplates.TryGetValue(name, out XElement subtemplate) || subtemplates.TryGetValue("*", out subtemplate)) {
+            foreach(var subelement in structure.Elements()) {
+                var name = subelement.Tag();
+                if(subtemplates.TryGetValue(name, out var subtemplate) || subtemplates.TryGetValue("*", out subtemplate)) {
                     //Initialize subelement base
                     LoadWithTemplate(subelement, subtemplate);
                 } else {
@@ -166,35 +165,32 @@ namespace Transgenesis {
         }
         public XElement FromTemplate(XElement template, string name = null) {
             var result = new XElement(name ?? template.Att("name"));
-            if(template == unknown) {
-                goto Ready;
-            }
-
-            foreach(var subtemplate in template.Elements("E").Where(e => e.Att(ATT_COUNT) == "1" || e.Att(ATT_COUNT) == "+")) {
-                var initialized = InitializeTemplate(subtemplate);
-                var subelement = FromTemplate(initialized);
-                bases[subelement] = initialized;
-                result.Add(subelement);
-            }
-            //Initialize attributes to default values
-            foreach (XElement attributeSpec in template.Elements("A")) {
-                string key = attributeSpec.Att("name");
-                string value = attributeSpec.Att("value");
-                if(value != null) {
-                    result.SetAttributeValue(key, value);
+            if(template != unknown) {
+                foreach (var subtemplate in template.Elements("E").Where(e => e.Att(ATT_COUNT) == "1" || e.Att(ATT_COUNT) == "+")) {
+                    var initialized = InitializeTemplate(subtemplate);
+                    var subelement = FromTemplate(initialized);
+                    bases[subelement] = initialized;
+                    result.Add(subelement);
+                }
+                //Initialize attributes to default values
+                foreach (XElement attributeSpec in template.Elements("A")) {
+                    string key = attributeSpec.Att("name");
+                    string value = attributeSpec.Att("value");
+                    if (value != null) {
+                        result.SetAttributeValue(key, value);
+                    }
                 }
             }
-            Ready:
             bases[result] = template;
             return result;
         }
         //Initializes a template for actual use, handling inheritance
         public XElement InitializeTemplate(XElement template) {
 
-            XElement result = new XElement(template.Name);
-            if (template.Att("inherit", out string from)) {
+            var result = new XElement(template.Name);
+            if (template.Att("inherit", out var from)) {
                 var parts = from.Split(':');
-                string source = parts.First();
+                var source = parts.First();
                 //XElement template = original;
                 /*
                 while (template.Name.LocalName != source) {
@@ -203,15 +199,13 @@ namespace Transgenesis {
                 }
                 */
                 //Start with the root and navigate to the base element
-                XElement inherited = unknown;
-                if(baseStructure.TryGetValue(source, out XElement templateBase) || rootStructures.TryGetValue(source, out templateBase)) {
+                var inherited = unknown;
+                if (baseStructure.TryGetValue(source, out var templateBase) || rootStructures.TryGetValue(source, out templateBase)) {
                     inherited = templateBase;
+                } else if (allowUnknown) {
+                    goto SkipInherit;
                 } else {
-                    if(allowUnknown) {
-                        goto SkipInherit;
-                    } else {
-                        inherited = baseStructure[source];
-                    }
+                    inherited = baseStructure[source];
                 }
 
                 //Handle the inheritance chain
@@ -240,7 +234,7 @@ namespace Transgenesis {
             }
             //Handle additional/overriding elements
             foreach (var e in template.Elements()) {
-                if (result.NameElement(e.Att("name"), out XElement replaced)) {
+                if (result.NameElement(e.Att("name"), out var replaced)) {
                     replaced.ReplaceWith(e);
                 } else {
                     result.Add(e);
@@ -263,31 +257,29 @@ namespace Transgenesis {
                     .Select(e => e.Att("name")).Where(id => id != null).ToList();
             }
 
-            if(customAttributeValues.TryGetValue(attributeType, out List<string> values)) {
+            if(customAttributeValues.TryGetValue(attributeType, out var values)) {
                 return values;
-            } else if(Enum.TryParse(attributeType, out AttributeTypes attributeTypeEnum)) {
-                IEnumerable<string> result;
-                switch(attributeTypeEnum) {
-                    case AttributeTypes.UNID:
-                        //return extension.types.entities;
+            }
+            if(Enum.TryParse(attributeType, out AttributeTypes attributeTypeEnum)) {
+                return GetEntities().Select(entity => $"&{entity};").ToList();
+                IEnumerable<string> GetEntities() {
+                    switch (attributeTypeEnum) {
+                        case AttributeTypes.UNID:
+                            //return extension.types.entities;
 
-                        //Return UNIDs that have not been bound yet
-                        result = from entity in extension.types.entities
-                               where !extension.types.typemap.TryGetValue(entity, out XElement design) || design == null
-                               select entity;
-                        break;
-                    case AttributeTypes.TYPE_ANY:
-                    case AttributeTypes.TYPE_INHERITED:
-                        result = FindTypes();
-                        break;
-                    case AttributeTypes.TYPE_ITEM:
-                        result = FindItems();
-                        break;
-                    case AttributeTypes.TYPE_ITEM_ARMOR:
-                        result = FindItems("Armor");
-                        break;
-                    case AttributeTypes.TYPE_ITEM_DEVICE:
-                        var deviceTags = new List<string> {
+                            //Return UNIDs that have not been bound yet
+                            return extension.types.entities.Where(e =>
+                                !extension.types.typemap.TryGetValue(e, out XElement design) || design == null
+                            );
+                        case AttributeTypes.TYPE_ANY:
+                        case AttributeTypes.TYPE_INHERITED:
+                            return FindTypes();
+                        case AttributeTypes.TYPE_ITEM:
+                            return FindItems();
+                        case AttributeTypes.TYPE_ITEM_ARMOR:
+                            return FindItems("Armor");
+                        case AttributeTypes.TYPE_ITEM_DEVICE:
+                            var deviceTags = new List<string> {
                                         "AutoDefenseDevice",
                                         "CargoHoldDevice",
                                         "DriveDevice",
@@ -299,53 +291,39 @@ namespace Transgenesis {
                                         "SolarDevice",
                                         "Weapon"
                                     };
-                        result = FindTypes(design =>
-                            design.Tag() == "ItemType" &&
-                            design.Elements().Any(
-                                element => deviceTags.Contains(element.Tag())));
-                        break;
-                    case AttributeTypes.TYPE_ITEM_WEAPON:
-                        result = FindItems("Weapon");
-                        break;
-                    //TO DO
-                    default:
-                        result = new List<string>();
-                        break;
+                            return FindTypes(design =>
+                                design.Tag() == "ItemType" && design.Elements().Any(
+                                    element => deviceTags.Contains(element.Tag())));
+                        case AttributeTypes.TYPE_ITEM_WEAPON:
+                            return FindItems("Weapon");
+                        //TO DO
+                        default:
+                            return new List<string>();
+                    }
                 }
-                return result.Select(entity => $"&{entity};").ToList();
-            } else {
-                //Error: Unknown attribute type
-
-                return null;
             }
+            return null;
             IEnumerable<string> FindItems(string category = null) {
+                Func<XElement, bool> filter = d => d.Tag() == "ItemType";
                 if(category != null) {
-                    return FindTypes(design => design.Tag() == "ItemType" && design.Elements(category).Count() > 0);
-                } else {
-                    return FindTypes(design => design.Tag() == "ItemType");
+                    filter = d => filter(d) && d.Elements(category).Count() > 0;
                 }
+                return FindTypes(filter);
             }
             IEnumerable<string> FindTypes(Func<XElement, bool> predicate = null) {
-                if(predicate == null) {
-                    return from entity in extension.types.entities
-                            where extension.types.typemap.TryGetValue(entity, out XElement design) && design != null
-                            select entity;
-                } else {
-                    return from entity in extension.types.entities
-                            where extension.types.typemap.TryGetValue(entity, out XElement design) && design != null && predicate(design)
-                            select entity;
-                }
+                Func<string, bool> filter =
+                    predicate == null ?
+                        entity => extension.types.typemap.TryGetValue(entity, out XElement design) && design != null :
+                        entity => extension.types.typemap.TryGetValue(entity, out XElement design) && design != null && predicate(design);
+                return extension.types.entities.Where(filter);
             }
         }
         public bool CreateExtension(string templateType, string path) {
-            XElement structure;
-            XElement template;
-            GameData extension;
-            if(rootStructures.TryGetValue(templateType, out template)) {
+            if(rootStructures.TryGetValue(templateType, out var template)) {
                 template = InitializeTemplate(template);
-                structure = FromTemplate(template);
+                var structure = FromTemplate(template);
 
-                extension = new GameData(
+                var extension = new GameData(
                     path: path,
                     structure: structure
                 );
@@ -372,7 +350,7 @@ namespace Transgenesis {
             }
         }
         public void Load(string path, bool modules = false) {
-            string xml = File.ReadAllText(path);
+            var xml = File.ReadAllText(path);
             //Cheat the XML reader by escaping ampersands so we don't parse entities
             xml = xml.Replace("&", "&amp;");
             var d = new Dictionary<string, Regex>() {
@@ -384,10 +362,10 @@ namespace Transgenesis {
                 xml = reg.Replace(xml, str);
             }
 
-            XmlDocument doc = new XmlDocument();
+            var doc = new XmlDocument();
             doc.LoadXml(xml);
 
-            LoadExtension(doc, path, out GameData e);
+            LoadExtension(doc, path, out var e);
             if (modules) {
                 LoadModules(e);
             }
@@ -396,9 +374,9 @@ namespace Transgenesis {
             foreach (var module in e.structure.Elements()) {
                 var template = bases[module];
                 if (template.Att("module", out var key)) {
-                    string filename = module.Att(key);
+                    var filename = module.Att(key);
                     //Use the full path when finding modules
-                    string path = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(e.path), filename));
+                    var path = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(e.path), filename));
                     Load(path, true);
                 }
             }
@@ -413,12 +391,12 @@ namespace Transgenesis {
         }
 
         public void SaveState() {
-            File.WriteAllText(file, JsonConvert.SerializeObject(extensions.Keys.ToList()));
-            File.WriteAllText("Schema.json", path);
+            File.WriteAllText(stateFile, JsonConvert.SerializeObject(extensions.Keys.ToList()));
+            File.WriteAllText("Schema.json", schemaFile);
         }
         public void LoadState() {
-            if(File.Exists(file)) {
-                var loaded = JsonConvert.DeserializeObject<List<string>>(File.ReadAllText(file));
+            if(File.Exists(stateFile)) {
+                var loaded = JsonConvert.DeserializeObject<List<string>>(File.ReadAllText(stateFile));
                 foreach(var file in loaded.Where(f => File.Exists(f))) {
                     Load(file);
                 }

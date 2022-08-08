@@ -97,7 +97,7 @@ namespace Transgenesis {
             c.SetCursor(new Point(0, 1));
             List<ColoredString> buffer = new List<ColoredString>();
             buffer.Add(c.Color("Transgenesis II"));
-            buffer.Add(c.Color($"Schema: {Path.GetFileName(env.path)}"));
+            buffer.Add(c.Color($"Schema: {Path.GetFileName(env.schemaFile)}"));
 
             buffer.Add(c.Color($"Extensions Loaded: {env.extensions.Count}"));
             var ext = new List<GameData>(env.extensions.Values);
