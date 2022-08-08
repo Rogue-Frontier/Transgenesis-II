@@ -143,8 +143,8 @@ namespace Transgenesis {
 
                 formatter.ShowElementTree(root, focused, expanded, semiexpanded);
             }
-            formatter.SyntaxHighlight();
-            List<ColoredString> buffer = formatter.buffer;
+            //formatter.SyntaxHighlight();
+            var buffer = formatter.buffer;
             /*
             {
                 List<ColoredString> buffer2 = new List<ColoredString>();

@@ -54,7 +54,7 @@ namespace Transgenesis {
                 if(cg.GlyphCharacter == s) {
                     result.Add(new ColoredString());
                 } else {
-                    result[result.Count - 1] += str.SubString(0, 1);
+                    result[result.Count - 1] += new ColoredString(cg);
                 }
             }
             result.RemoveAll(s => s.Length == 0);

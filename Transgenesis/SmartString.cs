@@ -6,15 +6,19 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using SadConsole;
+
 namespace Transgenesis;
 
 internal class SmartString {
     public override string ToString() => string.Join(null, text.Select(t => t.c));
-    string raw = "";
-    List<SmartChar> text = new();
-    Color f = Color.White,
+    public string raw = "";
+    public List<SmartChar> text = new();
+
+    public ColoredString colored => new(text.Select(c => new ColoredGlyph(c.f, c.b, c.c)).ToArray());
+    public Color f = Color.White,
           b = Color.Black;
-    int lw = int.MaxValue,
+    public int lw = int.MaxValue,
         row = 0,
         col = 0;
     Stack<Command> l = new();
@@ -25,6 +29,7 @@ internal class SmartString {
 
     private void Append(char c) => text.Add(new(c, f, b));
     private void Append(string s) => text.AddRange(s.Select(c => new SmartChar(c, f, b)));
+    public SmartString() { }
     public SmartString(string s) => Parse(s);
 
     
@@ -98,6 +103,17 @@ internal class SmartString {
                                 return c;
                             }
                         } catch { }
+                        var d = new Dictionary<string, Color> {
+                            ["White"] = Color.White,
+                            ["LightBlue"] = Color.LightBlue,
+                            ["LightGoldenrodYellow"] = Color.LightGoldenrodYellow,
+                            ["Salmon"] = Color.Salmon,
+                            ["SkyBlue"] = Color.SkyBlue,
+                            ["LimeGreen"] = Color.LimeGreen
+                        };
+                        if(d.TryGetValue(s, out var co)) {
+                            return co;
+                        }
                         if (new Regex("(?<R>[0-9]+),(?<G>[0-9]+),(?<B>[0-9]+)").Match(s) is Match { Success: true } m) {
                             var p = (string k) => int.Parse(m.Groups[k].Value);
                             return new(p("R"), p("G"), p("B"));
@@ -117,6 +133,12 @@ internal class SmartString {
                     }
                     break;
                 default:
+                    if(ch == '\n') {
+                        Append(ch);
+                        col = 0;
+                        row++;
+                        break;
+                    }
                     if(col == lw) {
                         Append('\n');
                         col = 0;

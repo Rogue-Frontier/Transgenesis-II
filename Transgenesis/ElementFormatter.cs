@@ -24,9 +24,10 @@ namespace Transgenesis {
         string collapsedBox = "+   ";
         string noBox = ".   ";
 
-        public List<ColoredString> buffer = new List<ColoredString>();
+        public SmartString smart = new();
+        public List<ColoredString> buffer => smart.colored.Split('\n');
         public Dictionary<int, HashSet<LabelButton>> buttonBuffer = new();
-        public HashSet<int> highlightLines = new HashSet<int>();
+        public HashSet<int> highlightLines = new();
 
         ConsoleManager c;
         public ElementFormatter(ConsoleManager c, bool showBoxes = true) {
@@ -34,14 +35,17 @@ namespace Transgenesis {
             if(!showBoxes) {
                 expandedBox = collapsedBox = noBox = "";
             }
+            smart.lw = c.width;
+            smart.f = c.theme.front;
+            smart.b = c.theme.back;
         }
         void AddLine(string line) {
-            buffer.AddRange(line.SplitMulti("\n", c.width).Select(s => new ColoredString(s, c.theme.front, c.theme.back)));
+            smart.Parse($"{line}\n");
         }
         void AddLineHighlight(string line) {
-            var parts = line.SplitMulti("\n", c.width).Select(s => new ColoredString(s, c.theme.highlight, c.theme.back));
-            highlightLines.UnionWith(Enumerable.Range(buffer.Count, parts.Count()));
-            buffer.AddRange(parts);
+            var row = smart.row;
+            smart.Parse($"{line}\n");
+            highlightLines.UnionWith(Enumerable.Range(row, smart.row - row));
         }
         public void ShowElementTree(XElement root, XElement focused, HashSet<XElement> expanded = null, HashSet<XElement> semiexpanded = null, HashSet<XElement> collapsed = null) {
             bool expandAll = expanded == null;
@@ -52,49 +56,51 @@ namespace Transgenesis {
                 const bool expandFocused = false;
                 var isFocused = (focused == element);
                 var expandedCheck = (expandAll || expanded.Contains(element) || (expandFocused && isFocused)) && (collapseNone || !collapsed.Contains(element));
-                string box =
+                var box =
                     !element.Nodes().Any() ?
                         noBox :
                     expandedCheck ?
                         expandedBox :
                     collapsedBox;
-                string tag = $"<{element.Tag()}";
+                box = isFocused ? RecHighlight(box) : RecBox(box);
+                var tagLeft = $"<{element.Tag()}";
                 //If we have no attributes, then do not pad any space for attributes
                 if (element.Attributes().Count() > 0) {
-                    tag = tag.PadRightTab();
+                    tagLeft = tagLeft.PadRightTab();
                 }
                 if (element.Nodes().Count() > 0) {
-                    Action<string> writeTag =
+                    Func<string, string> recTag =
                         isFocused ?
-                            AddLineHighlight :
-                            AddLine;
-                    var closingTag = $"</{element.Tag()}>";
+                            RecHighlight :
+                        RecTag;
+                    var closingTag = recTag($"</{element.Tag()}>");
                     if (expandedCheck) {
-                        string openingTag = $"{box}{Tab()}{tag}{ShowAllAttributes(element)}>";
+                        var openingTag = $"{box}{Tab()}{recTag($"{tagLeft}{ShowAllAttributes(element)}>")}";
                         if(element.Nodes().Count() == 1 && element.FirstNode is XText text) {
                             //To do: Generate an equivalent string of metadata objects
                             var t = text.Value.Replace("\t", "    ");
-                            writeTag($"{openingTag}{t}{(t.Contains("\n") ? $"\n\r{box}{Tab()}" : "")}{closingTag}");
+                            AddLine($"{openingTag}{t}{(t.Contains("\n") ? $"\n\r{box}{Tab()}" : "")}{closingTag}");
                             var line = new List<UIData>();
                             line.AddRepeat(null, box.Length);
                         } else {
                             //show all attributes and children
-                            writeTag($"{openingTag}");
+                            AddLine($"{openingTag}");
                             ShowChildren();
-                            writeTag($"{box}{Tab()}</{element.Tag()}>");
+                            AddLine($"{box}{Tab()}{closingTag}");
                         }
                     } else {
                         //show only the important attributes and (semi)expanded children
-                        var openingTag = $"{box}{Tab()}{tag}{ShowContextAttributes(element)}>";
+                        var openingTag = $"{box}{Tab()}{recTag($"{tagLeft}{ShowContextAttributes(element)}>")}";
                         if (!semiexpandAll && !element.Elements().Intersect(semiexpanded).Any()) {
                             //We have no important children to show, so just put our whole tag on one line
-                            writeTag($"{openingTag}...{closingTag}");
+                            AddLine($"{openingTag}{RecText("...")}{closingTag}");
                         } else {
                             //Show any important children and attributes
-                            writeTag($"{openingTag}");
+                            AddLine($"{openingTag}");
                             tabs++;
-                            int skipped = 0;
+                            var skipped = 0;
 
+                            var more = RecTag($"<{RecText("...")}/>");
                             foreach (var child in element.Nodes()) {
                                 if(child is XText t) {
                                     skipped++;
@@ -103,7 +109,7 @@ namespace Transgenesis {
                                         //Show that we have previous children not shown
                                         if (skipped > 0) {
                                             skipped = 0;
-                                            AddLine($"{noBox}{Tab()}<.../>");
+                                            AddLine($"{noBox}{Tab()}{more}");
                                         }
                                         ShowElementTree(e);
                                     } else {
@@ -113,7 +119,7 @@ namespace Transgenesis {
                             }
                             //Show that we have more children not shown
                             if (skipped > 0) {
-                                AddLine($"{noBox}{Tab()}<.../>");
+                                AddLine($"{noBox}{Tab()}{more}");
                             }
                             /*
                             if(element.Value.Length > 0) {
@@ -121,7 +127,7 @@ namespace Transgenesis {
                             }
                             */
                             tabs--;
-                            writeTag($"{box}{Tab()}{closingTag}");
+                            AddLine($"{box}{Tab()}{closingTag}");
                         }
                     }
                     return;
@@ -138,15 +144,15 @@ namespace Transgenesis {
                         tabs--;
                     }
                 } else {
-                    Action<string> writeTag =
+                    Func<string, string> recTag =
                         isFocused ?
-                            AddLineHighlight :
-                        AddLine;
-                    string att =
+                            RecHighlight :
+                        RecTag;
+                    var att =
                         expandedCheck ?
                             ShowAllAttributes(element) :
                             ShowContextAttributes(element);
-                    writeTag($"{box}{Tab()}{tag}{att}/>");
+                    AddLine($"{box}{Tab()}{recTag($"{tagLeft}{att}/>")}");
                     return;
                 }
             }
@@ -189,12 +195,12 @@ namespace Transgenesis {
         }
         string AttributesToString(Dictionary<string, string> attributes, bool inline, bool more) {
             if (attributes.Count == 0) {
-                return more ? " ..." : "";
+                return more ? RecText(" ...") : "";
             } else if (inline) {
-                StringBuilder result = new StringBuilder();
+                var result = new StringBuilder();
                 var first = attributes.Keys.First();
-                result.Append($@"{first}=""{attributes[first]}""");
-                foreach (string key in attributes.Keys.Skip(1)) {
+                result.Append(StrPair(first, attributes[first]));
+                foreach (var key in attributes.Keys.Skip(1)) {
                     result.Append(" ");
                     //Pad space between each attribute so that keys are aligned by tab
                     //We can't align perfectly since we don't know the global position of the string
@@ -207,27 +213,27 @@ namespace Transgenesis {
                         result.Append(new string(' ', aligned - result.Length));
                     }
                     */
-                    result.Append($@"{key}=""{attributes[key]}""");
+                    result.Append(StrPair(key, attributes[key]));
                 }
                 if (more) {
                     result.Append(" ");
-                    result.Append("...");
+                    result.Append(RecText("..."));
                 }
                 return result.ToString();
             } else {
                 var result = new StringBuilder();
                 var first = attributes.Keys.First();
-                result.AppendLine($@"{first}=""{attributes[first]}""");
+                result.AppendLine($"{StrPair(first, attributes[first])}");
                 tabs += 2;
 
-                int interval = 8;
+                //int interval = 8;
                 //int padding = (1 + attributes.Keys.Select(k => k.Length).Max() / interval) * interval;
-                foreach (string key in attributes.Keys.Skip(1)) {
-                    int padding = (1 + key.Length / interval) * interval;
-                    result.AppendLine($@"{noBox}{Tab()}{$"{key}=".PadRight(padding)}""{attributes[key]}""");
+                foreach (var key in attributes.Keys.Skip(1)) {
+                    //int padding = (1 + key.Length / interval) * interval;
+                    result.AppendLine($@"{noBox}{Tab()}{StrPair(key, attributes[key])}");
                 }
                 if (more) {
-                    result.AppendLine($"{noBox}{Tab()}...");
+                    result.AppendLine($"{noBox}{Tab()}{RecText("...")}");
                 }
                 result.Append($"{noBox}{Tab()}");
                 tabs--;
@@ -235,97 +241,9 @@ namespace Transgenesis {
                 return result.ToString();
             }
         }
+        public string StrPair(string key, string val, int padding = 0) => $"{RecAtt($"{key}=".PadRight(padding))}{RecQuotes($"\"{val}\"")}";
 
-        public void SyntaxHighlight() {
-            Stack<Syntax> type = new Stack<Syntax>();
-            type.Push(Syntax.Space);
-            foreach (var line in buffer) {
-                foreach (var glyph in line) {
-                    switch (glyph.GlyphCharacter) {
-                        case ';' when type.Peek() == Syntax.Entity:
-                            glyph.Foreground = SyntaxColors.std.entity;
-                            type.Pop();
-                            break;
-                        case '"':
-                            if (type.Peek() == Syntax.Quotes) {
-                                type.Pop();
-                            } else {
-                                type.Push(Syntax.Quotes);
-                            }
-                            glyph.Foreground = SyntaxColors.std.quotes;
-                            break;
-                        case '=' when type.Peek() == Syntax.Attribute:
-                            glyph.Foreground = SyntaxColors.std.attribute;
-                            type.Pop();
-                            break;
-                        case '+' when type.Peek() != Syntax.Quotes:
-                        case '-' when type.Peek() != Syntax.Quotes:
-                        case '.' when type.Peek() != Syntax.Quotes:
-                            break;
-                        case '<':
-                            if (type.Peek() != Syntax.Tag) {
-                                type.Push(Syntax.Tag);
-                                if (glyph.Foreground != c.theme.highlight) {
-                                    glyph.Foreground = SyntaxColors.std.tag;
-                                }
-                            }
-                            break;
-                        case '/' when type.Peek() == Syntax.Tag:
-                            if (glyph.Foreground != c.theme.highlight) {
-                                glyph.Foreground = SyntaxColors.std.tag;
-                            }
-                            break;
-                        case '/' when type.Peek() == Syntax.Attribute:
-                            type.Pop();
-                            if (glyph.Foreground != c.theme.highlight) {
-                                glyph.Foreground = SyntaxColors.std.tag;
-                            }
-                            break;
-                        case '>' when type.Peek() == Syntax.Tag:
-                            type.Pop();
-                            if (glyph.Foreground != c.theme.highlight) {
-                                glyph.Foreground = SyntaxColors.std.tag;
-                            }
-                            break;
-                        case '>' when type.Peek() == Syntax.Attribute:
-                            type.Pop();
-                            if (glyph.Foreground != c.theme.highlight) {
-                                glyph.Foreground = SyntaxColors.std.tag;
-                            }
-                            break;
-                        case '&':
-                            type.Push(Syntax.Entity);
-                            glyph.Foreground = SyntaxColors.std.entity;
-                            break;
-                        case var c when char.IsWhiteSpace(c) && type.Peek() == Syntax.Tag:
-                            type.Push(Syntax.Attribute);
-                            break;
-                        case var c when char.IsWhiteSpace(c) && type.Peek() == Syntax.Attribute:
-                            //type.Pop();
-                            break;
-                        default:
-                            switch (type.Peek()) {
-                                case Syntax.Tag:
-                                    if (glyph.Foreground != c.theme.highlight) {
-                                        glyph.Foreground = SyntaxColors.std.tag;
-                                    }
-                                    break;
-                                case Syntax.Attribute:
-                                    glyph.Foreground = SyntaxColors.std.attribute;
-                                    break;
-                                case Syntax.Entity:
-                                    glyph.Foreground = SyntaxColors.std.entity;
-                                    break;
-                                case Syntax.Quotes:
-                                    glyph.Foreground = SyntaxColors.std.quotes;
-                                    break;
-                            }
-                            break;
-                    }
-                }
-            }
-        }
-
+        public string RecHighlight(string text) => Recolor("LimeGreen", text);
         public string RecBox(string text) => Recolor("White", text);
         public string RecAtt(string text) => Recolor("Salmon", text);
         public string RecText(string text) => Recolor("White", text);
