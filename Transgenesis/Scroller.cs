@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace Transgenesis {
     class Scroller {
         public int scrolling = 0;
-        public int screenRows = 36;
+        public int screenRows = 48;
         Input i;
         ConsoleManager c;
 
@@ -38,7 +38,7 @@ namespace Transgenesis {
         public void Draw(List<ColoredString> buffer) => Draw(buffer, screenRows);
         public void Draw(List<ColoredString> buffer, int screenRows) {
             scrolling = Math.Max(0, Math.Min(scrolling, buffer.Count - screenRows));
-            c.margin = new Point(0, 0);
+            c.margin = new Point(0, 1);
             c.SetCursor(c.margin);
             var count = Math.Min(screenRows, buffer.Count);
             var lines = buffer.GetRange(scrolling, count);

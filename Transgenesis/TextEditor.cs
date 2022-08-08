@@ -8,8 +8,9 @@ using System.Threading.Tasks;
 using static SadConsole.ColoredString;
 
 namespace Transgenesis {
-    class TextEditor : IComponent {
-        Stack<IComponent> screens;
+    class TextEditor : IScreen {
+        public string name => $"Text";
+        Stack<IScreen> screens;
         ConsoleManager c;
         Scroller scroller;
         StringBuilder s;
@@ -19,7 +20,7 @@ namespace Transgenesis {
         Action<string> OnClosed;
         public string Text => s.ToString();
 
-        public TextEditor(Stack<IComponent> screens, ConsoleManager c, string Text = "", Action<string> OnClosed = null) {
+        public TextEditor(Stack<IScreen> screens, ConsoleManager c, string Text = "", Action<string> OnClosed = null) {
             this.screens = screens;
             this.c = c;
             this.scroller = new(c);

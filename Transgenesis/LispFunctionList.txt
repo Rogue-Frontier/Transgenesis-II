@@ -1,0 +1,566 @@
+﻿(!= x1 x2 ... xn) -> True if any arguments are not equal
+(* x1 x2 ... xn) -> z
+(+ x1 [x2 ... xn]) -> sum (int32 or real)
+(- x) -> -x
+(/ x y) -> x / y (real)
+(< [x1 x2 ... xn]) -> True if x1 < x2 < ... < xn
+(<= [x1 x2 ... xn]) -> True if x1 <= x2 <= ... <= xn
+(= [x1 x2 ... xn]) -> True if all arguments are equal
+(> [x1 x2 ... xn]) -> True if x1 > x2 > ... > xn
+(>= [x1 x2 ... xn]) -> True if x1 >= x2 >= ... >= xn
+(@ struct key) -> value corresponding to key from struct
+(abs x) -> absolute value (int32 or real)
+(acos x ['degrees]) -> inverse cosine (real)
+(add x1 [x2 ... xn]) -> sum (after converting arguments to int32)
+(and [exp1 exp2 ... expn]) -> True/Nil
+(append [list1 list2 ...]) -> concatenated list
+(apply function [arg1 arg2 ... argn] argList) -> Result of function with arguments arg1... followed by contents of argList
+(armGetRepairCost type) -> Cost to repair 1 hit point
+(armGetRepairTech type) -> Tech level required to repair
+(asin x ['degrees]) -> inverse sine (real)
+(atan y [x] ['degrees]) -> inverse tangent (real)
+(block [localsList exp1 exp2 ... expn]) -> value of expn
+(cat [string1 string2 ... stringn]) -> concatenated string
+(ceil x) -> x rounded up, i.e. towards positive infinity (real)
+(convertTo dataType value) -> result
+(cos x ['degrees]) -> cosine (real)
+(count list|string|struct) -> number of items or characters
+(dbgBreak)
+(dbgClear)
+(dbgGet property) -> value
+(dbgGetPerformance) -> list of performance entries
+(dbgIsActive) -> True if in debug mode, else Nil
+(dbgLog [string]*) -> True if in debug mode, else Nil
+(dbgOutput [string]*) -> True if in debug mode, else Nil
+(dbgSet property value) -> True/Nil
+(dbgSetPerformanceCounter "?") -> List of counters
+(diagSetPlayerShip obj) -> True/error
+(diagSetSystem nodeID) -> True/error
+(diagUpdateSystem [updates]) -> True/error
+(divide x y) -> x / y after converting arguments to int32, rounded toward 0
+(double x) -> x as a double
+(ecoExchange amount fromCurrency toCurrency) -> amount
+(enum list itemVar exp) -> value
+(enumWhile list condition itemVar exp) -> value
+(eq [x1 x2 ... xn]) -> True if all arguments are equal
+(errBlock localsList [exp1 exp2 ... expn] expErr) -> value of expn or expErr if error occurs
+(error msg) -> error
+(eval exp) -> result
+(exp x) -> e^x (real)
+(filter list var boolean-exp) -> filtered list
+(find source-list target ['ascending|'descending] [keyIndex]) -> position of target in source-list (0-based)
+(floor x) -> x rounded down, i.e. towards negative infinity (real)
+(fmtCompose text [data]) -> string
+(fmtCurrency currency [amount]) -> string
+(fmtNoun namePattern [nameFlags] count formatFlags) -> string
+(fmtNumber [type] value) -> string
+(fmtPower powerInKWs) -> string
+(fmtVerb verb pluralize) -> string
+(fncHelp symbol) -> help on function symbol (works on deprecated functions)
+(for var from to exp) -> value of last expression
+(geq [x1 x2 ... xn]) -> True if x1 >= x2 >= ... >= xn
+(getAPIVersion) -> version
+(gr [x1 x2 ... xn]) -> True if x1 > x2 > ... > xn
+(help 'function-name) -> help on function-name
+(hex hex-string) -> value
+(if condition exp1 [exp2]) -> exp1 if condition True, otherwise exp2
+(int x) -> x as an integer
+(isAtom exp) -> True if exp is not a list
+(isError exp) -> True if exp is an error
+(isFunction exp) -> True if exp is a function
+(isInt exp) -> True if exp is an integer
+(isPrimitive exp) -> True if exp is a primitive
+(itm@ item|type property) -> value
+(itmCreate itemUNID count) -> item
+(itmCreateByName criteria name [count]) -> item
+(itmCreateRandom criteria levelDistribution) -> item
+(itmEnumTypes criteria item-var exp) -> value of last expression
+(itmFireEvent item|type event [data]) -> result of event
+(itmGetActualPrice item|type) -> actual price of a single item
+(itmGetArmorInstalledLocation item) -> segment #
+(itmGetArmorType item) -> type
+(itmGetAverageAppearing item|type) -> average number that appear randomly
+(itmGetCategory item|type) -> item category
+(itmGetCount item) -> count of items
+(itmGetDamageType item|type) -> damage type
+(itmGetData item attrib) -> data
+(itmGetFrequency item|type [level]) -> frequency
+(itmGetImageDesc item|type) -> imageDesc
+(itmGetInstallCost item|type [currency]) -> cost
+(itmGetInstallPos item) -> installPos
+(itmGetLevel item|type) -> level
+(itmGetMass item|type) -> mass of single item in kg
+(itmGetMaxAppearing item|type) -> max number that appear randomly
+(itmGetName item|type [flags]) -> name of item
+(itmGetPrice item|type [currency]) -> price of a single item
+(itmGetStaticData item attrib) -> data
+(itmGetType item) -> itemUNID
+(itmGetTypeData item|type attrib) -> data
+(itmGetTypes criteria) -> list of itemUNIDs
+(itmGetUseScreen item|type) -> screenUNID
+(itmHasAttribute item|type attrib) -> True/Nil
+(itmHasReference item|type) -> True/Nil
+(itmIsEnhanced item) -> Nil or mods
+(itmIsEqual item1 item2 [options]) -> True/Nil
+(itmIsInstalled item) -> True/Nil
+(itmIsKnown item|type) -> True/Nil
+(itmMatches item|type criteria) -> True/Nil
+(itmSet@ item property value) -> item
+(itmSetCount item count) -> item
+(itmSetData item attrib data [count]) -> item
+(itmSetEnhanced item mods) -> item
+(itmSetKnown type|item [True/Nil]) -> True/Nil
+(itmSetReference item) -> True/Nil
+(itmSetTypeData item attrib data) -> True/Nil
+(join list 'oxfordComma) -> 'a' ; 'a and b' ; 'a, b, and c' ; etc.
+(lambda args-list exp) -> lambda function
+(leq [x1 x2 ... xn]) -> True if x1 <= x2 <= ... <= xn
+(list [i1 i2 ... in]) -> list
+(lnkAppend list item) -> Modifies list by appending item to the end and returns the result.
+(lnkRemove list index) -> Modifies list by removing the specified item (0-based) and returns the result.
+(lnkRemoveNil list) -> Modifies list by removing all Nil items and returns the result.
+(lnkReplace list index item) -> list
+(log x [base]) -> Logarithm of x (real). Base defaults to e.
+(lookup source target ['ascending|'descending] [keyIndex]) -> Like find, but returns the matching item rather than the index.
+(ls [x1 x2 ... xn]) -> True if x1 < x2 < ... < xn
+(make 'sequence start end [inc]) -> list from start to end, incrementing by inc
+(map list ['excludeNil|'original|'reduceMax|'reduceMin|'reduceAverage|'reduceSum] var exp) -> list
+(match list var boolean-exp) -> first item that matches
+(max x1 x2 ... xn) -> z
+(min x1 x2 ... xn) -> z
+(mod ['degrees] x y) -> z
+(modulo ['degrees] x y) -> z
+(msn@ missionObj property) -> value
+(msnAccept missionObj) -> True/Nil
+(msnAddRecurringTimerEvent missionObj interval event [options])
+(msnAddTimerEvent missionObj delay event [options])
+(msnCanCreate unid [owner [data|options]]) -> True|Nil
+(msnCancelTimerEvent missionObj event) -> True/Nil
+(msnCreate unid-list owner [data]) -> missionObj|Nil
+(msnDecline missionObj)
+(msnDestroy missionObj) -> True/Nil
+(msnFailure missionObj [data]) -> True/Nil
+(msnFind [source] criteria) -> list of missionObjs
+(msnFireEvent missionObj event [data]) -> result of event
+(msnGetData missionObj attrib) -> data
+(msnGetObjRefData missionObj attrib) -> obj
+(msnGetStaticData missionObj attrib) -> data
+(msnGetTypeData missionObj attrib) -> data
+(msnInc@ obj property [increment]) -> new value
+(msnIncData missionObj attrib [increment]) -> new value
+(msnRefreshSummary missionObj)
+(msnRegisterForEvents missionObj obj|obj-list)
+(msnReward missionObj [data])
+(msnSet@ obj property value) -> True/Nil
+(msnSetData missionObj attrib data)
+(msnSetObjRefData missionObj attrib obj)
+(msnSetPlayerTarget missionObj)
+(msnSetTypeData missionObj attrib data)
+(msnSetUnavailable missionObj)
+(msnSuccess missionObj [data]) -> True/Nil
+(msnTranslate missionObj textID [data] [default]) -> text (or Nil)
+(multiply x1 x2 ... xn) -> z
+(neq x1 x2 ... xn) -> True if any arguments are not equal
+(not exp) -> True/Nil
+(obj@ obj property) -> value
+(objAccelerate obj angle thrust [ticks]) -> velVector
+(objAddBuyOrder obj criteria priceAdj) -> True/Nil
+(objAddConnection obj1 connectType obj2 [options]) -> connectionID
+(objAddItem obj item|type [count]) -> item
+(objAddOverlay obj overlayType pos rotation lifetime [posZ]) -> overlayID
+(objAddRandomItems obj table count) -> True/Nil
+(objAddSellOrder obj criteria priceAdj) -> True/Nil
+(objAddSubordinate obj subordinate) -> True/Nil
+(objAddTradeOrder obj service criteria priceAdj) -> True/Nil
+(objApplyCondition obj condition [options]) -> result
+(objCalcBestTarget obj [objList]) -> targetObj (or Nil)
+(objCanApplyCondition obj condition [options]) -> result
+(objCanAttack obj) -> True/Nil
+(objCanDestroyTarget obj target) -> True/Nil
+(objCanDetectTarget obj target) -> True/Nil
+(objCanEnhanceItem obj item enhancementType|item) -> result
+(objCanHitTarget obj target) -> True/Nil
+(objCanInstallItem obj item [armorSeg|deviceSlot]) -> (True/Nil resultCode resultString [itemToReplace])
+(objCanRemoveCondition obj condition [options]) -> result
+(objChangeEquipmentStatus obj equipment command [duration] [options]) -> True/Nil
+(objCharge obj [currency] amount) -> remaining balance
+(objClearIdentified obj) -> True/Nil
+(objClearShowAsDestination obj) -> True/Nil
+(objCommunicate obj senderObj msg [obj] [data]) -> result
+(objCreateReflection missile [pos] [angle]) -> reflection
+(objCredit obj [currency] amount) -> new balance
+(objDamage obj weaponType objSource [pos] [options]) -> result
+(objDepleteShields obj) -> True/Nil
+(objDestroy obj [objSource]) -> True/Nil
+(objEnhanceItem obj item enhancementType|item|enhancementDesc) -> result
+(objEnumItems obj criteria itemVar exp) -> value
+(objFireEvent obj event [data]) -> result of event
+(objFireItemEvent obj item event [data]) -> result of event
+(objFireItemInvoke obj item) -> True/Nil
+(objFireOverlayEvent obj overlayID event [data]) -> result of event
+(objFirePowerInvoke obj power [target] ['noInvokeCheck]) -> result of event
+(objFireWeapon obj weapon target [fireDelay] [checkFireDelay]) -> True/Nil
+(objGateTo obj node entrypoint [effectID]) -> True/Nil
+(objGetArmorCriticality obj item|armorSegment) -> criticalityType
+(objGetArmorDamage obj item|armorSegment) -> damage to armor segment
+(objGetArmorLevel obj item|armorSegment) -> 0-100%
+(objGetArmorName obj item|armorSegment) -> name of armor (e.g., 'forward', etc.)
+(objGetArmorRepairPrice obj [shipObj] armorItem hpToRepair) -> price (at which obj repairs)
+(objGetArmorReplacePrice obj armorItem) -> price
+(objGetArmorType obj item|armorSegment) -> type
+(objGetBalance obj [currency]) -> balance
+(objGetBuyPrice obj item [options]) -> price (at which obj buys item)
+(objGetCargoSpaceLeft obj) -> space left in kg
+(objGetCharacterData obj attrib) -> data
+(objGetCombatPower obj) -> 0-100
+(objGetCondition obj [condition]) -> True/Nil
+(objGetDamageType obj) -> damage type
+(objGetData obj attrib) -> data
+(objGetDataField obj field) -> data
+(objGetDetectRange obj targetObj) -> range in light-seconds
+(objGetDisposition obj targetObj) -> disposition of obj towards targetObj
+(objGetDistance obj destObj) -> distance in light-seconds
+(objGetEquipmentStatus obj equipment) -> status
+(objGetEventHandler obj) -> unid or Nil
+(objGetID obj) -> objID
+(objGetImageDesc obj) -> imageDesc
+(objGetInstalledItemDesc obj item) -> 'installed as forward armor'
+(objGetItems obj criteria) -> list of items
+(objGetLevel obj) -> level
+(objGetMass obj) -> mass in tons
+(objGetMaxPower obj) -> power (in 1/10 MWs)
+(objGetName obj [flags]) -> Name of the object
+(objGetNamedItems obj name) -> list of items
+(objGetNearestStargate obj) -> obj
+(objGetObjByID objID) -> obj
+(objGetObjRefData obj attrib) -> obj
+(objGetOpenDockingPortCount obj) -> count of open docking ports
+(objGetOrderGiver obj [destroyReason]) -> obj
+(objGetOverlayData obj overlayID attrib) -> data
+(objGetOverlayPos obj overlayID) -> vector
+(objGetOverlayRotation obj overlayID) -> rotation
+(objGetOverlayType obj overlayID) -> type
+(objGetOverlays obj [criteria|overlayType]) -> list of overlayIDs
+(objGetPlayerPriceAdj obj [data]) -> priceAdj (or Nil if no adj)
+(objGetPos obj) -> vector
+(objGetRefuelItemAndPrice obj objToRefuel) -> (item price)
+(objGetRemoveConditionPrice obj shipObj condition) -> price (at which obj restores ship)
+(objGetSellPrice obj item [options]) -> price (at which obj sells item)
+(objGetShieldLevel obj) -> 0-100% (or -1 for no shields)
+(objGetShipBuyPrice obj shipObj) -> price (at which obj buys ship)
+(objGetShipSellPrice obj shipObj) -> price (at which obj sells ship)
+(objGetShipwreckType obj) -> unid
+(objGetStargateID obj) -> gateID
+(objGetStaticData obj attrib) -> data
+(objGetTarget obj) -> obj
+(objGetType obj) -> unid
+(objGetTypeData obj attrib) -> data
+(objGetVel obj) -> velVector
+(objHasAttribute obj attrib) -> True/Nil
+(objHasItem obj item [count] [options]) -> number of items (or Nil)
+(objHasTradeService obj service [options]) -> True/Nil
+(objInc@ obj item property [increment]) -> item
+(objIncData obj attrib [increment]) -> new value
+(objIncOverlayData obj overlayID attrib [increment]) -> new value
+(objIncVel obj velVector) -> velVector
+(objIsAngryAt obj targetObj) -> True/Nil
+(objIsDeviceSlotAvailable ship) -> True/Nil
+(objIsDockedAt obj stationObj) -> True/Nil
+(objIsEnemy obj target) -> True/Nil
+(objIsIdentified obj) -> True/Nil
+(objIsKnown obj) -> True/Nil
+(objIsParalyzed obj) -> True/Nil
+(objIsRadioactive obj) -> True/Nil
+(objIsShip obj) -> True/Nil
+(objJumpTo obj pos) -> True/Nil
+(objLowerShields obj) -> True/Nil
+(objMatches obj source filter) -> True/Nil
+(objProgramDamage obj hacker progName aiLevel code) -> True/Nil
+(objRecordBuyItem buyerObj sellerObj item [currency] price) -> True/Nil
+(objRegisterForEvents target obj|obj-list) -> True/Nil
+(objRegisterForSystemEvents target range) -> True/Nil
+(objRemoveCondition obj condition [options]) -> result
+(objRemoveItem obj item [count] [options]) -> True/Nil
+(objRemoveItemEnhancement obj item enhancementID) -> True/Nil
+(objRemoveOverlay obj overlayID) -> True/Nil
+(objRepairArmor ship item|armorSegment [hpToRepair]) -> hp repaired
+(objResume obj [gateObj]) -> True/Nil
+(objSendMessage obj sender text) -> True/Nil
+(objSendMessageTranslate obj sender textID [data]) -> True/Nil
+(objSet@ obj property value) -> True/Nil
+(objSetCharacterData obj attrib data) -> True/Nil
+(objSetData obj attrib data) -> True/Nil
+(objSetDeviceActivationDelay obj deviceItem [delay]) -> True/Nil
+(objSetEventHandler obj unid) -> True/Nil
+(objSetIdentified obj) -> True/Nil
+(objSetItemData obj item attrib data [count]) -> item
+(objSetKnown obj) -> True/Nil
+(objSetName obj name [flags]) -> True/Nil
+(objSetObjRefData obj attrib obj) -> True/Nil
+(objSetOverlayData obj overlayID attrib data)
+(objSetOverlayEffectProperty obj overlayID property value)
+(objSetOverlayPos obj overlayID pos)
+(objSetOverlayRotation obj overlayID rotation)
+(objSetPos obj vector [rotation])
+(objSetShowAsDestination obj [options]) -> True/Nil
+(objSetTradeDesc obj currency [maxCurrency replenishCurrency]) -> True/Nil
+(objSetTypeData obj attrib data)
+(objSetVel obj velVector)
+(objSquadronComms obj receiver msgID [options]) -> Result
+(objSquadronCommsMessages obj receiver) -> List of msgIDs
+(objSuspend obj)
+(objTranslate obj textID [data] [default]) -> text (or Nil)
+(objUnregisterForEvents target obj)
+(objUnregisterForSystemEvents target)
+(or exp1 exp2 ... expn) -> True/Nil
+(ovr@ obj overlayID property) -> value
+(ovrInc@ obj overlayID property [increment]) -> new value
+(ovrSet@ obj overlayID property value)
+(pow x y) -> z
+(power x y) -> z
+(print [string]*) -> True
+(printTo output [string]*) -> True
+(quote exp) -> unevaluated exp
+(random) -> random number between 0 and 1
+(randomGaussian low mid high) -> random number between low and high
+(randomTable chance1 exp1 chance2 exp2 ... chancen expn) -> exp
+(regex source pattern ['offset|'subex]) -> result
+(resColorBlend rgbDest rgbSource srcOpacity) -> rgbColor
+(resCreateImageDesc imageUNID x y width height) -> imageDesc
+(resGetImageProperty imageDesc property) -> value
+(rollChance percentChance [rolls]) -> True/Nil
+(rollDice count sides [bonus]) -> value
+(round ['stochastic] x) -> y
+(seededRandom seed list)
+(set string value) -> value
+(set@ struct-var struct) -> merged structs
+(setq variable value)
+(shpCanRemoveDevice ship item) -> resultCode
+(shpCancelOrder ship [orderIndex]) -> True/Nil
+(shpCancelOrders ship) -> True/Nil
+(shpConsumeFuel ship fuel [useType]) -> fuelLeft
+(shpDamageArmor ship armorSegment damageType damage ['noSRSFlash]) -> damage done
+(shpEnhanceItem ship item [mods|options]) -> True/Nil
+(shpGetAISetting ship setting)
+(shpGetArmor ship armorSegment) -> item struct
+(shpGetArmorCount ship) -> number of armor segments
+(shpGetArmorMaxHitPoints obj item|armorSegment) -> damage to armor segment
+(shpGetClassName class flags) -> class name
+(shpGetDirection ship) -> angle
+(shpGetDockObj ship) -> dockObj
+(shpGetFuelLeft ship) -> fuel left
+(shpGetFuelNeeded ship item) -> items needed
+(shpGetImageDesc class [options|rotationAngle]) -> imageDesc
+(shpGetItemDeviceName ship item) -> device name of item (or -1)
+(shpGetMaxSpeed ship) -> max speed in % of lightspeed
+(shpGetOrder obj) -> order
+(shpGetOrderCount obj) -> count
+(shpGetOrderDesc obj [orderIndex]) -> orderDesc
+(shpGetOrderTarget obj) -> obj
+(shpGetShieldDamage ship) -> damage to shields
+(shpGetShieldItemUNID ship) -> UNID (or Nil)
+(shpGetShieldMaxHitPoints ship) -> max hp of shields
+(shpInstallArmor ship item armorSegment) -> itemStruct (or Nil)
+(shpInstallDevice ship item [deviceSlot]) -> itemStruct (or Nil)
+(shpIsBlind ship) -> True/Nil
+(shpIsFuelCompatible ship item) -> True/Nil
+(shpIsRadiationImmune ship [item])
+(shpOrder ship order [target] [count]) -> True/Nil
+(shpOrderImmediate ship order [target] [count]) -> True/Nil
+(shpRechargeShield ship [hpToRecharge]) -> shield hp
+(shpRefuelFromItem ship item) -> True/Nil
+(shpRemoveDevice ship item) -> item
+(shpRepairItem ship item) -> True/Nil
+(shpSetAISetting ship setting value)
+(shpSetCommandCode ship code) -> True/Nil
+(shpSetController ship controller) -> True/Nil
+(shuffle list) -> shuffled list
+(sin x ['degrees]) -> z
+(sort list-of-structs ['ascending|'descending] [field to sort on]) -> sorted list
+(sovGetDisposition sovereignID targetSovereignID) -> disposition of sovereign to target
+(sovGetName sovereignID [flags]) -> name
+(sovMessage sovereignID text) -> True/Nil
+(sovMessageFromObj sovereignID obj text) -> True/Nil
+(sovSetDisposition sovereignID targetSovereignID disposition)
+(split string [characters]) -> list
+(sqrt x) -> integer z
+(sqrtn x) -> real z
+(staAbandon obj [objSource]) -> True/Nil
+(staClearFireReconEvent station)
+(staClearReconned station)
+(staGetDockedShips station) -> list of docked ships
+(staGetImageVariant station) -> variant
+(staGetSubordinates station) -> list of subordinates (e.g., guardians)
+(staIsEncountered type) -> True/Nil
+(staIsReconned station) -> True/Nil
+(staSetActive station [True/Nil])
+(staSetFireReconEvent station)
+(staSetImageVariant station variant)
+(staSetShowMapLabel station True/Nil)
+(strCapitalize string) -> string
+(strFind string target) -> pos of target in string (0-based)
+(struct struct1 [struct2 ...]) -> struct
+(structAppend struct1 [struct2 ...]) -> struct
+(subset string pos [count]) -> string
+(subst string arg1 arg2 ... argn) -> string
+(subtract x1 x2 ... xn) -> z
+(switch [cond1 exp1 ... condn expn] [defaultexp]) -> value
+(sys@ [nodeID] property) -> value
+(sysAddEncounterEvent delay target encounterID gateObj|pos)
+(sysAddEncounterEventAtDist delay target encounterID distance)
+(sysAddObjRecurringTimerEvent interval obj event)
+(sysAddObjTimerEvent delay obj event)
+(sysAddStargateTopology [nodeID] gateID destNodeID destGateID) -> True/Nil
+(sysAddTypeRangeEvent type event options)
+(sysAddTypeRecurringTimerEvent interval type event)
+(sysAddTypeTimerEvent delay type event)
+(sysAscendObject obj) -> True/Nil
+(sysCalcFireSolution targetPos targetVel speed) -> angle to shoot (Nil, if no solution)
+(sysCalcStdCombatStrength level) -> standard combat strength for level
+(sysCalcTravelDistance speed time) -> distance in light-seconds
+(sysCalcTravelTime distance speed) -> time in ticks
+(sysCancelTimerEvent obj event) -> True/Nil
+(sysCancelTypeTimerEvent type event) -> True/Nil
+(sysCreateEffect effectID anchorObj pos [rotation] [params]) -> obj or Nil
+(sysCreateEncounter unid [options]) -> True/Nil
+(sysCreateFlotsam item|unid pos sovereignID) -> obj
+(sysCreateHitEffect weaponUNID hitObj hitPos hitDir damageHP) -> True/Nil
+(sysCreateLookup tableName orbit) -> True/Nil
+(sysCreateMarker name pos sovereignID|options) -> marker
+(sysCreateShip unid pos sovereignID [options|eventHandler|controller]) -> ship or list
+(sysCreateShipwreck unid pos sovereignID) -> shipwreck
+(sysCreateStargate unid pos gateID [destNodeID destGateID]) -> obj
+(sysCreateStation unid pos [eventHandler]) -> obj
+(sysCreateTerritory orbit minRadius maxRadius attributes [criteria]) -> True/Nil
+(sysCreateWeaponFire weaponID objSource pos dir speed objTarget [options] [bonus%]) -> obj
+(sysDescendObject objID pos) -> obj
+(sysFindObject source criteria) -> list of objects
+(sysFindObjectAtPos source criteria pos [destPos]) -> list of objects
+(sysGetAscendedObjects) -> list of objects
+(sysGetData [nodeID] attrib) -> data
+(sysGetEnvironment pos) -> environmentUNID
+(sysGetItemBuyPrice [nodeID] item [typeCriteria]) -> price (or Nil)
+(sysGetItemFrequency [nodeID] item) -> frequencyRate
+(sysGetLevel [nodeID]) -> level
+(sysGetLightIntensity pos) -> intensity (0-100)
+(sysGetLocations) -> list of locations
+(sysGetName [nodeID]) -> name
+(sysGetNavPathPoint sovereignID objFrom objTo %path) -> vector
+(sysGetNextNodeTo [fromNodeID] toNodeID) -> nodeID
+(sysGetNode) -> nodeID
+(sysGetNodes [criteria|options]) -> list of nodeIDs
+(sysGetObjectByName [source] name) -> obj
+(sysGetPOV) -> obj
+(sysGetRandomLocation criteria [options]) -> location or Nil
+(sysGetStargateDestination [nodeID] gateID) -> (nodeID gateID)
+(sysGetStargateDestinationNode [nodeID] gateID) -> nodeID
+(sysGetStargateProperty [nodeID] gateID property) -> value
+(sysGetStargates [nodeID]) -> list of gateIDs
+(sysGetSystemType [nodeID]) -> systemUNID
+(sysGetTopologyDistance fromID [toID]) -> distance (or Nil)
+(sysGetTopologyDistanceToCriteria [fromID] criteria) -> distance (or Nil)
+(sysGlobals) -> list of global symbols
+(sysHasAttribute [nodeID] attrib) -> True/Nil
+(sysHitScan source startPos endPos [options]) -> (obj hitPos) or Nil
+(sysHitTest source pos [options]) -> obj or Nil
+(sysIncData [nodeID] attrib increment) -> new value
+(sysIsKnown [nodeID]) -> True/Nil
+(sysMatches [nodeID] criteria) -> True/Nil
+(sysOrbit center radius angle [eccentricity rotation]) -> orbit
+(sysOrbitPos orbit [options]) -> vector
+(sysPlaySound unid [sourceObj]) -> True/Nil
+(sysPoolUsage) -> list of resource usage
+(sysSelfTest) -> True/Nil
+(sysSet@ [nodeID] property value) -> True/Nil
+(sysSetData [nodeID] attrib data) -> data
+(sysSetEnvironment unid shape options) -> True/Nil
+(sysSetKnown [nodeID] [True/Nil]) -> True/Nil
+(sysSetPOV obj|vector) -> True/Nil
+(sysStartTime) -> True/Nil
+(sysStopTime targetList duration) -> True/Nil
+(sysTicks) -> int
+(sysVectorAdd vector vector) -> vector
+(sysVectorAngle pos1 pos2) -> angle of pos1 relative to pos2
+(sysVectorDistance vector [vector]) -> distance in light-seconds (int32)
+(sysVectorDistanceExact vector [vector]) -> distance in light-seconds or speed as a fraction of c (real)
+(sysVectorDivide vector scalar) -> vector
+(sysVectorInPolygon vector list-of-points) -> True/Nil
+(sysVectorMultiply vector scalar) -> vector
+(sysVectorPixelOffset center x y) -> vector
+(sysVectorPolarOffset center angle radius) -> vector
+(sysVectorPolarVelocity angle speed) -> velVector
+(sysVectorRandom center radius minSeparation [filter]) -> vector
+(sysVectorSpeed velVector) -> % of light speed
+(sysVectorSubtract vector vector) -> vector
+(tan x ['degrees]) -> z
+(tseAffinityCriteria criteria attribs [freq]) -> result
+(tseParseIntegerRange criteria) -> result
+(tsePattern pattern ...) -> string
+(tsePerceptionRange perception stealth) -> range (light-seconds)
+(tseRegenDesc regen [ticksPerCycle]) -> desc of hp to regen
+(tseRotationAngleFromFrameVar frameCount frameVar) -> angle
+(tseRotationFrameIndex frameCount angle) -> frameVar
+(tseRotationTest frameCount maxRotationSpeed accel accelStop) -> test output
+(typ@ unid property) -> value
+(typAddRecurringTimerEvent unid interval event)
+(typAddTimerEvent unid delay event)
+(typCancelTimerEvent unid event) -> True/Nil
+(typCreate unid XML) -> True/Nil
+(typDynamicUNID uniqueName) -> UNID
+(typFind criteria) -> list of UNIDs
+(typFireEvent unid event [data]) -> result of event
+(typFireObjEvent unid obj event [data]) -> result of event
+(typFireObjItemEvent unid obj item event [data]) -> result of event
+(typGetData unid attrib) -> data
+(typGetDataField unid field) -> data
+(typGetImageDesc unid [options]) -> imageDesc
+(typGetName unid [flags]) -> name
+(typGetStaticData unid attrib) -> data
+(typGetXML unid) -> xmlElement
+(typHasAttribute unid attrib) -> True/Nil
+(typHasEvent unid event) -> True/Nil
+(typHasProperty unid property) -> propertyType|Nil
+(typInc@ unid property [increment]) -> True/Nil
+(typIncData unid attrib [increment]) -> new value
+(typMarkImages unid) -> True/Nil
+(typMatches unid criteria) -> True/Nil
+(typSet@ unid property data) -> True/Nil
+(typSetData unid attrib data) -> True/Nil
+(typTranslate unid textID [data] [default]) -> text (or Nil)
+(typeOf item) -> type
+(unv@ property)
+(unvEntity unid) -> entity
+(unvFindObject [nodeID] criteria) -> list of entries
+(unvGetCurrentExtensionUNID) -> UNID
+(unvGetElapsedGameTime [startTick] endTick format) -> result
+(unvGetExtensionData scope attrib) -> data
+(unvGetRealDate) -> (year month day) GMT
+(unvGetTick) -> time
+(unvSetAchievement id) -> True/Nil
+(unvSetExtensionData scope attrib data) -> True/Nil
+(unvSetObjectKnown [nodeID] criteria [True/Nil]) -> True/Nil
+(unvUNID string) -> (unid 'itemtype name) or (unid 'shipclass name)
+(v* scalar vec1) -> result of scalar multiplication of scalar and vec1
+(v+ vec1 vec2) -> result of vector addition of vec1 and vec2
+(v-> vec1 indexlist) -> get the elements of vec1 based on indexlist
+(v<- vec1 indexlist datalist) -> set the elements of vec1 with datalist based on the indices in indexlist
+(v= vec1 vec2) -> compare vec1 and vec2 for equality
+(vDot vec1 vec2) -> result of vector dot product of vec1 and vec2
+(vFilled scalar shapelist) -> vector filled with scalar's value
+(v^ vec1 vec2) -> result of element-wise multiplication of vec1 and vec2
+(vecCreate) -> empty vector
+(vector contentlist) -> vector form of contentlist
+(while condition exp) -> Evaluate exp until condition is Nil
+(xmlAppendSubElement xml xmlToAdd [index]) -> True/Nil
+(xmlAppendText xml text [index]) -> True/Nil
+(xmlCreate xml) -> xml
+(xmlDeleteSubElement xml index) -> True/Nil
+(xmlGetAttrib xml attrib) -> value
+(xmlGetAttribList xml) -> list of attribs
+(xmlGetSubElement xml tag|index) -> xml
+(xmlGetSubElementCount xml) -> number of sub-elements
+(xmlGetSubElementList xml [tag]) -> list of xml
+(xmlGetTag xml) -> tag
+(xmlGetText xml index) -> text (index should usually be 0, i.e. before the first subelement)
+(xmlSetAttrib xml attrib value) -> value
+(xmlSetText xml text [index]) -> True/Nil

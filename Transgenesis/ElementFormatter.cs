@@ -173,9 +173,9 @@ namespace Transgenesis {
 
         }
 
-        string Tab() => new string(' ', tabs * 4);
+        string Tab() => new(' ', tabs * 4);
         string ShowContextAttributes(XElement element) {
-            Dictionary<string, string> attributes = new Dictionary<string, string>();
+            var attributes = new Dictionary<string, string>();
 
             //If we have a few attributes, just show all of them inline
             if (element.Attributes().Count() < 4) {
@@ -201,16 +201,16 @@ namespace Transgenesis {
             }
 
 
-            bool inline = attributes.Count < 4;
-            bool more = attributes.Count < element.Attributes().Count();
+            var inline = attributes.Count < 4;
+            var more = attributes.Count < element.Attributes().Count();
             return AttributesToString(attributes, inline, more);
         }
         string ShowAllAttributes(XElement element) {
-            Dictionary<string, string> attributes = new Dictionary<string, string>();
+            var attributes = new Dictionary<string, string>();
             foreach (var attribute in element.Attributes()) {
                 attributes[attribute.Name.LocalName] = attribute.Value;
             }
-            bool inline = attributes.Count < 4;
+            var inline = attributes.Count < 4;
             return AttributesToString(attributes, inline, false);
         }
         string AttributesToString(Dictionary<string, string> attributes, bool inline, bool more) {

@@ -13,9 +13,10 @@ using SadConsole.Input;
 using System.Diagnostics;
 
 namespace Transgenesis {
-    class ElementEditor : IComponent {
+    class ElementEditor : IScreen {
+        public string name => $"Editor: {extension.name}";
         ProgramState state;
-        Stack<IComponent> screens;
+        Stack<IScreen> screens;
         Environment env;
         GameData extension;
         ConsoleManager c;
@@ -93,7 +94,7 @@ namespace Transgenesis {
                             "Exits this XML Editor and returns to the main menu"},
             };
 
-        public ElementEditor(ProgramState state, Stack<IComponent> screens, Environment env, GameData extension, ConsoleManager c, XElement focused = null) {
+        public ElementEditor(ProgramState state, Stack<IScreen> screens, Environment env, GameData extension, ConsoleManager c, XElement focused = null) {
             this.state = state;
             this.screens = screens;
             this.env = env;
@@ -109,8 +110,6 @@ namespace Transgenesis {
             //{"", () => new List<string>{ "set", "add", "remove", "bind", "bindall", "save", "saveall", "moveup", "movedown", "root", "parent", "next", "prev", "types", "exit" } },
         }
         public void Draw() {
-            c.Clear();
-            c.SetCursor(new Point(0, 0));
             //Console.WriteLine(extension.structure.ToString());
 
             var root = focused;
@@ -203,6 +202,8 @@ namespace Transgenesis {
                 ScrollToFocused();
                 scrollToFocused = false;
             }
+            c.Clear();
+            c.SetCursor(new Point(0, 1));
             if (i.Text.Length == 0) {
                 scroller.Draw(buffer, scroller.screenRows + s.height);
                 //i.Draw();

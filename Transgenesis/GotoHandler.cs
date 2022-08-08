@@ -9,7 +9,7 @@ using System.Xml.Linq;
 namespace Transgenesis {
     class GotoHandler {
         public ProgramState state;
-        public Stack<IComponent> screens;
+        public Stack<IScreen> screens;
         public Environment env;
         public GameData extension;
         public ConsoleManager c;

@@ -29,7 +29,14 @@
     <None Remove="Content\Square.png" />
     <None Remove="Icon.bmp" />
     <None Remove="Icon.ico" />
+    <None Remove="LispFunctionList.txt" />
     <None Remove="RogueFrontier.xml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="LispFunctionList.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>

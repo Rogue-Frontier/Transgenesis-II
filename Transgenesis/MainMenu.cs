@@ -11,9 +11,10 @@ using SadConsole.Input;
 using System.Text.RegularExpressions;
 
 namespace Transgenesis {
-    class MainMenu : IComponent {
+    class MainMenu : IScreen {
+        public string name => "Main Menu";
         ProgramState state;
-        Stack<IComponent> screens;
+        Stack<IScreen> screens;
         Input i;
         History h;
         Suggest s;
@@ -25,11 +26,11 @@ namespace Transgenesis {
         string extensionsFolder;
         Task loading;
 
-        public MainMenu(Stack<IComponent> screens, Environment env) {
+        public MainMenu(Stack<IScreen> screens, Environment env) {
             this.state = new ProgramState();
             this.screens = screens;
             this.env = env;
-            this.c = new ConsoleManager(new Point(0, 0));
+            this.c = new ConsoleManager(new Point(0, 1));
             this.scroller = new Scroller(c, i);
             
             i = new Input(c);
@@ -93,7 +94,7 @@ namespace Transgenesis {
         }
         public void Draw() {
             c.Clear();
-            c.SetCursor(new Point(0, 0));
+            c.SetCursor(new Point(0, 1));
             List<ColoredString> buffer = new List<ColoredString>();
             buffer.Add(c.Color("Transgenesis II"));
             buffer.Add(c.Color($"Schema: {Path.GetFileName(env.path)}"));

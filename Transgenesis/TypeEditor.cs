@@ -6,9 +6,10 @@ using System.Linq;
 using SadRogue.Primitives;
 using System.Xml.Linq;
 namespace Transgenesis {
-    class TypeEditor : IComponent {
+    class TypeEditor : IScreen {
+        public string name => $"Types: {extension.name}";
         ProgramState state;
-        Stack<IComponent> screens;
+        Stack<IScreen> screens;
         Environment env;
         GameData extension;
         ConsoleManager c;
@@ -23,7 +24,7 @@ namespace Transgenesis {
 
         List<ColoredString> buffer;
 
-        public TypeEditor(Stack<IComponent> screens, Environment env, GameData extension, ConsoleManager c, GotoHandler go) {
+        public TypeEditor(Stack<IScreen> screens, Environment env, GameData extension, ConsoleManager c, GotoHandler go) {
             this.screens = screens;
             this.env = env;
             this.extension = extension;

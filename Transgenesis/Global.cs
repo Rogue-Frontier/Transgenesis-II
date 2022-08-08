@@ -34,11 +34,15 @@ namespace Transgenesis {
             return result;
         }
         public static ColoredString[] Split(this ColoredString str, int length) {
+            if (str.Length < length) {
+                return new[] { str };
+            }
             ColoredString[] result = new ColoredString[(str.Length + length - 1) / length];
-            int i;
-            for(i = 0; str.Length < length; i++) {
+            int i = 0;
+            while (str.Length > length) {
                 result[i] = str.SubString(0, length);
                 str = str.SubString(length);
+                i++;
             }
             result[i] = str;
             return result;

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using static SadConsole.ColoredString;
 
@@ -12,70 +13,180 @@ namespace Transgenesis {
     interface LispNode {
         public LispExpression parent { get; }
         int length { get; }
-
         public int index => parent.items.IndexOf(this);
-        public void Replace(LispNode other) {
-            parent.items[index] = other;
+        public int end => 0;
+        public bool enter { get; }
+
+        public string GetSpaces(int tabs) => (enter ? $"\n\r{new string(' ', 4 * tabs)}" : "");
+        public (LispExpression parent, int index) GetParentPosition() => (parent, index);
+        public LispNode SiblingBefore => parent == null ? null :
+            (index > 0 ?
+                parent.items[index - 1] :
+                ((LispNode)parent).SiblingBefore
+            )?.LastDescendant ?? this;
+        public LispNode SiblingAfter => parent == null ? null :
+            (index < parent.items.Count - 1 ?
+                parent.items[index + 1] :
+                ((LispNode)parent).SiblingAfter
+            )?.FirstDescendant ?? this;
+        public LispNode LastDescendant => this;
+        public LispNode FirstDescendant => this;
+        public IEnumerable<LispNode> leaves { get; }
+        public void AddSiblingBefore(LispNode other) =>
+            parent.items.Insert(index, other);
+        public void AddSiblingAfter(LispNode other) =>
+            parent.items.Insert(index + 1, other);
+        public LispNode Replace(LispNode other) {
+            if(parent != null)
+                parent.items[index] = other;
+            return other;
+        }
+        public void Remove() =>
+            parent?.items.RemoveAt(index);
+        public string ToString(int tabs);
+        public string ToColored((LispNode node, int index) cursor, int tabs);
+        public static LispNode Parse(string s) {
+            int i = 0;
+            s = s.Trim();
+            if(s.Length == 0) {
+                return null;
+            }
+            return ParseItem();
+            LispNode ParseItem(LispExpression parent = null, bool enter = false) {
+                switch (s[i]) {
+                    case '(': i++; return ParseExpression(parent, enter);
+                    default: return ParseSymbol(parent, enter);
+                }
+            }
+            LispExpression ParseExpression(LispExpression parent = null, bool enter = false) {
+                LispExpression e = new(parent, new()) { enter = enter };
+                enter = false;
+                while (i < s.Length) {
+                    switch (s[i]) {
+                        case ' ': i++; break;
+                        case ')': i++; return e;
+                        case '\n':
+                        case '\r':
+                            i++;
+                            enter = true;
+                            break;
+                        default:
+                            e.items.Add(ParseItem(e, enter));
+                            enter = false;
+                            break;
+                    }
+                }
+                throw new Exception("Unexpected end of file");
+            }
+            LispString ParseSymbol(LispExpression parent = null, bool enter = false) {
+                LispString str = new(parent, "");
+                while (i < s.Length) {
+                    
+                    switch (s[i]) {
+                        case ' ':
+                        case ')':
+                            return str;
+                        case var c:
+                            i++;
+                            str.value += c;
+                            break;
+                    }
+                }
+                return str;
+            }
         }
     }
     class LispNil : LispNode {
         public LispExpression parent { get; set; }
         public int length => 0;
-        public int index => parent.items.IndexOf(this);
-        public override string ToString() => "Nil";
+        public bool enter { get; set; }
+        public IEnumerable<LispNode> leaves => new List<LispNode> { this };
+        public LispNil(LispExpression parent) { this.parent = parent; }
+
+        public override string ToString() => $"Nil";
+        public string ToString(int tabs) => $"{((LispNode)this).GetSpaces(tabs)}Nil";
+        public string ToColored((LispNode node, int index) cursor, int tabs) =>
+            $"{((LispNode)this).GetSpaces(tabs)}{(this == cursor.node ? $"[c:r f:black][c:r b:yellow]Nil[c:u][c:u]" : "Nil")}";
     }
     class LispExpression : LispNode {
         public LispExpression parent { get; set; }
         public int length => items.Count;
+        public int end => length - 1;
+        public bool enter { get; set; }
+        public IEnumerable<LispNode> leaves => items.SelectMany(i => i.leaves);
         public List<LispNode> items = new();
-        public int index => parent.items.IndexOf(this);
-
-        public override string ToString() => $"({string.Join(' ', items.Select(i => i?.ToString()??"Nil"))})";
-        public ColoredString ToColored(LispNode selected, int index) {
-            
+        public LispNode LastDescendant => items.Last().LastDescendant;
+        public LispNode FirstDescendant => items.First().FirstDescendant;
+        public LispExpression(LispExpression parent, List<LispNode> items = null) {
+            this.parent = parent;
+            this.items = items ?? new() { new LispNil(this) };
+        }
+        public override string ToString() => $"({string.Join(' ', items.Select(i => i.ToString()))})";
+        public string ToString(int tabs) => $"{((LispNode)this).GetSpaces(tabs)}({string.Join(' ', items.Select(i => i.ToString(tabs + 1)))})";
+        public string ToColored((LispNode node, int index) cursor, int tabs) {
             Func<string, string> color = s => s;
-            var items = this.items.Select(i => i?.ToString() ?? "Nil");
-            if (this == (selected is LispString s ? s.parent : selected)) {
+            if (this == cursor.node.parent) {
                 color = s => $"[c:r f:yellow]{s}[c:u]";
-
             }
-            string content = string.Join(' ', items);
-            return Parser.Parse($"{color("(")}{content}{color(")")}");
+            string content = string.Join(' ', items.Select(i => i.ToColored(cursor, tabs + 1)));
+            return $"{((LispNode)this).GetSpaces(tabs)}{color("(")}{content}{color(")")}";
         }
     }
     class LispString : LispNode {
         public LispExpression parent { get; set; }
         public string value;
         public int length => value.Length;
-        public int index => parent.items.IndexOf(this);
-        public override string ToString() => value;
+        public int end => length;
+        public bool enter { get; set; }
+
+        public IEnumerable<LispNode> leaves => new List<LispNode> { this };
+        public LispString(LispExpression parent, string value) { this.parent = parent; this.value = value; }
+        public override string ToString() => $"{value}";
+        public string ToString(int tabs) => $"{((LispNode)this).GetSpaces(tabs)}{value}";
+        public string ToColored((LispNode node, int index) cursor, int tabs) {
+            if(this == cursor.node) {
+                var value = this.value;
+                if(cursor.index == value.Length) {
+                    value += "[c:r b:yellow] [c:u]";
+                } else {
+                    value = value[..cursor.index]
+                        + $"[c:r f:black][c:r b:yellow]{value[cursor.index]}[c:u][c:u]"
+                        + value[(cursor.index + 1)..];
+                }
+                return $"{((LispNode)this).GetSpaces(tabs)}[c:r f:yellow]{value}[c:u]";
+            }
+            return $"{((LispNode)this).GetSpaces(tabs)}{value}";
+        }
     }
-    class LispEditor : IComponent {
-        Stack<IComponent> screens;
+    class LispEditor : IScreen {
+        public string name => "Lisp";
+        Stack<IScreen> screens;
         ConsoleManager c;
         Scroller scroller;
         Point pos = (0, 0);
         Action<string> OnClosed;
 
-        LispExpression root = new();
+        LispNode root;
         (LispNode node, int index) cursor;
 
-        public LispEditor(Stack<IComponent> screens, ConsoleManager c, string Text = "", Action<string> OnClosed = null) {
+        public LispEditor(Stack<IScreen> screens, ConsoleManager c, string Text = "", Action<string> OnClosed = null) {
             this.screens = screens;
             this.c = c;
             this.scroller = new(c);
             this.OnClosed = OnClosed;
+            this.root = LispNode.Parse(Text) ?? new LispExpression(null);
             cursor = (root, 0);
+            UpdateCursor(false);
 
         }
         public void UpdateCursor(bool forward = true) {
 
-            var original = cursor.node;
+            var node = cursor.node;
             Start:
             if(cursor.index == -1) {
                 var parent = cursor.node.parent;
                 if(parent == null) {
-                    cursor = (original, 0);
+                    cursor = (node, 0);
                     return;
                 }
                 var index = cursor.node.index;
@@ -83,10 +194,10 @@ namespace Transgenesis {
                 forward = false;
                 goto Start;
             }
-            if((cursor.node is LispString ls && cursor.index > ls.length) || (cursor.node is LispExpression exp && cursor.index >= exp.length)) {
+            if(cursor.index > cursor.node.end) {
                 var parent = cursor.node.parent;
                 if(parent == null) {
-                    cursor = (original, parent is LispString ? original.length : original.length - 1);
+                    cursor = (node, node.end);
                     return;
                 }
                 var index = cursor.node.index;
@@ -97,7 +208,7 @@ namespace Transgenesis {
             if (cursor.node is LispExpression exp2) {
                 var n = exp2.items[cursor.index];
                 if (n != null) {
-                    cursor = (n, forward ? 0 : n is LispString ? n.length : n.length - 1);
+                    cursor = (n, forward ? 0 : n.end);
                     goto Start;
                 }
             }
@@ -110,8 +221,35 @@ namespace Transgenesis {
             bool ctrl = (k.Modifiers & ConsoleModifiers.Control) != 0;
             switch (k.Key) {
                 case ConsoleKey.Escape: {
-                        OnClosed?.Invoke(root.ToString());
+                        OnClosed?.Invoke(root.ToString(0));
                         screens.Pop();
+                        break;
+                    }
+                case ConsoleKey.DownArrow: {
+                        
+                        var prev = cursor.node;
+                        var n = prev.SiblingAfter;
+                        while (!n.enter) {
+                            prev = n;
+                            n = prev.SiblingAfter;
+                            if (prev == n) {
+                                break;
+                            }
+                        }
+                        cursor = (n, 0);
+                        break;
+                    }
+                case ConsoleKey.UpArrow: {
+                        var prev = cursor.node;
+                        var n = prev.SiblingBefore;
+                        while (!n.enter) {
+                            prev = n;
+                            n = prev.SiblingBefore;
+                            if(prev == n) {
+                                break;
+                            }
+                        }
+                        cursor = (n, 0);
                         break;
                     }
                 case ConsoleKey.LeftArrow: {
@@ -125,36 +263,32 @@ namespace Transgenesis {
                         break;
                     }
                 case ConsoleKey.Backspace: {
-
                         void Remove(LispNode n) {
-                            var parent = n.parent;
-                            var index = n.index;
-                            parent.items.RemoveAt(index);
-                            if (parent.length > 0) {
-                                cursor = (parent, index - 1);
+                            if(n == root) {
+                                root = new LispNil(null);
+                                cursor = (root, 0);
+                                return;
+                            }
+                            cursor = n.GetParentPosition();
+                            n.Remove();
+                            if (cursor.node.length > 0) {
+                                cursor.index--;
                                 UpdateCursor(false);
                             } else {
-                                if(parent == root) {
+                                if(cursor.node == root) {
+                                    root = new LispNil(null);
+                                    cursor = (root, 0);
                                     UpdateCursor(false);
                                     return;
                                 }
-                                Remove(parent);
+                                Remove(cursor.node);
                             }
                         }
                         switch (cursor.node) {
-                            case LispExpression exp:
-                                if (exp.length == 0) {
-                                    Remove(exp);
-                                } else if(exp.items[cursor.index] == null) {
-                                    exp.items.RemoveAt(cursor.index);
-                                    cursor.index--;
-                                    if (exp.length == 0) {
-                                        Remove(exp);
-                                    } else {
-                                        UpdateCursor(false);
-                                    }
+                            case LispNil nil: {
+                                    Remove(nil);
+                                    break;
                                 }
-                                break;
                             case LispString ls: {
                                     if(ls.value.Length == 0) {
                                         Remove(ls);
@@ -164,13 +298,12 @@ namespace Transgenesis {
                                         break;
                                     }
                                     if (cursor.index == ls.value.Length) {
-                                        
                                         ls.value = ls.value[..(ls.length - 1)];
                                         cursor.index--;
                                         if(ls.length == 0) {
-                                            cursor = (ls.parent, ls.index);
-                                            ls.parent.items[ls.index] = null;
-                                            UpdateCursor(false);
+                                            var n = new LispNil(cursor.node.parent) { enter = ls.enter };
+                                            Replace(n);
+                                            cursor = (n, 0);
                                         }
                                     } else {
                                         ls.value = ls.value[..(cursor.index - 1)] + ls.value[(cursor.index)..];
@@ -183,54 +316,56 @@ namespace Transgenesis {
                         break;
                     }
                 case ConsoleKey.Enter:
-                    //Show on new line
+                    if(cursor.node == root) {
+                        break;
+                    }
+                    if(cursor.node.index == 0) {
+                        cursor.node.parent.enter = !cursor.node.parent.enter;
+                        break;
+                    }
+                    switch (cursor.node) {
+                        case LispNil l: l.enter = !l.enter; break;
+                        case LispString s: s.enter = !s.enter; break;
+                    }
                     break;
                 case ConsoleKey.Spacebar: {
+                        if(cursor.node == root) {
+                            break;
+                        }
                         if (k.Modifiers.HasFlag(ConsoleModifiers.Shift)) {
-                            var (node, i) = GetCursorExpression();
-                            if (node == root) {
+                            var (parent, index) = cursor.node.GetParentPosition();
+                            if (parent == root) {
                                 break;
                             }
-                            var (parent, index) = (node.parent, node.index);
-                            if (index == parent.length - 1) {
-                                parent.items.Add(null);
-                            } else {
-                                parent.items.Insert(index + 1, null);
-                            }
-                            cursor = (parent, index + 1);
+                            var n = new LispNil(parent.parent);
+                            ((LispNode)parent).AddSiblingAfter(n);
+                            cursor = (n, 0);
                         } else if (k.Modifiers.HasFlag(ConsoleModifiers.Control)) {
-                            var (node, i) = GetCursorExpression();
-                            if (node == root) {
+                            var (parent, index) = cursor.node.GetParentPosition();
+                            if (parent == root) {
                                 break;
                             }
-                            var (parent, index) = (node.parent, node.index);
-                            if (index < parent.length) {
-                                parent.items.Insert(index, null);
-                            } else {
-                                parent.items.Add(null);
-                            }
-                            cursor = (parent, index - 1);
+                            var n = new LispNil(parent.parent);
+                            ((LispNode)parent).AddSiblingBefore(n);
+                            cursor = (n, 0);
                         } else {
-                            if (cursor.node == root) {
-                                var index = cursor.index;
-                                if (index == root.items.Count) {
-                                    root.items.Add(null);
-                                } else {
-                                    root.items.Insert(index + 1, null);
-                                }
-                                cursor.index++;
-                            } else {
-                                var parent = cursor.node.parent;
+                            /*
+                            LispNode n;
+                            switch (cursor.node) {
+                                case LispNil:
+                                    n = new LispNil(cursor.node.parent);
+                                    cursor.node.AddSiblingAfter(n);
+                                    break;
+                                case LispString s:
 
-                                var index = cursor.node.index;
-                                if (index == parent.items.Count) {
-                                    parent.items.Add(null);
-                                } else {
-                                    parent.items.Insert(cursor.index == 0 ? index : index + 1, null);
-                                }
-
-                                cursor = (parent, cursor.index == 0 ? index : index + 1);
+                                    break;
+                                    
                             }
+                            */
+                            Action<LispNil> add = (cursor.node is LispNil || cursor.index > 0) ? cursor.node.AddSiblingAfter : cursor.node.AddSiblingBefore;
+                            var n = new LispNil(cursor.node.parent) {  enter = false };
+                            add(n);
+                            cursor = (n, 0);
                         }
                         break;
                     }
@@ -243,48 +378,51 @@ namespace Transgenesis {
                     }
             }
             void AddChar(char c) {
+                
                 switch (cursor.node) {
-                    case LispExpression exp: {
-
-                            var next = (LispNode)(c == '(' ? new LispExpression() { parent = exp, items = { null } } : new LispString() { parent = exp, value = $"{c}" });
-                            var nextCursor = c == '(' ? (next, 0) : (next, 1);
-                            if (exp.length == 0) {
-                                exp.items.Add(next);
-                                cursor = nextCursor;
-                            } else if(exp.items[cursor.index] == null) {
-                                exp.items[cursor.index] = next;
-                                cursor = nextCursor;
+                    case LispNil nil: {
+                            var parent = cursor.node.parent;
+                            if(c == '(') {
+                                var n = new LispExpression(parent) { enter = nil.enter };
+                                Replace(n);
+                                cursor = (n.items[0], 0);
+                            } else {
+                                var n = new LispString(parent, $"{c}") { enter = nil.enter };
+                                Replace(n);
+                                cursor = (n, 1);
                             }
+                            UpdateCursor(false);
                             break;
                         }
-                    case LispString ls: {
+                    case LispString s: {
                             if (k.KeyChar != 0) {
-                                if (cursor.index >= ls.value.Length) {
-                                    ls.value = ls.value + k.KeyChar;
-                                    cursor.index = ls.value.Length;
+                                if (cursor.index >= s.value.Length) {
+                                    s.value = s.value + k.KeyChar;
+                                    cursor.index = s.value.Length;
                                 } else {
-                                    ls.value = ls.value.Insert(cursor.index, c.ToString());
+                                    s.value = s.value.Insert(cursor.index, c.ToString());
                                     cursor.index++;
                                 }
-
                             }
                             break;
                         }
                 }
             }
+            void Replace(LispNode n) {
+                if (cursor.node == root) {
+                    root = n;
+                } else {
+                    cursor.node.Replace(n);
+                }
+            }
         }
-        public (LispExpression, int) GetCursorExpression() {
-            return cursor.node switch {
-                LispExpression exp => (exp, cursor.index),
-                LispString ls => (ls.parent, ls.index)
-            };
-        }
+
         public void Draw() {
             c.Clear();
 
             c.SetCursor(pos);
-            var s = root.ToString().Split(32).Select(s => new ColoredString(s)).ToList();
-            scroller.Draw(s, 64);
+            var s = Parser.Parse(root.ToColored(cursor, 0));
+            c.Write(s);
         }
     }
 }

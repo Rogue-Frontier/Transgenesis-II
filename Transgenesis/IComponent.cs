@@ -6,6 +6,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 namespace Transgenesis {
+    interface IScreen : IComponent {
+        string name { get; }
+    }
     interface IComponent {
         void Update();
         void Handle(ConsoleKeyInfo k);
