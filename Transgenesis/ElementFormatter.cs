@@ -32,9 +32,7 @@ namespace Transgenesis {
         public ElementFormatter(ConsoleManager c, bool showBoxes = true) {
             this.c = c;
             if(!showBoxes) {
-                expandedBox = "";
-                collapsedBox = "";
-                noBox = "";
+                expandedBox = collapsedBox = noBox = "";
             }
         }
         void AddLine(string line) {
@@ -52,59 +50,48 @@ namespace Transgenesis {
             ShowElementTree(root);
             void ShowElementTree(XElement element) {
                 const bool expandFocused = false;
-                var isFocused = focused == element;
-
-                bool expandedCheck = (expandAll || expanded.Contains(element) || (expandFocused && isFocused)) && (collapseNone || !collapsed.Contains(element));
-                string box;
-                if (!element.Nodes().Any()) {
-                    box = noBox;
-                } else if (expandedCheck) {
-                    box = expandedBox;
-                } else {
-                    box = collapsedBox;
-                }
-
+                var isFocused = (focused == element);
+                var expandedCheck = (expandAll || expanded.Contains(element) || (expandFocused && isFocused)) && (collapseNone || !collapsed.Contains(element));
+                string box =
+                    !element.Nodes().Any() ?
+                        noBox :
+                    expandedCheck ?
+                        expandedBox :
+                    collapsedBox;
                 string tag = $"<{element.Tag()}";
                 //If we have no attributes, then do not pad any space for attributes
                 if (element.Attributes().Count() > 0) {
                     tag = tag.PadRightTab();
                 }
-
                 if (element.Nodes().Count() > 0) {
-                    Action<string> writeTag;
-                    if (isFocused) {
-                        writeTag = s => AddLineHighlight(s);
-                    } else {
-                        writeTag = s => AddLine(s);
-                    }
-
+                    Action<string> writeTag =
+                        isFocused ?
+                            AddLineHighlight :
+                            AddLine;
+                    var closingTag = $"</{element.Tag()}>";
                     if (expandedCheck) {
+                        string openingTag = $"{box}{Tab()}{tag}{ShowAllAttributes(element)}>";
                         if(element.Nodes().Count() == 1 && element.FirstNode is XText text) {
                             //To do: Generate an equivalent string of metadata objects
-
-                            var tab = Tab();
                             var t = text.Value.Replace("\t", "    ");
-                            writeTag($"{box}{tab}{tag}{ShowAllAttributes(element)}>{t}{(t.Contains("\n") ? $"\n\r{box}{tab}" : "")}</{element.Tag()}>");
-
-                            List<UIData> line = new List<UIData>();
+                            writeTag($"{openingTag}{t}{(t.Contains("\n") ? $"\n\r{box}{Tab()}" : "")}{closingTag}");
+                            var line = new List<UIData>();
                             line.AddRepeat(null, box.Length);
-                            
-
                         } else {
                             //show all attributes and children
-                            writeTag($"{box}{Tab()}{tag}{ShowAllAttributes(element)}>");
+                            writeTag($"{openingTag}");
                             ShowChildren();
                             writeTag($"{box}{Tab()}</{element.Tag()}>");
                         }
                     } else {
                         //show only the important attributes and (semi)expanded children
-
-                        if (!semiexpandAll && !element.Elements().Any(c => semiexpanded.Contains(c))) {
+                        var openingTag = $"{box}{Tab()}{tag}{ShowContextAttributes(element)}>";
+                        if (!semiexpandAll && !element.Elements().Intersect(semiexpanded).Any()) {
                             //We have no important children to show, so just put our whole tag on one line
-                            writeTag($"{box}{Tab()}{tag}{ShowContextAttributes(element)}>...</{element.Tag()}>");
+                            writeTag($"{openingTag}...{closingTag}");
                         } else {
                             //Show any important children and attributes
-                            writeTag($"{box}{Tab()}{tag}{ShowContextAttributes(element)}>");
+                            writeTag($"{openingTag}");
                             tabs++;
                             int skipped = 0;
 
@@ -124,7 +111,6 @@ namespace Transgenesis {
                                     }
                                 }
                             }
-                            
                             //Show that we have more children not shown
                             if (skipped > 0) {
                                 AddLine($"{noBox}{Tab()}<.../>");
@@ -135,7 +121,7 @@ namespace Transgenesis {
                             }
                             */
                             tabs--;
-                            writeTag($"{box}{Tab()}</{element.Tag()}>");
+                            writeTag($"{box}{Tab()}{closingTag}");
                         }
                     }
                     return;
@@ -152,63 +138,51 @@ namespace Transgenesis {
                         tabs--;
                     }
                 } else {
-
-                    Action<string> writeTag;
-                    if (isFocused) {
-                        writeTag = s => AddLineHighlight(s);
-                    } else {
-                        writeTag = s => AddLine(s);
-                    }
-                    if (expandedCheck) {
-                        //show all attributes
-                        writeTag($"{box}{Tab()}{tag}{ShowAllAttributes(element)}/>");
-
-                    } else {
-                        //show only the important attributes
-                        writeTag($"{box}{Tab()}{tag}{ShowContextAttributes(element)}/>");
-                    }
+                    Action<string> writeTag =
+                        isFocused ?
+                            AddLineHighlight :
+                        AddLine;
+                    string att =
+                        expandedCheck ?
+                            ShowAllAttributes(element) :
+                            ShowContextAttributes(element);
+                    writeTag($"{box}{Tab()}{tag}{att}/>");
                     return;
                 }
             }
-
         }
 
         string Tab() => new(' ', tabs * 4);
         string ShowContextAttributes(XElement element) {
             var attributes = new Dictionary<string, string>();
-
             //If we have a few attributes, just show all of them inline
             if (element.Attributes().Count() < 4) {
-                foreach (var attribute in element.Attributes()) {
-                    attributes[attribute.Name.LocalName] = attribute.Value;
+                foreach (var a in element.Attributes()) {
+                    attributes[a.Name.LocalName] = a.Value;
                 }
             } else {
                 //Otherwise, just show the important ones
                 foreach (var key in new string[] { "unid", "name" }) {
-                    if (element.Att(key, out string value)) {
+                    if (element.Att(key, out var value)) {
                         attributes[key] = value;
                     }
                 }
-
                 //Or the first three ones
-                foreach (var attribute in element.Attributes()) {
-                    if (attributes.Count < 3) {
-                        attributes[attribute.Name.LocalName] = attribute.Value;
-                    } else {
+                foreach (var a in element.Attributes()) {
+                    if(attributes.Count >= 3) {
                         break;
                     }
+                    attributes[a.Name.LocalName] = a.Value;
                 }
             }
-
-
             var inline = attributes.Count < 4;
             var more = attributes.Count < element.Attributes().Count();
             return AttributesToString(attributes, inline, more);
         }
         string ShowAllAttributes(XElement element) {
             var attributes = new Dictionary<string, string>();
-            foreach (var attribute in element.Attributes()) {
-                attributes[attribute.Name.LocalName] = attribute.Value;
+            foreach (var a in element.Attributes()) {
+                attributes[a.Name.LocalName] = a.Value;
             }
             var inline = attributes.Count < 4;
             return AttributesToString(attributes, inline, false);
@@ -241,11 +215,10 @@ namespace Transgenesis {
                 }
                 return result.ToString();
             } else {
-                StringBuilder result = new StringBuilder();
-                string first = attributes.Keys.First();
+                var result = new StringBuilder();
+                var first = attributes.Keys.First();
                 result.AppendLine($@"{first}=""{attributes[first]}""");
-                tabs++;
-                tabs++;
+                tabs += 2;
 
                 int interval = 8;
                 //int padding = (1 + attributes.Keys.Select(k => k.Length).Max() / interval) * interval;

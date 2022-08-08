@@ -372,16 +372,18 @@ namespace Transgenesis {
             }
         }
         public void Load(string path, bool modules = false) {
-
-
             string xml = File.ReadAllText(path);
             //Cheat the XML reader by escaping ampersands so we don't parse entities
             xml = xml.Replace("&", "&amp;");
+            var d = new Dictionary<string, Regex>() {
+                ["<!--  -->"] = new("<!-(-*)->"),
+                ["<!--"] = new Regex("<!--(-+)"),
+                ["-->"] = new Regex("(-+)-->"),
+            };
+            foreach((var str, var reg) in d) {
+                xml = reg.Replace(xml, str);
+            }
 
-            var removeCommentOpen = new Regex(Regex.Escape("<!--") + Regex.Escape("-") + "+");
-            var removeCommentClose = new Regex(Regex.Escape("-") + "+" + Regex.Escape("-->"));
-            xml = removeCommentOpen.Replace(xml, "<!--");
-            xml = removeCommentClose.Replace(xml, "-->");
             XmlDocument doc = new XmlDocument();
             doc.LoadXml(xml);
 

@@ -17,9 +17,6 @@ namespace Transgenesis {
         static int width = 150;
         static int height = 90;
         private static void Main(string[] args) {
-
-            var s = new SmartString("[c:r f:255,255,0][c:t w:5][c:button id:selectme]aaaaaaa");
-            if (true) return;
             /*
             Dictionary<string, string> dict = new();
             foreach(var line in File.ReadAllLines("LispFunctionList.txt")) {
