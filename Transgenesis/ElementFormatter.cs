@@ -35,9 +35,9 @@ namespace Transgenesis {
             if(!showBoxes) {
                 expandedBox = collapsedBox = noBox = "";
             }
-            smart.lw = c.width;
-            smart.f = c.theme.front;
-            smart.b = c.theme.back;
+            smart.truncate = c.width;
+            smart.front = c.theme.front;
+            smart.back = c.theme.back;
         }
         void AddLine(string line) {
             smart.Parse($"{line}\n");
@@ -57,7 +57,7 @@ namespace Transgenesis {
                 var isFocused = (focused == element);
                 var expandedCheck = (expandAll || expanded.Contains(element) || (expandFocused && isFocused)) && (collapseNone || !collapsed.Contains(element));
                 var box =
-                    !element.Nodes().Any() ?
+                    !element.Nodes().Any() && element.Attributes().Count() < 4 ?
                         noBox :
                     expandedCheck ?
                         expandedBox :
@@ -157,7 +157,7 @@ namespace Transgenesis {
                 }
             }
         }
-
+        //string Indent(string text) => $"[c:i i:{tabs * 4}]{text}[c:u]";
         string Tab() => new(' ', tabs * 4);
         string ShowContextAttributes(XElement element) {
             var attributes = new Dictionary<string, string>();

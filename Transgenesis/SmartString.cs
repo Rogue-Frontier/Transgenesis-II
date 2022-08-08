@@ -16,19 +16,20 @@ internal class SmartString {
     public List<SmartChar> text = new();
 
     public ColoredString colored => new(text.Select(c => new ColoredGlyph(c.f, c.b, c.c)).ToArray());
-    public Color f = Color.White,
-          b = Color.Black;
-    public int lw = int.MaxValue,
+    public Color front = Color.White,
+          back = Color.Black;
+    public int truncate = int.MaxValue,
+        indent = 0,
         row = 0,
         col = 0;
-    Stack<Command> l = new();
+    Stack<Command> commands = new();
 
     string buttonId = "";
     Dictionary<string, Rectangle> buttons = new();
 
 
-    private void Append(char c) => text.Add(new(c, f, b));
-    private void Append(string s) => text.AddRange(s.Select(c => new SmartChar(c, f, b)));
+    private void Append(char c) => text.Add(new(c, front, back));
+    private void Append(string s) => text.AddRange(s.Select(c => new SmartChar(c, front, back)));
     public SmartString() { }
     public SmartString(string s) => Parse(s);
 
@@ -73,28 +74,34 @@ internal class SmartString {
                     switch (dict["c"]) {
                         case "r":
                         case "recolor":
-                            var c = new Recolor(f, b,
-                                Sel<Color?>("f", s => ParseColor(s), null) ?? f,
-                                Sel<Color?>("b", s => ParseColor(s), null) ?? b);
+                            var c = new Recolor(front, back,
+                                Sel<Color?>("f", s => ParseColor(s), null) ?? front,
+                                Sel<Color?>("b", s => ParseColor(s), null) ?? back);
                             Apply(c);
-                            l.Push(c);
+                            commands.Push(c);
                             break;
                         case "t":
                         case "truncate":
-                            var t = new Truncate(lw, Sel("w", int.Parse));
+                            var t = new Truncate(truncate, Sel("w", int.Parse));
                             var wrap = true;
                             Apply(t);
-                            l.Push(t);
+                            commands.Push(t);
+                            break;
+                        case "i":
+                        case "indent":
+                            var ind = new Indent(indent, Sel("i", int.Parse));
+                            Apply(ind);
+                            commands.Push(ind);
                             break;
                         case "button":
                             var bu = new Button(buttonId, Sel("id", s => s, null) ?? throw new Exception("id expected"));
                             Apply(bu);
-                            l.Push(bu);
+                            commands.Push(bu);
                             break;
                         case "u":
                         case "undo":
-                            Unapply(l.Peek());
-                            l.Pop();
+                            Unapply(commands.Peek());
+                            commands.Pop();
                             break;
                     }
                     Color ParseColor(string s) {
@@ -135,14 +142,18 @@ internal class SmartString {
                 default:
                     if(ch == '\n') {
                         Append(ch);
-                        col = 0;
+                        Append(new string(' ', indent));
+                        col = indent;
                         row++;
                         break;
                     }
-                    if(col == lw) {
+                    if(col == truncate) {
                         Append('\n');
-                        col = 0;
+                        Append(new string(' ', indent));
+                        col = indent;
                         row++;
+
+
                     }
 
                     var p = new Point(col, row);
@@ -189,34 +200,39 @@ internal class SmartString {
     private void Apply(Command co) {
         switch (co) {
             case Recolor c:
-                (f, b) = (c.f, c.b);
+                (front, back) = (c.f, c.b);
                 return;
             case Truncate t:
-                (lw) = (t.w);
+                (truncate) = (t.w);
                 return;
             case Button bu:
                 buttonId = bu.id;
+                return;
+            case Indent i:
+                indent = i.i;
                 return;
         }
     }
     private void Unapply(Command co) {
         switch (co) {
             case Recolor r:
-                (f, b) = (r.fprev, r.bprev);
+                (front, back) = (r.fPrev, r.bPrev);
                 return;
             case Truncate t:
-                lw = t.wprev;
+                truncate = t.wPrev;
                 return;
             case Button bu:
-                buttonId = bu.idprev;
+                buttonId = bu.idPrev;
+                return;
+            case Indent i:
+                indent = i.iPrev;
                 return;
         }
     }
 }
 public interface Command { }
-public record Truncate(int wprev, int w) : Command { }
-public record Recolor(Color fprev, Color bprev, Color f, Color b) : Command { }
-public record SmartChar(char c, Color f, Color b) {
-}
-public record Newline() { }
-public record Button(string idprev, string id) : Command { }
+public record Truncate(int wPrev, int w) : Command { }
+public record Indent(int iPrev, int i) : Command { }
+public record Recolor(Color fPrev, Color bPrev, Color f, Color b) : Command { }
+public record SmartChar(char c, Color f, Color b) { }
+public record Button(string idPrev, string id) : Command { }
