@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using SadConsole;
+using static SadRogue.Primitives.ColorExtensions2;
 
 namespace Transgenesis;
 
@@ -112,15 +113,7 @@ internal class SmartString {
                                 return c;
                             }
                         } catch { }
-                        var d = new Dictionary<string, Color> {
-                            ["White"] = Color.White,
-                            ["LightBlue"] = Color.LightBlue,
-                            ["LightGoldenrodYellow"] = Color.LightGoldenrodYellow,
-                            ["Salmon"] = Color.Salmon,
-                            ["SkyBlue"] = Color.SkyBlue,
-                            ["LimeGreen"] = Color.LimeGreen
-                        };
-                        if(d.TryGetValue(s, out var co)) {
+                        if(ColorMappings.TryGetValue(s.ToLower(), out var co)) {
                             return co;
                         }
                         if (new Regex("(?<R>[0-9]+),(?<G>[0-9]+),(?<B>[0-9]+)").Match(s) is Match { Success: true } m) {
