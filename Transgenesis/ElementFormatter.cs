@@ -26,7 +26,6 @@ namespace Transgenesis {
 
         public SmartString smart = new();
         public List<ColoredString> buffer => smart.colored.Split('\n');
-        public Dictionary<int, HashSet<LabelButton>> buttonBuffer = new();
         public HashSet<int> highlightLines = new();
 
         ConsoleManager c;
@@ -42,17 +41,13 @@ namespace Transgenesis {
         void AddLine(string line) {
             smart.Parse($"{line}\n");
         }
-        void AddLineHighlight(string line) {
-            var row = smart.row;
-            smart.Parse($"{line}\n");
-            highlightLines.UnionWith(Enumerable.Range(row, smart.row - row));
-        }
         public void ShowElementTree(XElement root, XElement focused, HashSet<XElement> expanded = null, HashSet<XElement> semiexpanded = null, HashSet<XElement> collapsed = null) {
             bool expandAll = expanded == null;
             bool semiexpandAll = semiexpanded == null;
             bool collapseNone = collapsed == null;
             ShowElementTree(root);
             void ShowElementTree(XElement element) {
+
                 const bool expandFocused = false;
                 var isFocused = (focused == element);
                 var expandedCheck = (expandAll || expanded.Contains(element) || (expandFocused && isFocused)) && (collapseNone || !collapsed.Contains(element));
@@ -67,13 +62,27 @@ namespace Transgenesis {
                 //If we have no attributes, then do not pad any space for attributes
                 if (element.Attributes().Count() > 0) {
                     tagLeft = tagLeft.PadRightTab();
+            }
+                var index = 0;
+                var root = element.AncestorsAndSelf().Last();
+                var all = root.DescendantsAndSelf().ToList();
+                foreach (var d in all) {
+                    if(d == element) {
+                        break;
+                    }
+                    index++;
                 }
+
+                var button = $"[c:button id:{index}]";
+                smart.Parse(button);
                 if (element.Nodes().Count() > 0) {
                     Func<string, string> recTag =
                         isFocused ?
                             RecHighlight :
                         RecTag;
                     var closingTag = recTag($"</{element.Tag()}>");
+
+
                     if (expandedCheck) {
                         var openingTag = $"{box}{Tab()}{recTag($"{tagLeft}{ShowAllAttributes(element)}>")}";
                         if(element.Nodes().Count() == 1 && element.FirstNode is XText text) {
@@ -130,7 +139,6 @@ namespace Transgenesis {
                             AddLine($"{box}{Tab()}{closingTag}");
                         }
                     }
-                    return;
                     void ShowChildren() {
                         tabs++;
                         foreach (var child in element.Nodes()) {
@@ -153,8 +161,9 @@ namespace Transgenesis {
                             ShowAllAttributes(element) :
                             ShowContextAttributes(element);
                     AddLine($"{box}{Tab()}{recTag($"{tagLeft}{att}/>")}");
-                    return;
                 }
+
+                smart.Parse("[c:u]");
             }
         }
         //string Indent(string text) => $"[c:i i:{tabs * 4}]{text}[c:u]";

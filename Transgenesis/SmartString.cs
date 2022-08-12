@@ -18,6 +18,8 @@ internal class SmartString {
     public ColoredString colored => new(text.Select(c => new ColoredGlyph(c.f, c.b, c.c)).ToArray());
     public Color front = Color.White,
           back = Color.Black;
+
+    public bool padRight = true;
     public int truncate = int.MaxValue,
         indent = 0,
         row = 0,
@@ -25,7 +27,7 @@ internal class SmartString {
     Stack<Command> commands = new();
 
     string buttonId = "";
-    Dictionary<string, Rectangle> buttons = new();
+    public Dictionary<string, Rectangle> buttons = new();
 
 
     private void Append(char c) => text.Add(new(c, front, back));
@@ -141,6 +143,14 @@ internal class SmartString {
                     break;
                 default:
                     if(ch == '\n') {
+                        if (padRight && truncate != int.MaxValue && col < truncate) {
+                            /*
+                            while (col < truncate) {
+                                Append(' ');
+                                col++;
+                            }
+                            */
+                        }
                         Append(ch);
                         Append(new string(' ', indent));
                         col = indent;

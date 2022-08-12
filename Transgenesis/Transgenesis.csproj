@@ -72,7 +72,7 @@
 
   <ItemGroup>
     <Reference Include="ArchConsole">
-      <HintPath>..\..\ArchConsole\ArchConsole\bin\Debug\netstandard2.1\ArchConsole.dll</HintPath>
+      <HintPath>..\..\ArchConsole\ArchConsole\bin\Release\net6.0\ArchConsole.dll</HintPath>
     </Reference>
   </ItemGroup>
 

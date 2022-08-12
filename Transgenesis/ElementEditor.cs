@@ -11,8 +11,85 @@ using static Transgenesis.Global;
 using ColoredString = SadConsole.ColoredString;
 using SadConsole.Input;
 using System.Diagnostics;
+using ArchConsole;
+using Console = SadConsole.Console;
 
 namespace Transgenesis {
+
+    public static class Common {
+        //https://stackoverflow.com/a/12016968
+        //Blend another color over this color
+        public static Color Blend(this Color background, Color foreground, byte setAlpha = 0xff) {
+            //Background should be premultiplied because we ignore its alpha value
+            var alpha = (byte)(foreground.A);
+            var inv_alpha = (byte)(255 - foreground.A);
+            return new(
+                r: (byte)((alpha * foreground.R + inv_alpha * background.R) >> 8),
+                g: (byte)((alpha * foreground.G + inv_alpha * background.G) >> 8),
+                b: (byte)((alpha * foreground.B + inv_alpha * background.B) >> 8),
+                alpha: setAlpha
+                );
+        }
+    }
+    public class RectButton : Console {
+        public Action leftClick;
+        public Action rightClick;
+
+        public Action leftHold;
+        public Action rightHold;
+
+        MouseWatch mouse;
+        public bool enabled;
+        public RectButton(Rectangle r, Action leftClick = null, Action rightClick = null, bool enabled = true) : base(r.Width, r.Height) {
+            Position = new(r.X, r.Y);
+            this.leftClick = leftClick;
+            this.rightClick = rightClick;
+            this.mouse = new();
+            this.enabled = enabled;
+        }
+        public override bool ProcessMouse(MouseScreenObjectState state) {
+            mouse.Update(state, IsMouseOver);
+            if (!enabled) {
+                goto Done;
+            }
+            if (!IsMouseOver) {
+                goto Done;
+            }
+            if (mouse.leftPressedOnScreen) {
+                switch (mouse.left) {
+                    case ClickState.Released: leftClick?.Invoke(); break;
+                    case ClickState.Held: leftHold?.Invoke(); break;
+                }
+            }
+            if (mouse.rightPressedOnScreen) {
+                switch (mouse.right) {
+                    case ClickState.Released: rightClick?.Invoke(); break;
+                    case ClickState.Held: rightHold?.Invoke(); break;
+                }
+            }
+        Done:
+            return base.ProcessMouse(state);
+        }
+        public override void Render(TimeSpan timeElapsed) {
+            Color b;
+
+            if (!enabled || !IsMouseOver) {
+                return;
+            } else if (leftClick != null && mouse.nowLeft) {
+                b = Color.White.SetAlpha(128);
+            } else {
+                b = Color.White.SetAlpha(51);
+            }
+
+            var par = (Console)Parent;
+            foreach (var p in Area.Positions()) {
+                var cg = par.GetCellAppearance(p.X + Position.X, p.Y + Position.Y);
+                cg.Background = cg.Background.Blend(b);
+                this.SetCellAppearance(p.X, p.Y, cg);
+            }
+            base.Render(timeElapsed);
+        }
+    }
     class ElementEditor : IScreen {
         public string name => $"Editor: {extension.name}";
         ProgramState state;
@@ -109,6 +186,29 @@ namespace Transgenesis {
             scroller = new Scroller(c, i);
             //{"", () => new List<string>{ "set", "add", "remove", "bind", "bindall", "save", "saveall", "moveup", "movedown", "root", "parent", "next", "prev", "types", "exit" } },
         }
+
+        void Click(XElement clicked) {
+            if (true) {
+
+                ToggleExpand(clicked);
+                return;
+            }
+            if(focused == clicked) {
+                ToggleExpand(focused);
+                return;
+            }
+            focused = clicked;
+        }
+        void ToggleExpand(XElement e) {
+            if (keepExpanded.Contains(e)) {
+                keepExpanded.Remove(e);
+            } else if (e.Nodes().Any() || e.Attributes().Count() > 3) {
+
+                keepExpanded.Add(e);
+            }
+        }
+
+        private Dictionary<string, (Rectangle rect, RectButton button)> buttons = new();
         public void Draw() {
             //Console.WriteLine(extension.structure.ToString());
 
@@ -143,38 +243,45 @@ namespace Transgenesis {
 
                 formatter.ShowElementTree(root, focused, expanded, semiexpanded);
             }
-            //formatter.SyntaxHighlight();
-            var buffer = formatter.buffer;
-            /*
-            {
-                List<ColoredString> buffer2 = new List<ColoredString>();
-                ColoredString splitline = new ColoredString(150);
-                int index = 0;
-                foreach (var line in buffer) {
-                    foreach (var c in line) {
-                        if (c.Glyph == '\n') {
-                            buffer2.Add(splitline);
-                            splitline = new ColoredString(150);
-                            index = 0;
-                        } else {
-                            splitline[index] = c;
-                            index++;
-                            if (index == 150) {
-                                buffer2.Add(splitline);
-                                splitline = new ColoredString(150);
-                                index = 0;
-                            }
-                        }
-                    }
-                    if(index > 0) {
-                        buffer2.Add(splitline);
-                        splitline = new ColoredString(150);
-                        index = 0;
+
+
+            HashSet<string> keptButtons = new();
+            HashSet<string> removedButtons = new(buttons.Keys);
+            foreach((var id, var rect) in formatter.smart.buttons) {
+                var r = new Rectangle(rect.MinExtent + (0, 1), rect.MaxExtent + (0, 1));
+                
+                if(r.MaxExtentY < scroller.yMin || r.MinExtentY > scroller.yMax) {
+                    continue;
+                }
+                if(r.MinExtentY < scroller.yMin) {
+                    var delta = scroller.yMin - rect.MinExtentY;
+                    r = new(r.MinExtent + (0, delta), r.MaxExtent);
+                } else if(r.MaxExtentY > scroller.yMax) {
+                    var delta = scroller.yMax - rect.MaxExtentY;
+                    r = new(r.MinExtent, r.MaxExtent + (0, delta));
+                }
+
+                removedButtons.Remove(id);
+                if (buttons.TryGetValue(id, out var current)) {
+                    if (current.rect == r) {
+                        keptButtons.Add(id);
+                        continue;
+                    } else {
+                        c.console.Children.Remove(current.button);
                     }
                 }
-                buffer = buffer2;
+
+                var b = new RectButton(r, () => Click(root.DescendantsAndSelf().ElementAt(int.Parse(id))));
+                c.console.Children.Add(b);
+                buttons[id] = (r, b);
             }
-            */
+            foreach(var id in removedButtons) {
+                c.console.Children.Remove(buttons[id].button);
+                buttons.Remove(id);
+            }
+
+            var buffer = formatter.buffer;
+
             //We auto-expand children of the focused element if we press Ctrl-F
             //MarkDescendantsSemiExpanded(focused);
             void MarkAncestorsSemiExpanded(XElement element) {
@@ -345,12 +452,7 @@ namespace Transgenesis {
                     break;
                 case ConsoleKey.Enter: {
                         if(input.Length == 0) {
-                            if(keepExpanded.Contains(focused)) {
-                                keepExpanded.Remove(focused);
-                            } else if(focused.Nodes().Any() || focused.Attributes().Count() > 3) {
-                                
-                                keepExpanded.Add(focused);
-                            }
+                            ToggleExpand(focused);
                             break;
                         }
 
