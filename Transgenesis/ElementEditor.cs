@@ -70,12 +70,14 @@ namespace Transgenesis {
         Done:
             return base.ProcessMouse(state);
         }
+        bool isLeftDown => leftClick != null && mouse.nowLeft;
+        bool isRightDown => rightClick != null && mouse.nowRight;
         public override void Render(TimeSpan timeElapsed) {
             Color b;
 
             if (!enabled || !IsMouseOver) {
                 return;
-            } else if (leftClick != null && mouse.nowLeft) {
+            } else if (isLeftDown || isRightDown) {
                 b = Color.White.SetAlpha(128);
             } else {
                 b = Color.White.SetAlpha(51);
@@ -244,20 +246,22 @@ namespace Transgenesis {
                 formatter.ShowElementTree(root, focused, expanded, semiexpanded);
             }
 
-
+            var all = root.DescendantsAndSelf().ToList();
             HashSet<string> keptButtons = new();
             HashSet<string> removedButtons = new(buttons.Keys);
-            foreach((var id, var rect) in formatter.smart.buttons) {
-                var r = new Rectangle(rect.MinExtent + (0, 1), rect.MaxExtent + (0, 1));
+            foreach(var pair in formatter.smart.buttons) {
+                var id = pair.Key;
+                
+                var r = new Rectangle(pair.Value.MinExtent + (0, 1 - scroller.scrolling), pair.Value.MaxExtent + (0, 1 - scroller.scrolling));
                 
                 if(r.MaxExtentY < scroller.yMin || r.MinExtentY > scroller.yMax) {
                     continue;
                 }
                 if(r.MinExtentY < scroller.yMin) {
-                    var delta = scroller.yMin - rect.MinExtentY;
+                    var delta = scroller.yMin - r.MinExtentY;
                     r = new(r.MinExtent + (0, delta), r.MaxExtent);
                 } else if(r.MaxExtentY > scroller.yMax) {
-                    var delta = scroller.yMax - rect.MaxExtentY;
+                    var delta = scroller.yMax - r.MaxExtentY;
                     r = new(r.MinExtent, r.MaxExtent + (0, delta));
                 }
 
@@ -271,7 +275,8 @@ namespace Transgenesis {
                     }
                 }
 
-                var b = new RectButton(r, () => Click(root.DescendantsAndSelf().ElementAt(int.Parse(id))));
+                var e = all[int.Parse(id)];
+                var b = new RectButton(r, () => ToggleExpand(e), () => focused = e);
                 c.console.Children.Add(b);
                 buttons[id] = (r, b);
             }

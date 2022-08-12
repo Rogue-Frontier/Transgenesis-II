@@ -137,12 +137,8 @@ internal class SmartString {
                 default:
                     if(ch == '\n') {
                         if (padRight && truncate != int.MaxValue && col < truncate) {
-                            /*
-                            while (col < truncate) {
-                                Append(' ');
-                                col++;
-                            }
-                            */
+                            col = truncate;
+                            AddPoint();
                         }
                         Append(ch);
                         Append(new string(' ', indent));
@@ -159,34 +155,39 @@ internal class SmartString {
 
                     }
 
-                    var p = new Point(col, row);
-                    if (buttonId.Any()) {
-                        if (!buttons.TryGetValue(buttonId, out var rect)) {
-                            rect = new(p.X, p.Y, 1, 1);
-                            buttons[buttonId] = rect;
-                        }
-                        if (!rect.Contains(p)) {
-                            if(p.X < rect.MinExtentX) {
-                                rect = rect.WithMinExtentX(p.X);
-                            }
-                            if (p.Y < rect.MinExtentY) {
-                                rect = rect.WithMinExtentY(p.Y);
-                            }
-                            if (p.X > rect.MaxExtentX) {
-                                rect = rect.WithMaxExtentX(p.X);
-                            }
-                            if (p.Y > rect.MaxExtentY) {
-                                rect = rect.WithMaxExtentY(p.Y);
-                            }
-                            buttons[buttonId] = rect;
-                        }
-                    }
+
+                    AddPoint();
 
                     Append(ch);
                     col++;
 
                     
                     break;
+
+                    void AddPoint() {
+                        var p = new Point(col, row);
+                        if (buttonId.Any()) {
+                            if (!buttons.TryGetValue(buttonId, out var rect)) {
+                                rect = new(p.X, p.Y, 1, 1);
+                                buttons[buttonId] = rect;
+                            }
+                            if (!rect.Contains(p)) {
+                                if (p.X < rect.MinExtentX) {
+                                    rect = rect.WithMinExtentX(p.X);
+                                }
+                                if (p.Y < rect.MinExtentY) {
+                                    rect = rect.WithMinExtentY(p.Y);
+                                }
+                                if (p.X > rect.MaxExtentX) {
+                                    rect = rect.WithMaxExtentX(p.X);
+                                }
+                                if (p.Y > rect.MaxExtentY) {
+                                    rect = rect.WithMaxExtentY(p.Y);
+                                }
+                                buttons[buttonId] = rect;
+                            }
+                        }
+                    }
             }
         }
 
