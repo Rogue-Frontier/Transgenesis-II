@@ -31,6 +31,60 @@ namespace Transgenesis {
                 );
         }
     }
+
+    public class RectButtonWatch {
+        private Dictionary<string, (Rectangle rect, RectButton button)> buttons = new();
+
+        public delegate RectButton GetButton(Rectangle r, string id);
+        public void Update(Console c, Rectangle visible, Dictionary<string, Rectangle> rects, XElement root, GetButton gb) {
+
+            bool needReorderButtons = false;
+
+            HashSet<string> keptButtons = new();
+            HashSet<string> removedButtons = new(buttons.Keys);
+
+            foreach (var pair in rects) {
+                var id = pair.Key;
+
+                var r = new Rectangle(pair.Value.MinExtent + (0, 1 - visible.MinExtentY), pair.Value.MaxExtent + (0, 1 - visible.MinExtentY));
+
+                if (r.MaxExtentY < visible.MinExtentY || r.MinExtentY > visible.MaxExtentY) {
+                    continue;
+                }
+                if (r.MinExtentY < visible.MinExtentY) {
+                    var delta = visible.MinExtentY - r.MinExtentY;
+                    r = new(r.MinExtent + (0, delta), r.MaxExtent);
+                } else if (r.MaxExtentY > visible.MaxExtentY) {
+                    var delta = visible.MaxExtentY - r.MaxExtentY;
+                    r = new(r.MinExtent, r.MaxExtent + (0, delta));
+                }
+
+                removedButtons.Remove(id);
+                if (buttons.TryGetValue(id, out var current)) {
+                    if (current.rect == r) {
+                        keptButtons.Add(id);
+                        continue;
+                    } else {
+                        c.Children.Remove(current.button);
+                    }
+                }
+                needReorderButtons = true;
+                buttons[id] = (r, gb(r, id));
+            }
+            foreach (var id in removedButtons) {
+                c.Children.Remove(buttons[id].button);
+                buttons.Remove(id);
+            }
+
+            if (needReorderButtons) {
+                foreach (var b in buttons.Values.Select(v => v.button)) {
+                    c.Children.Remove(b);
+                    c.Children.Add(b);
+                }
+            }
+
+        }
+    }
     public class RectButton : Console {
         public Action leftClick;
         public Action rightClick;
@@ -82,7 +136,7 @@ namespace Transgenesis {
                 return;
             } else if (isLeftDown || isRightDown) {
                 b = Color.White.SetAlpha(102);
-            } else if(isLeftUp && isRightUp) {
+            } else if (isLeftUp || isRightUp) {
                 b = Color.White.SetAlpha(51);
             } else {
                 return;
@@ -116,6 +170,8 @@ namespace Transgenesis {
         Suggest s;
         Tooltip t;
         Scroller scroller;
+
+        RectButtonWatch rectButtons = new();
 
         Dictionary<string, string> helpMain = new Dictionary<string, string>() {
                 {"",    "Navigate Mode" + "\r\n" +
@@ -200,7 +256,7 @@ namespace Transgenesis {
                 ToggleExpand(clicked);
                 return;
             }
-            if(focused == clicked) {
+            if (focused == clicked) {
                 ToggleExpand(focused);
                 return;
             }
@@ -215,19 +271,18 @@ namespace Transgenesis {
             }
         }
 
-        private Dictionary<string, (Rectangle rect, RectButton button)> buttons = new();
         public void Draw() {
             //Console.WriteLine(extension.structure.ToString());
 
             var root = focused;
-            while(root.Parent != null) {
+            while (root.Parent != null) {
                 root = root.Parent;
             }
 
             formatter = new ElementFormatter(c);
             HashSet<XElement> semiexpanded = new HashSet<XElement>();
             bool invertExpand = true;
-            if(invertExpand) {
+            if (invertExpand) {
                 MarkAncestorsSemiExpanded(focused);
                 formatter.ShowElementTree(root, focused, keepExpanded, semiexpanded);
             } else {
@@ -253,52 +308,29 @@ namespace Transgenesis {
 
             var all = root.DescendantsAndSelf().ToList();
 
-            bool needReorderButtons = false;
+            var rect = new Rectangle(0, scroller.scrolling, c.width, scroller.screenRows);
+            rectButtons.Update(c.console, rect, formatter.smart.buttons, root,
+                (rect, id) => {
+                    var parts = id.Split(",", 2);
+                    (var type, var target) = (parts[0], parts[1]);
 
-            HashSet<string> keptButtons = new();
-            HashSet<string> removedButtons = new(buttons.Keys);
-
-            foreach(var pair in formatter.smart.buttons) {
-                var id = pair.Key;
-                
-                var r = new Rectangle(pair.Value.MinExtent + (0, 1 - scroller.scrolling), pair.Value.MaxExtent + (0, 1 - scroller.scrolling));
-                
-                if(r.MaxExtentY < scroller.yMin || r.MinExtentY > scroller.yMax) {
-                    continue;
-                }
-                if(r.MinExtentY < scroller.yMin) {
-                    var delta = scroller.yMin - r.MinExtentY;
-                    r = new(r.MinExtent + (0, delta), r.MaxExtent);
-                } else if(r.MaxExtentY > scroller.yMax) {
-                    var delta = scroller.yMax - r.MaxExtentY;
-                    r = new(r.MinExtent, r.MaxExtent + (0, delta));
-                }
-
-                removedButtons.Remove(id);
-                if (buttons.TryGetValue(id, out var current)) {
-                    if (current.rect == r) {
-                        keptButtons.Add(id);
-                        continue;
-                    } else {
-                        c.console.Children.Remove(current.button);
+                    switch(type) {
+                        case "element": {
+                                var e = all[int.Parse(target)];
+                                return new(rect, () => ToggleExpand(e), () => focused = e);
+                            }
+                        case "attribute": {
+                                parts = target.Split(",", 2);
+                                (var elementId, var attribute) = (parts[0], parts[1]);
+                                var e = all[int.Parse(elementId)];
+                                return new(rect, null, () => {
+                                    i.Text = @$"set {attribute}=""{e.Att(attribute)}""";
+                                    focused = e;
+                                });
+                            }
+                        default: throw new Exception($"Unknown button type {id}");
                     }
-                }
-                needReorderButtons = true;
-                var e = all[int.Parse(id)];
-                var b = new RectButton(r, () => ToggleExpand(e), () => focused = e);
-                buttons[id] = (r, b);
-            }
-            foreach(var id in removedButtons) {
-                c.console.Children.Remove(buttons[id].button);
-                buttons.Remove(id);
-            }
-
-            if (needReorderButtons) {
-                foreach (var b in buttons.Values.Select(v => v.button)) {
-                    c.console.Children.Remove(b);
-                    c.console.Children.Add(b);
-                }
-            }
+                });
 
             var buffer = formatter.buffer;
 
@@ -457,7 +489,7 @@ namespace Transgenesis {
                     scrollToFocused = true;
                     break;
                 case ConsoleKey.Home when i.Text.Length == 0:
-                    if((k.Modifiers & ConsoleModifiers.Shift) == 0) {
+                    if ((k.Modifiers & ConsoleModifiers.Shift) == 0) {
                         ScrollToHome();
                     } else {
                         ScrollToFocusedOpenTag();
@@ -471,7 +503,7 @@ namespace Transgenesis {
                     }
                     break;
                 case ConsoleKey.Enter: {
-                        if(input.Length == 0) {
+                        if (input.Length == 0) {
                             ToggleExpand(focused);
                             break;
                         }
@@ -484,7 +516,7 @@ namespace Transgenesis {
                                     if (env.CanAddElement(focused, env.bases[focused], elementName, out XElement subtemplate)) {
                                         var subelement = env.FromTemplate(subtemplate, elementName);
                                         focused.Add(subelement);
-                                        foreach(Match m in new Regex("(?<attribute>[a-zA-Z0-9]+)=\"(?<value>[^\"]*)\"").Matches(input)) {
+                                        foreach (Match m in new Regex("(?<attribute>[a-zA-Z0-9]+)=\"(?<value>[^\"]*)\"").Matches(input)) {
                                             string key = m.Groups["attribute"].Value;
                                             string value = m.Groups["value"].Value;
                                             subelement.SetAttributeValue(key, value);
@@ -511,17 +543,17 @@ namespace Transgenesis {
                                 }
                             case "reorder": {
                                     Dictionary<string, string> attributes = new Dictionary<string, string>();
-                                    foreach(var a in focused.Attributes()) {
+                                    foreach (var a in focused.Attributes()) {
                                         attributes[a.Name.LocalName] = a.Value;
                                     }
                                     focused.RemoveAttributes();
-                                    foreach(var a in parts.Skip(1)) {
-                                        if(attributes.TryGetValue(a, out string value)) {
+                                    foreach (var a in parts.Skip(1)) {
+                                        if (attributes.TryGetValue(a, out string value)) {
                                             focused.SetAttributeValue(a, value);
                                             attributes.Remove(a);
                                         }
                                     }
-                                    foreach(var a in attributes.Keys) {
+                                    foreach (var a in attributes.Keys) {
                                         focused.SetAttributeValue(a, attributes[a]);
                                     }
                                     h.Record();
@@ -603,11 +635,11 @@ namespace Transgenesis {
                                     h.Record();
                                     break;
                                 }
-                                /*
-                            case "child":
-                                focused = focused.Elements().FirstOrDefault() ?? focused;
-                                break;
-                            */
+                            /*
+                        case "child":
+                            focused = focused.Elements().FirstOrDefault() ?? focused;
+                            break;
+                        */
                             /*
                             case "find":
                                 //Start from the focused element and find elements matching this criteria
@@ -671,11 +703,11 @@ namespace Transgenesis {
                                     string module;
                                     if (parts.Length < 2) {
                                         var att = env.bases[focused].Att("module");
-                                        if(att == null) {
+                                        if (att == null) {
                                             break;
                                         }
                                         module = focused.Att(att);
-                                        if(module == null) {
+                                        if (module == null) {
                                             break;
                                         }
                                     } else {
@@ -691,7 +723,7 @@ namespace Transgenesis {
                                 }
                             case "editparent": {
                                     var parent = extension.parent;
-                                    if(parent != null) {
+                                    if (parent != null) {
                                         screens.Push(state.sessions.Initialize(parent, new ElementEditor(state, screens, env, parent, c)));
                                     }
                                     h.Record();
@@ -780,7 +812,7 @@ namespace Transgenesis {
         public void UpdateSuggest() {
             var input = i.Text;
             //Disable suggest when input is completely empty so that we can navigate aroung the UI with arrow keys
-            
+
             t.help = helpMain;
             List<HighlightEntry> Suggest(string text, IEnumerable<string> choices) => Global.GetSuggestions(text, choices);
 
@@ -827,7 +859,7 @@ namespace Transgenesis {
                         t.help = e.Elements("A").ToDictionary(a => a.Att("name"), a =>
                             $"<{e.Att("name")}> {e.Att("desc")}\n\r{a.Att("name")}=\"{{{a.Att("type")}}}\"\n\r{a.Att("desc")}");
                         result = Suggest(g.Value, e.GetValidAttributes().Except(previous));
-                    } else if(TryMatch(input, new Regex("^add\\s+(?<element>[a-zA-Z0-9_]+)\\s+(?<attributes>([a-zA-Z0-9_]+=\"[^\"]*\"\\s*)*\\s)?(?<attribute>[a-zA-Z0-9_]+)=$"), out m)) {
+                    } else if (TryMatch(input, new Regex("^add\\s+(?<element>[a-zA-Z0-9_]+)\\s+(?<attributes>([a-zA-Z0-9_]+=\"[^\"]*\"\\s*)*\\s)?(?<attribute>[a-zA-Z0-9_]+)=$"), out m)) {
                         //Show tooltip for the attribute
                         var sub = m.Groups["element"].Value;
                         string attribute = m.Groups["attribute"].Value;
@@ -855,7 +887,7 @@ namespace Transgenesis {
                         var sub = m.Groups["element"].Value;
                         string attribute = m.Groups["attribute"].Value;
                         var e = env.bases[focused];
-                        if(!e.TryNameElement(sub, out e)) {
+                        if (!e.TryNameElement(sub, out e)) {
                             t.warning = (new ColoredString($"Unknown subelement {sub}"));
                             s.Clear();
                             break;
@@ -870,7 +902,7 @@ namespace Transgenesis {
                         }
                         var valueType = att.Att("type");
 
-                        t.text = new($"<{e.Att("name")}> {e.Att("desc")}\n\r{attribute}=\"{{{valueType}}}\"\n\r{att.Att("desc")??""}");
+                        t.text = new($"<{e.Att("name")}> {e.Att("desc")}\n\r{attribute}=\"{{{valueType}}}\"\n\r{att.Att("desc") ?? ""}");
                         t.help = new();
                         //show desc for highlighted option
 
@@ -880,7 +912,7 @@ namespace Transgenesis {
                         replaceStart = g.Index;
                         //replaceLength = g.Length;
                         result = Suggest(v, all);
-                    } else if(TryMatch(input, new Regex("^add\\s+(?<element>[a-zA-Z0-9_]*)"), out m)) {
+                    } else if (TryMatch(input, new Regex("^add\\s+(?<element>[a-zA-Z0-9_]*)"), out m)) {
                         var sub = m.Groups["element"].Value;
                         var e = env.bases[focused];
                         if (!e.TryNameElement(sub, out e)) {
@@ -1005,44 +1037,44 @@ namespace Transgenesis {
                         });
                     break;
             }
-            /*
-            var empty = new List<string>();
-            Dictionary<string, Func<List<string>>> autocomplete = new Dictionary<string, Func<List<string>>> {
-                                {"", () => },
-                                {"set", () => env.bases[focused].GetValidAttributes() },
-                                {"add", () => env.GetAddableElements(focused, env.bases[focused]) },
-                                {"remove", () => env.GetRemovableElements(focused, env.bases[focused]) },
-                                {"goto", () => new GotoHandler() {
-                                        state = state,
-                                        screens = screens,
-                                        env = env,
-                                        extension = extension,
-                                        c = c,
-                                        focused = focused
-                                    }.SuggestGoto(parts[1]) }
-                                //bind
-                                //bindall
-                                //save
-                                //saveall
-                                //moveup
-                                //movedown
-                                //root
-                                //parent
-                                //next
-                                //prev
-                                //types
-                                //createmodule
-                                //loadmodule
-                                //editmodule
-                                //editparent
-                                //exit
-                            };
-            //string p = autocomplete.Keys.Last(prefix => input.StartsWith((prefix + " ").TrimStart()));
-            //List<string> all = autocomplete[p]();
+        /*
+        var empty = new List<string>();
+        Dictionary<string, Func<List<string>>> autocomplete = new Dictionary<string, Func<List<string>>> {
+                            {"", () => },
+                            {"set", () => env.bases[focused].GetValidAttributes() },
+                            {"add", () => env.GetAddableElements(focused, env.bases[focused]) },
+                            {"remove", () => env.GetRemovableElements(focused, env.bases[focused]) },
+                            {"goto", () => new GotoHandler() {
+                                    state = state,
+                                    screens = screens,
+                                    env = env,
+                                    extension = extension,
+                                    c = c,
+                                    focused = focused
+                                }.SuggestGoto(parts[1]) }
+                            //bind
+                            //bindall
+                            //save
+                            //saveall
+                            //moveup
+                            //movedown
+                            //root
+                            //parent
+                            //next
+                            //prev
+                            //types
+                            //createmodule
+                            //loadmodule
+                            //editmodule
+                            //editparent
+                            //exit
+                        };
+        //string p = autocomplete.Keys.Last(prefix => input.StartsWith((prefix + " ").TrimStart()));
+        //List<string> all = autocomplete[p]();
 
-            //var items = Global.GetSuggestions(input.Substring(p.Length).TrimStart(), all);
-            //s.SetItems(items);
-            */
+        //var items = Global.GetSuggestions(input.Substring(p.Length).TrimStart(), all);
+        //s.SetItems(items);
+        */
 
         Done:
             s.SetItems(result, replaceStart, replaceLength);

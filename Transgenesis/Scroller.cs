@@ -14,7 +14,6 @@ namespace Transgenesis {
         Input i;
         ConsoleManager c;
 
-
         public int yMin => scrolling;
         public int yMax => scrolling + screenRows;
 

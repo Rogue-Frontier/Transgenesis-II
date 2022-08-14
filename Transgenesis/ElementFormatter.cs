@@ -73,8 +73,11 @@ namespace Transgenesis {
                     index++;
                 }
 
-                var button = $"[c:button id:{index}]";
+                var button = $"[c:button id:element,{index}]";
                 smart.Parse(button);
+
+                AttribToStr Str = (string key, string value) => $"[c:button id:attribute,{index},{key}]{StrPair(key, value)}[c:u]";
+
                 if (element.Nodes().Count() > 0) {
                     Func<string, string> recTag =
                         isFocused ?
@@ -84,7 +87,7 @@ namespace Transgenesis {
 
 
                     if (expandedCheck) {
-                        var openingTag = $"{box}{Tab()}{recTag($"{tagLeft}{ShowAllAttributes(element)}>")}";
+                        var openingTag = $"{box}{Tab()}{recTag($"{tagLeft}{ShowAllAttributes(element, Str)}>")}";
                         if(element.Nodes().Count() == 1 && element.FirstNode is XText text) {
                             //To do: Generate an equivalent string of metadata objects
                             var t = text.Value.Replace("\t", "    ");
@@ -99,7 +102,7 @@ namespace Transgenesis {
                         }
                     } else {
                         //show only the important attributes and (semi)expanded children
-                        var openingTag = $"{box}{Tab()}{recTag($"{tagLeft}{ShowContextAttributes(element)}>")}";
+                        var openingTag = $"{box}{Tab()}{recTag($"{tagLeft}{ShowContextAttributes(element, Str)}>")}";
                         if (!semiexpandAll && !element.Elements().Intersect(semiexpanded).Any()) {
                             //We have no important children to show, so just put our whole tag on one line
                             AddLine($"{openingTag}{RecText("...")}{closingTag}");
@@ -158,8 +161,8 @@ namespace Transgenesis {
                         RecTag;
                     var att =
                         expandedCheck ?
-                            ShowAllAttributes(element) :
-                            ShowContextAttributes(element);
+                            ShowAllAttributes(element, Str) :
+                            ShowContextAttributes(element, Str);
                     AddLine($"{box}{Tab()}{recTag($"{tagLeft}{att}/>")}");
                 }
 
@@ -168,7 +171,7 @@ namespace Transgenesis {
         }
         //string Indent(string text) => $"[c:i i:{tabs * 4}]{text}[c:u]";
         string Tab() => new(' ', tabs * 4);
-        string ShowContextAttributes(XElement element) {
+        string ShowContextAttributes(XElement element, AttribToStr Str) {
             var attributes = new Dictionary<string, string>();
             //If we have a few attributes, just show all of them inline
             if (element.Attributes().Count() < 4) {
@@ -192,23 +195,28 @@ namespace Transgenesis {
             }
             var inline = attributes.Count < 4;
             var more = attributes.Count < element.Attributes().Count();
-            return AttributesToString(attributes, inline, more);
+            return AttributesToString(attributes, inline, more, Str);
         }
-        string ShowAllAttributes(XElement element) {
+        string ShowAllAttributes(XElement element, AttribToStr Str) {
             var attributes = new Dictionary<string, string>();
             foreach (var a in element.Attributes()) {
                 attributes[a.Name.LocalName] = a.Value;
             }
             var inline = attributes.Count < 4;
-            return AttributesToString(attributes, inline, false);
+            return AttributesToString(attributes, inline, false, Str);
         }
-        string AttributesToString(Dictionary<string, string> attributes, bool inline, bool more) {
+        public delegate string AttribToStr(string key, string value);
+        string AttributesToString(Dictionary<string, string> attributes, bool inline, bool more, AttribToStr Str) {
+
+
             if (attributes.Count == 0) {
                 return more ? RecText(" ...") : "";
             } else if (inline) {
+                
+
                 var result = new StringBuilder();
                 var first = attributes.Keys.First();
-                result.Append(StrPair(first, attributes[first]));
+                result.Append(Str(first, attributes[first]));
                 foreach (var key in attributes.Keys.Skip(1)) {
                     result.Append(" ");
                     //Pad space between each attribute so that keys are aligned by tab
@@ -222,7 +230,7 @@ namespace Transgenesis {
                         result.Append(new string(' ', aligned - result.Length));
                     }
                     */
-                    result.Append(StrPair(key, attributes[key]));
+                    result.Append(Str(key, attributes[key]));
                 }
                 if (more) {
                     result.Append(" ");
@@ -232,14 +240,14 @@ namespace Transgenesis {
             } else {
                 var result = new StringBuilder();
                 var first = attributes.Keys.First();
-                result.AppendLine($"{StrPair(first, attributes[first])}");
+                result.AppendLine($"{Str(first, attributes[first])}");
                 tabs += 2;
 
                 //int interval = 8;
                 //int padding = (1 + attributes.Keys.Select(k => k.Length).Max() / interval) * interval;
                 foreach (var key in attributes.Keys.Skip(1)) {
                     //int padding = (1 + key.Length / interval) * interval;
-                    result.AppendLine($@"{noBox}{Tab()}{StrPair(key, attributes[key])}");
+                    result.AppendLine($@"{noBox}{Tab()}{Str(key, attributes[key])}");
                 }
                 if (more) {
                     result.AppendLine($"{noBox}{Tab()}{RecText("...")}");
