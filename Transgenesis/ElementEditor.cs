@@ -42,7 +42,7 @@ namespace Transgenesis {
 
             HashSet<string> keptButtons = new();
             HashSet<string> removedButtons = new(buttons.Keys);
-
+            List<RectButton> presentButtons = new();
             foreach (var pair in rects) {
                 var id = pair.Key;
 
@@ -63,13 +63,16 @@ namespace Transgenesis {
                 if (buttons.TryGetValue(id, out var current)) {
                     if (current.rect == r) {
                         keptButtons.Add(id);
+                        presentButtons.Add(current.button);
                         continue;
                     } else {
                         c.Children.Remove(current.button);
                     }
                 }
                 needReorderButtons = true;
-                buttons[id] = (r, gb(r, id));
+                var button = gb(r, id);
+                presentButtons.Add(button);
+                buttons[id] = (r, button);
             }
             foreach (var id in removedButtons) {
                 c.Children.Remove(buttons[id].button);
@@ -77,7 +80,7 @@ namespace Transgenesis {
             }
 
             if (needReorderButtons) {
-                foreach (var b in buttons.Values.Select(v => v.button)) {
+                foreach (var b in presentButtons) {
                     c.Children.Remove(b);
                     c.Children.Add(b);
                 }
