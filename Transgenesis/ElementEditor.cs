@@ -70,17 +70,22 @@ namespace Transgenesis {
         Done:
             return base.ProcessMouse(state);
         }
-        bool isLeftDown => leftClick != null && mouse.nowLeft;
-        bool isRightDown => rightClick != null && mouse.nowRight;
+        bool isLeftDown => leftClick != null && mouse.nowLeft && mouse.leftPressedOnScreen;
+        bool isRightDown => rightClick != null && mouse.nowRight && mouse.rightPressedOnScreen;
+
+        bool isLeftUp => leftClick != null && !mouse.nowLeft;
+        bool isRightUp => rightClick != null && !mouse.nowRight;
         public override void Render(TimeSpan timeElapsed) {
             Color b;
 
             if (!enabled || !IsMouseOver) {
                 return;
             } else if (isLeftDown || isRightDown) {
-                b = Color.White.SetAlpha(128);
-            } else {
+                b = Color.White.SetAlpha(102);
+            } else if(isLeftUp && isRightUp) {
                 b = Color.White.SetAlpha(51);
+            } else {
+                return;
             }
 
             var par = (Console)Parent;
@@ -247,8 +252,12 @@ namespace Transgenesis {
             }
 
             var all = root.DescendantsAndSelf().ToList();
+
+            bool needReorderButtons = false;
+
             HashSet<string> keptButtons = new();
             HashSet<string> removedButtons = new(buttons.Keys);
+
             foreach(var pair in formatter.smart.buttons) {
                 var id = pair.Key;
                 
@@ -274,15 +283,21 @@ namespace Transgenesis {
                         c.console.Children.Remove(current.button);
                     }
                 }
-
+                needReorderButtons = true;
                 var e = all[int.Parse(id)];
                 var b = new RectButton(r, () => ToggleExpand(e), () => focused = e);
-                c.console.Children.Add(b);
                 buttons[id] = (r, b);
             }
             foreach(var id in removedButtons) {
                 c.console.Children.Remove(buttons[id].button);
                 buttons.Remove(id);
+            }
+
+            if (needReorderButtons) {
+                foreach (var b in buttons.Values.Select(v => v.button)) {
+                    c.console.Children.Remove(b);
+                    c.console.Children.Add(b);
+                }
             }
 
             var buffer = formatter.buffer;

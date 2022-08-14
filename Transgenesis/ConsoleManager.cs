@@ -7,7 +7,7 @@ using SadConsole.Components;
 using static SadConsole.ColoredString;
 
 namespace Transgenesis {
-    class Theme {
+    public class Theme {
         public Color front = Color.White;
         //public Color back = Color.Multiply(Color.Turquoise, 0.25f).FillAlpha();
         public Color back = new Color(0, (int) (51 * 0.75), (int) (102 * 0.75), 255);
@@ -17,7 +17,7 @@ namespace Transgenesis {
             (front, back) = (this.front, this.back);
         }
     }
-    class ConsoleManager {
+    public class ConsoleManager {
         public Console console => (Console)SadConsole.Game.Instance.Screen;
         public Cursor cursor => console.Cursor;
         public int width => console.Width;

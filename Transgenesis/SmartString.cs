@@ -8,9 +8,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using SadConsole;
 using static SadRogue.Primitives.ColorExtensions2;
-
 namespace Transgenesis;
-
 internal class SmartString {
     public override string ToString() => string.Join(null, text.Select(t => t.c));
     public string raw = "";
@@ -19,25 +17,18 @@ internal class SmartString {
     public ColoredString colored => new(text.Select(c => new ColoredGlyph(c.f, c.b, c.c)).ToArray());
     public Color front = Color.White,
           back = Color.Black;
-
     public bool padRight = true;
     public int truncate = int.MaxValue,
         indent = 0,
         row = 0,
         col = 0;
     Stack<Command> commands = new();
-
     string buttonId = "";
     public Dictionary<string, Rectangle> buttons = new();
-
-
     private void Append(char c) => text.Add(new(c, front, back));
     private void Append(string s) => text.AddRange(s.Select(c => new SmartChar(c, front, back)));
     public SmartString() { }
     public SmartString(string s) => Parse(s);
-
-    
-
     public void Parse(string s) {
         var i = 0;
         bool Check(out char c) {
@@ -167,23 +158,9 @@ internal class SmartString {
                     void AddPoint() {
                         var p = new Point(col, row);
                         if (buttonId.Any()) {
-                            if (!buttons.TryGetValue(buttonId, out var rect)) {
-                                rect = new(p.X, p.Y, 1, 1);
-                                buttons[buttonId] = rect;
-                            }
+                            var rect = buttons[buttonId];
                             if (!rect.Contains(p)) {
-                                if (p.X < rect.MinExtentX) {
-                                    rect = rect.WithMinExtentX(p.X);
-                                }
-                                if (p.Y < rect.MinExtentY) {
-                                    rect = rect.WithMinExtentY(p.Y);
-                                }
-                                if (p.X > rect.MaxExtentX) {
-                                    rect = rect.WithMaxExtentX(p.X);
-                                }
-                                if (p.Y > rect.MaxExtentY) {
-                                    rect = rect.WithMaxExtentY(p.Y);
-                                }
+                                rect = AddToRect(rect, p);
                                 buttons[buttonId] = rect;
                             }
                         }
@@ -201,6 +178,22 @@ internal class SmartString {
         }
         raw += s;
     }
+
+    private Rectangle AddToRect(Rectangle rect, Point p) {
+        if (p.X < rect.MinExtentX) {
+            rect = rect.WithMinExtentX(p.X);
+        }
+        if (p.Y < rect.MinExtentY) {
+            rect = rect.WithMinExtentY(p.Y);
+        }
+        if (p.X > rect.MaxExtentX) {
+            rect = rect.WithMaxExtentX(p.X);
+        }
+        if (p.Y > rect.MaxExtentY) {
+            rect = rect.WithMaxExtentY(p.Y);
+        }
+        return rect;
+    }
     private void Apply(Command co) {
         switch (co) {
             case Recolor c:
@@ -211,6 +204,10 @@ internal class SmartString {
                 return;
             case Button bu:
                 buttonId = bu.id;
+                
+                if (!buttons.ContainsKey(buttonId)) {
+                    buttons[buttonId] = new(col, row, 1, 1);
+                }
                 return;
             case Indent i:
                 indent = i.i;

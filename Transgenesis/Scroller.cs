@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Transgenesis {
-    class Scroller {
+    public class Scroller {
         public int scrolling = 0;
         public int screenRows = 48;
         Input i;

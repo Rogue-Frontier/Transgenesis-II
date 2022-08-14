@@ -6,16 +6,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 namespace Transgenesis {
-    interface IScreen : IComponent {
+    public interface IScreen : IComponent {
         string name { get; }
     }
-    interface IComponent {
+    public interface IComponent {
         void Update();
         void Handle(ConsoleKeyInfo k);
         void Handle(MouseScreenObjectState mouse) { }
         void Draw();
     }
-    class Input {
+    public class Input {
         //To do: Flip Suggest area so that input is below to save space
         ConsoleManager c;
         private StringBuilder s = new StringBuilder();
